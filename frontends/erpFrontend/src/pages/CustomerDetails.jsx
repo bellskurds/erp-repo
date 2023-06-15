@@ -148,31 +148,24 @@ export default function CustomerDetails() {
       dataIndex: ['client', 'company'],
     },
   ];
-  const customerColumns = [
+  const contactsColumns = [
     {
-      title: 'Customer',
+      title: 'Name',
       dataIndex: 'number',
     },
     {
-      title: 'Store',
+      title: 'Position',
       dataIndex: 'number',
     },
     {
-      title: 'Hours',
+      title: 'Email',
       dataIndex: 'number',
     },
     {
-      title: 'Hr/Week',
+      title: 'Phone',
       dataIndex: 'number',
     },
-    {
-      title: 'Sal/Hr',
-      dataIndex: ['client', 'company'],
-    },
-    {
-      title: 'Type',
-      dataIndex: ['client', 'company'],
-    },
+
   ];
   const scheduleColumns = [
     {
@@ -226,7 +219,130 @@ export default function CustomerDetails() {
       dataIndex: 'number',
     },
   ];
-  const config = { entity, dataTableColumns };
+  const storesColumns = [
+    {
+      title: 'Store',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Hours',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Hr/week',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Location',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Billing',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Products',
+      dataIndex: 'number',
+    },
+  ];
+  const assignedEmployeeColumns = [
+    {
+      title: 'Name',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Branch',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Time',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Hr/week',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Type',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Sal/hr',
+      dataIndex: 'number',
+    },
+  ];
+  const documentsColumns = [
+    {
+      title: 'Name',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Date',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Comments',
+      dataIndex: 'number',
+    },
+    {
+      title: 'By',
+      dataIndex: 'number',
+    },
+  ];
+  const recurrentBillingColumns = [
+    {
+      title: 'Description',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Amount',
+      dataIndex: 'number',
+    },
+    {
+      title: 'taxes',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Frequency',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Start',
+      dataIndex: 'number',
+    },
+    {
+      title: 'End',
+      dataIndex: 'number',
+    },
+  ];
+  const InvoiceHistoryColumns = [
+    {
+      title: 'Date',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Description',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Amount',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Details',
+      dataIndex: 'number',
+    },
+  ];
+  const BillingEstimationColumns = [
+    {
+      title: 'Month',
+      dataIndex: 'number',
+    },
+    {
+      title: 'Amount',
+      dataIndex: 'number',
+    },
+  ];
 
   return (
     <DashboardLayout>
@@ -234,64 +350,58 @@ export default function CustomerDetails() {
         <Tabs.TabPane tab="Details" key="1">
           <div className="whiteBox shadow">
             <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Bank Account</h3>
+              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Contacts</h3>
             </div>
 
-            <RecentTable entity={'banks'} dataTableColumns={bankColumns} />
+            <RecentTable entity={'banks'} dataTableColumns={contactsColumns} />
           </div>
 
           <div className="whiteBox shadow">
             <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Related People</h3>
+              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Stores</h3>
             </div>
-            <RecentTable entity={'quote'} dataTableColumns={relatedColumns} />
+            <RecentTable entity={'quote'} dataTableColumns={storesColumns} />
           </div>
 
           <div className="whiteBox shadow">
             <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Emergency Contacts</h3>
+              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Assigned Employees</h3>
             </div>
-            <RecentTable entity={'quote'} dataTableColumns={emergencyColumns} />
-          </div>
-
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Medical Details</h3>
-            </div>
-            <RecentTable entity={'quote'} dataTableColumns={medicalColumns} />
-          </div>
-
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Work Contract</h3>
-            </div>
-            <RecentTable entity={'quote'} dataTableColumns={contractColumns} />
+            <RecentTable entity={'quote'} dataTableColumns={assignedEmployeeColumns} />
           </div>
 
         </Tabs.TabPane>
-        <Tabs.TabPane tab="Work" key="2">
+        <Tabs.TabPane tab="Documentes" key="2">
           <div className="whiteBox shadow">
             <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Assigned Customers</h3>
+              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Documents</h3>
             </div>
 
-            <RecentTable entity={'invoice'} dataTableColumns={customerColumns} />
-          </div>
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Schedule</h3>
-            </div>
-            <RecentTable entity={'quote'} dataTableColumns={scheduleColumns} />
-          </div>
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Payment history</h3>
-            </div>
-            <RecentTable entity={'quote'} dataTableColumns={paymentColumns} />
+            <RecentTable entity={'invoice'} dataTableColumns={documentsColumns} />
           </div>
         </Tabs.TabPane>
-        <Tabs.TabPane tab="Documents" key="3">
-          Content of Tab Pane 3
+        <Tabs.TabPane tab="Biling" key="3">
+          <div className="whiteBox shadow">
+            <div className="pad20">
+              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Recurrent Billing</h3>
+            </div>
+
+            <RecentTable entity={'invoice'} dataTableColumns={recurrentBillingColumns} />
+          </div>
+          <div className="whiteBox shadow">
+            <div className="pad20">
+              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Invoice History</h3>
+            </div>
+
+            <RecentTable entity={'invoice'} dataTableColumns={InvoiceHistoryColumns} />
+          </div>
+          <div className="whiteBox shadow">
+            <div className="pad20">
+              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Billing Estimation</h3>
+            </div>
+
+            <RecentTable entity={'invoice'} dataTableColumns={BillingEstimationColumns} />
+          </div>
         </Tabs.TabPane>
       </Tabs>
 

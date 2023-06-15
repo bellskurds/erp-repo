@@ -58,7 +58,7 @@ export default function Navigation() {
             <img src={logoText} alt="Logo" style={{ marginTop: '3px', marginLeft: '10px' }} />
           )}
         </div>
-        <Menu mode="inline">
+        <Menu mode="inline" theme='dark'>
           <Menu.Item key={'Dashboard'} icon={<DashboardOutlined />}>
             <Link to={'/'} />
             Dashboard
