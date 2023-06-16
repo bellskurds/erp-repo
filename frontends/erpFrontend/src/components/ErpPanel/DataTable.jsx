@@ -51,10 +51,10 @@ export default function DataTable({ config, DataTableDropMenu }) {
     dispatch(erp.list({ entity, options }));
   }, []);
 
-  // const handelCurrency = () => {
-  //   dispatch(settings.currency({ value: '€' }));
-  //   dispatch(settings.currencyPosition({ position: 'before' }));
-  // };
+  const handelCurrency = () => {
+    dispatch(settings.currency({ value: '€' }));
+    dispatch(settings.currencyPosition({ position: 'before' }));
+  };
   useEffect(() => {
     dispatch(erp.list({ entity }));
   }, []);
@@ -68,9 +68,9 @@ export default function DataTable({ config, DataTableDropMenu }) {
           <Button onClick={handelDataTableLoad} key={`${uniqueId()}`} icon={<RedoOutlined />}>
             Refresh
           </Button>,
-          // <Button onClick={handelCurrency} key={`${uniqueId()}`} icon={<RedoOutlined />}>
-          //   Change Currency
-          // </Button>,
+          <Button onClick={handelCurrency} key={`${uniqueId()}`} icon={<RedoOutlined />}>
+            Change Currency
+          </Button>,
           <AddNewItem config={config} key={`${uniqueId()}`} />,
         ]}
         style={{

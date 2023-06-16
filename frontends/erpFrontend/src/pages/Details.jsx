@@ -1,12 +1,13 @@
 import React, { useRef, useState } from 'react';
-import { Form, Input, InputNumber, Space, Divider, Row, Col, Tabs } from 'antd';
+import { Form, Input, InputNumber, Space, Divider, Row, Col, Tabs, Upload, Avatar, Button, message, Select } from 'antd';
 
 import { Layout, Breadcrumb, Statistic, Progress, Tag } from 'antd';
 
-import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { ArrowUpOutlined, ArrowDownOutlined, UserOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 
 import { DashboardLayout } from '@/layout';
 import RecentTable from '@/components/RecentTable';
+import { Content } from 'antd/lib/layout/layout';
 
 
 export default function Details() {
@@ -226,12 +227,147 @@ export default function Details() {
       dataIndex: 'number',
     },
   ];
-  const config = { entity, dataTableColumns };
+  const [form] = Form.useForm();
+  const [name, setName] = useState('John Doe');
+  const [email, setEmail] = useState('johndoe@example.com');
+  const [phone, setPhone] = useState('123-456-7890');
+  const [avatar, setAvatar] = useState('');
+
+  const onFinish = (values) => {
+    setName(values.name);
+    setEmail(values.email);
+    setPhone(values.phone);
+    setAvatar(values.avatar);
+    message.success('Profile updated successfully!');
+  };
+  const beforeUpload = (file) => {
+    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+    if (!isJpgOrPng) {
+      message.error('You can only upload JPG/PNG file!');
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error('Image must be smaller than 2MB!');
+    }
+
+    return isJpgOrPng && isLt2M;
+  };
+
+  const handleChange = (info) => {
+
+    console.log(info, 'dfinfo')
+    if (info.file.status === 'done') {
+      getBase64(info.file.originFileObj, (imageUrl) =>
+        setAvatar(imageUrl),
+      );
+    }
+  };
+
+  const getBase64 = (img, callback) => {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => callback(reader.result));
+    reader.readAsDataURL(img);
+  };
 
   return (
     <DashboardLayout>
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="Details" key="1">
+          <Content style={{ padding: '0 0px' }}>
+            <Row gutter={[16, 16]}>
+              <Col span={6}>
+                <div className="profile-card">
+                  <Upload
+                    name="avatar"
+                    listType="picture-card"
+                    className="avatar-uploader"
+                    showUploadList={false}
+                    beforeUpload={beforeUpload}
+                    onChange={handleChange}
+                  >
+                    {avatar ? <Avatar shape="circle" src={avatar} size={128} /> : <UserOutlined style={{ fontSize: '44px' }} />}
+                    <div style={{ marginTop: 8 }}>Change Avatar</div>
+                  </Upload>
+                </div>
+              </Col>
+              <Col span={18}>
+                <p>Name:{name}</p>
+                <p>Personal ID:{name}</p>
+                <p>Phone:{phone}</p>
+                <p>Email:{email}</p>
+              </Col>
+            </Row>
+            <div className="profile-details">
+              <h2>Details</h2>
+              <Form form={form} onFinish={onFinish}>
+                <Row gutter={[20, 20]}>
+
+                  <Col span={10}>
+                    <Form.Item
+                      name="gender"
+                      label="Gender"
+                      rules={[
+                        {
+                          required: true,
+                        },
+                      ]}
+                    >
+                      <Select>
+                        <Select.Option value="men">Men</Select.Option>
+                        <Select.Option value="women">Women</Select.Option>
+                      </Select>
+                    </Form.Item>
+                    <Form.Item
+                      name="civil_status"
+                      label="Civil Status"
+                      rules={[
+                        {
+                          required: true,
+                        },
+                      ]}
+                    >
+                      <Select>
+                        <Select.Option value="Soltero">Soltero</Select.Option>
+                        <Select.Option value="Casado">Casado</Select.Option>
+                        <Select.Option value="Unido">Unido</Select.Option>
+                        <Select.Option value="Separado">Separado</Select.Option>
+                      </Select>
+                    </Form.Item>
+                    <Form.Item
+                      name="birth_place"
+                      label="Brith Place"
+                      rules={[{ required: true, message: 'Please input your name' }]}
+                      initialValue={name}
+                    >
+                      <Input prefix={<UserOutlined />} placeholder="Name" />
+                    </Form.Item>
+                    <Form.Item
+                      name="school"
+                      label="School"
+                      rules={[{ required: true, message: 'Please input your email!' }]}
+                      initialValue={email}
+                    >
+                      <Input prefix={<MailOutlined />} type="email" placeholder="Email" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={10}>
+
+                    <Form.Item
+                      name="phone"
+                      rules={[{ required: true, message: 'Please input your phone number!' }]}
+                      initialValue={phone}
+                    >
+                      <Input prefix={<PhoneOutlined />} type="tel" placeholder="Phone Number" />
+                    </Form.Item>
+                    <Form.Item>
+                      <Button type="primary" htmlType="submit">Save Chang es</Button>
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Form>
+            </div>
+
+          </Content>
           <div className="whiteBox shadow">
             <div className="pad20">
               <h3 style={{ color: '#22075e', marginBottom: 5 }}>Bank Account</h3>
