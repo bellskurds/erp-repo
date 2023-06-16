@@ -30,10 +30,7 @@ const employeeSchema = new mongoose.Schema({
   birthplace: {
     type: String,
   },
-  gender: {
-    type: String,
-    // required: true,
-  },
+
   photo: {
     type: String,
     trim: true,
@@ -51,7 +48,7 @@ const employeeSchema = new mongoose.Schema({
     trim: true,
   },
   state: {
-    type: String,
+    type: Number,
   },
   phone: {
     type: String,
@@ -66,8 +63,29 @@ const employeeSchema = new mongoose.Schema({
     trim: true,
   },
   status: {
+    type: Number,
+    default: 1,
+  },
+  gender: {
+    type: Number,
+    default: 1,
+  },
+  birthplace: {
     type: String,
     default: '1',
+  },
+  civil_status: {
+    type: Number,
+    default: 1,
+  },
+  school: {
+    type: String,
+    default: '',
+  },
+
+  address: {
+    type: String,
+    default: '',
   },
   created: {
     type: Date,

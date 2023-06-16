@@ -6,6 +6,7 @@
     "@ant-design/icons": "^4.7.0",
     "antd": "^4.17.4",
     "axios": "^0.27.2",
+    "country-list": "^2.3.0",
     "currency.js": "^2.0.4",
     "dayjs": "^1.10.4",
     "framer-motion": "^4.1.13",

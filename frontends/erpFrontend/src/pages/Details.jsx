@@ -1,10 +1,10 @@
 import React, { useRef, useState } from 'react';
-import { Form, Input, Row, Col, Tabs, Upload, Avatar, Button, message, Select } from 'antd';
+import { Form, Input, Row, Col, Tabs, Upload, Avatar, Button, message, Select, Modal, Radio } from 'antd';
 
 import { Tag } from 'antd';
 
 import { UserOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
-
+import countryList from 'country-list'
 import { DashboardLayout } from '@/layout';
 import RecentTable from '@/components/RecentTable';
 import { Content } from 'antd/lib/layout/layout';
@@ -13,6 +13,10 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
 import { selectReadItem } from '@/redux/crud/selectors';
+import { Option } from 'antd/lib/mentions';
+import Dropdown from '@/components/outsideClick.js';
+import { DatePicker } from '@/components/CustomAntd';
+import moment from 'moment';
 
 
 export default function Details() {
@@ -231,6 +235,40 @@ export default function Details() {
       dataIndex: 'number',
     },
   ];
+  const genderOptions = [
+    {
+      label: "Mem", value: 1,
+    },
+    {
+      label: "Womem", value: 2,
+    },
+  ]
+  const civilOptions = [
+    {
+      label: "Soltero", value: 1
+    },
+    {
+      label: "Casado", value: 2
+    },
+    {
+      label: "Unido", value: 3
+    },
+    {
+      label: "Separado", value: 4
+    },
+  ]
+  const statusOptions = [
+    {
+      label: "Active", value: 1,
+    },
+    {
+      label: "InActive", value: 2,
+    }
+    ,
+    {
+      label: "reject", value: 3,
+    }
+  ]
   const [form] = Form.useForm();
   const [name, setName] = useState('John Doe');
   const [email, setEmail] = useState('johndoe@example.com');
@@ -278,19 +316,181 @@ export default function Details() {
   const dispatch = useDispatch();
 
   const { result: currentItem } = useSelector(selectReadItem);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   // const { pagination, items } = currentResult;
+  const changeStatus = (e) => {
+    const id = currentEmployeeId;
+    dispatch(crud.update({ entity, id, jsonData: { status: e } }));
+    setTimeout(() => {
+      dispatch(crud.read({ entity, id }));
+    }, 500)
+    return true;
+  }
 
-  console.log(currentItem, 'itemsitemsitemsitemsitems')
 
+
+  const onFinishFailed = (errorInfo) => {
+    console.log('Failed:', errorInfo);
+  };
+  const formRef = useRef(null);
+
+  const handleOk = () => {
+    // handle ok button click here
+    setIsModalVisible(false);
+  };
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+  const editModal = () => {
+    if (formRef.current)
+      console.log(formRef.current.getFieldValue(), 'formRef.current')
+    //formRef.current.setFieldsValue(currentItem);
+
+    setIsModalVisible(true)
+    setTimeout(() => {
+      console.log(formRef.current.getFieldValue(), 'formRef.current.getFieldValue()')
+      console.log(moment(currentItem.birthday, 'YYYY-MM-DD'), 'sdfsdddddddddddddddddddddddddd')
+      formRef.current.setFieldsValue({
+        gender: currentItem.gender,
+        address: currentItem.address,
+        birthplace: currentItem.birthplace,
+        civil_status: currentItem.civil_status,
+        school: currentItem.school,
+      })
+    }, 600)
+  }
+  const onChange = (value) => {
+    console.log(`selected ${value}`);
+  };
+
+  const onSearch = (value) => {
+    // const id = 
+
+    console.log('search:', value);
+  };
+
+  const countryLists = countryList.getData().map((item) => ({
+    value: item.code,
+    label: item.name
+  }))
+  const saveDetails = (values) => {
+
+    dispatch(crud.update({ entity, id, jsonData: values }));
+    setTimeout(() => {
+      dispatch(crud.read({ entity, id }));
+    }, 500)
+    setIsModalVisible(false)
+  }
   useEffect(() => {
     dispatch(crud.read({ entity, id }));
-  }, []);
+  }, [entity, id]);
 
+  console.log(currentItem, 'currentItemcurrentItemcurrentItemcurrentItem')
   return (
     <DashboardLayout>
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="Details" key="1">
+          <Modal title="Create Form" visible={isModalVisible} onCancel={handleCancel} footer={null}>
+            <Form
+              ref={formRef}
+              name="basic"
+              labelCol={{
+                span: 8,
+              }}
+              wrapperCol={{
+                span: 16,
+              }}
+              onFinish={saveDetails}
+              onFinishFailed={onFinishFailed}
+              autoComplete="off"
+              initialValues={{
+                gender: 1,
+                civil_status: 3,
+                birthplace: "AU",
+
+              }}
+            >
+              <Form.Item
+                name="gender"
+                label="Gender"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Radio.Group name="radiogroup" options={genderOptions} />
+              </Form.Item>
+              <Form.Item
+                name="birthplace"
+                label="Birthplace"
+              >
+                <Select
+                  showSearch
+                  placeholder="Select a person"
+                  optionFilterProp="children"
+                  onChange={onChange}
+                  onSearch={onSearch}
+                  filterOption={(input, option) =>
+                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  }
+                  options={countryLists}
+                />
+              </Form.Item>
+              <Form.Item
+                name="birthday"
+                label="BirthDay"
+              >
+                <DatePicker style={{ width: '50%' }} mode='date' format="YYYY-MM-DD" />
+              </Form.Item>
+
+              <Form.Item
+                name="civil_status"
+                label="Civil Status"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Radio.Group name="civil_status" options={civilOptions} />
+              </Form.Item>
+              <Form.Item
+                name="school"
+                label="School"
+              >
+                <Input />
+
+              </Form.Item>
+              <Form.Item
+                name="address"
+                label="Address"
+              >
+                <Input value={"addddr"} />
+              </Form.Item>
+              <Form.Item
+                wrapperCol={{
+                  offset: 8,
+                  span: 16,
+                }}
+              >
+                {
+
+                  <Button type="primary" htmlType="submit">
+                    Save
+                  </Button>
+
+                }
+
+                <Button type="ghost" onClick={handleCancel}>
+                  cancel
+                </Button>
+              </Form.Item>
+            </Form>
+            <>
+            </>
+          </Modal>
           <Content style={{ padding: '0 0px' }}>
             <Row gutter={[16, 16]}>
               <Col span={6}>
@@ -308,15 +508,27 @@ export default function Details() {
                   </Upload>
                 </div>
               </Col>
-              <Col span={18}>
-                <p>Name : {currentItem.name}</p>
-                <p>Personal ID : {currentItem.personal_id}</p>
-                <p>Phone : {currentItem.phone}</p>
-                <p>Email : {currentItem.email}</p>
+              <Col span={12}>
+                <p>Name : {currentItem ? currentItem.name : ""}</p>
+                <p>Personal ID : {currentItem ? currentItem.personal_id : ""}</p>
+                <p>Phone : {currentItem ? currentItem.phone : ""}</p>
+                <p>Email : {currentItem ? currentItem.email : ""}</p>
+              </Col>
+              <Col span={6}>
+                <Select style={{ width: 120 }} onChange={changeStatus} value={currentItem ? currentItem.status : 4} options={statusOptions} />
+
               </Col>
             </Row>
             <div className="profile-details">
-              <h2>Details</h2>
+              <Row>
+                <Col span={3}>
+                  <h2>Details</h2>
+                </Col>
+                <Col span={12}>
+                  <Button type="primary" onClick={editModal}>Edit</Button>
+                </Col>
+              </Row>
+
               <Form form={form} onFinish={onFinish}>
                 <Row gutter={[20, 20]}>
 
@@ -324,61 +536,51 @@ export default function Details() {
                     <Form.Item
                       name="gender"
                       label="Gender"
-                      rules={[
-                        {
-                          required: true,
-                        },
-                      ]}
+
                     >
-                      <Select>
-                        <Select.Option value="men">Men</Select.Option>
-                        <Select.Option value="women">Women</Select.Option>
-                      </Select>
-                    </Form.Item>
-                    <Form.Item
-                      name="civil_status"
-                      label="Civil Status"
-                      rules={[
-                        {
-                          required: true,
-                        },
-                      ]}
-                    >
-                      <Select>
-                        <Select.Option value="Soltero">Soltero</Select.Option>
-                        <Select.Option value="Casado">Casado</Select.Option>
-                        <Select.Option value="Unido">Unido</Select.Option>
-                        <Select.Option value="Separado">Separado</Select.Option>
-                      </Select>
+                      {
+                        currentItem ? genderOptions.find((item) => { return item.value === currentItem.gender }).label : ""
+                      }
                     </Form.Item>
                     <Form.Item
                       name="birth_place"
                       label="Brith Place"
-                      rules={[{ required: true, message: 'Please input your name' }]}
                       initialValue={name}
                     >
-                      <Input prefix={<UserOutlined />} placeholder="Name" />
+                      {
+                        currentItem ? countryLists.find((item) => { return item.value === currentItem.birthplace }).label : ""
+                      }
                     </Form.Item>
+                    <Form.Item
+                      name="birth_day"
+                      label="BrithDay"
+                      initialValue={name}
+                    >
+                      {currentItem ? currentItem.birthday : ""}
+                    </Form.Item>
+
+                  </Col>
+                  <Col span={10}>
+                    <Form.Item
+                      name="civil_status"
+                      label="Civil Status"
+                    >
+                      {
+                        currentItem ? civilOptions.find((item) => { return item.value === currentItem.civil_status }).label : ""
+                      }
+                    </Form.Item>
+
                     <Form.Item
                       name="school"
                       label="School"
-                      rules={[{ required: true, message: 'Please input your email!' }]}
-                      initialValue={email}
                     >
-                      <Input prefix={<MailOutlined />} type="email" placeholder="Email" />
+                      {currentItem ? currentItem.school : ""}
                     </Form.Item>
-                  </Col>
-                  <Col span={10}>
-
                     <Form.Item
-                      name="phone"
-                      rules={[{ required: true, message: 'Please input your phone number!' }]}
-                      initialValue={phone}
+                      name="address"
+                      label="Address"
                     >
-                      <Input prefix={<PhoneOutlined />} type="tel" placeholder="Phone Number" />
-                    </Form.Item>
-                    <Form.Item>
-                      <Button type="primary" htmlType="submit">Save Chang es</Button>
+                      {currentItem ? currentItem.address : ""}
                     </Form.Item>
                   </Col>
                 </Row>
