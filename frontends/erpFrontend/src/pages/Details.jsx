@@ -1,17 +1,21 @@
 import React, { useRef, useState } from 'react';
-import { Form, Input, InputNumber, Space, Divider, Row, Col, Tabs, Upload, Avatar, Button, message, Select } from 'antd';
+import { Form, Input, Row, Col, Tabs, Upload, Avatar, Button, message, Select } from 'antd';
 
-import { Layout, Breadcrumb, Statistic, Progress, Tag } from 'antd';
+import { Tag } from 'antd';
 
-import { ArrowUpOutlined, ArrowDownOutlined, UserOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
+import { UserOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 
 import { DashboardLayout } from '@/layout';
 import RecentTable from '@/components/RecentTable';
 import { Content } from 'antd/lib/layout/layout';
+import { useParams } from 'react-router-dom/cjs/react-router-dom.min';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { crud } from '@/redux/crud/actions';
+import { selectReadItem } from '@/redux/crud/selectors';
 
 
 export default function Details() {
-  const entity = 'invoice213';
   const dataTableColumns = [
     {
       title: 'N#',
@@ -232,7 +236,8 @@ export default function Details() {
   const [email, setEmail] = useState('johndoe@example.com');
   const [phone, setPhone] = useState('123-456-7890');
   const [avatar, setAvatar] = useState('');
-
+  const currentEmployeeId = useParams().id;
+  const entity = "employee";
   const onFinish = (values) => {
     setName(values.name);
     setEmail(values.email);
@@ -269,6 +274,19 @@ export default function Details() {
     reader.readAsDataURL(img);
   };
 
+  const id = useParams().id;
+  const dispatch = useDispatch();
+
+  const { result: currentItem } = useSelector(selectReadItem);
+
+  // const { pagination, items } = currentResult;
+
+  console.log(currentItem, 'itemsitemsitemsitemsitems')
+
+  useEffect(() => {
+    dispatch(crud.read({ entity, id }));
+  }, []);
+
   return (
     <DashboardLayout>
       <Tabs defaultActiveKey="1">
@@ -291,10 +309,10 @@ export default function Details() {
                 </div>
               </Col>
               <Col span={18}>
-                <p>Name:{name}</p>
-                <p>Personal ID:{name}</p>
-                <p>Phone:{phone}</p>
-                <p>Email:{email}</p>
+                <p>Name : {currentItem.name}</p>
+                <p>Personal ID : {currentItem.personal_id}</p>
+                <p>Phone : {currentItem.phone}</p>
+                <p>Email : {currentItem.email}</p>
               </Col>
             </Row>
             <div className="profile-details">

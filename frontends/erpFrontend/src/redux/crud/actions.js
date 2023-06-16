@@ -109,7 +109,6 @@ export const crud = {
         });
 
         let data = await request.read({ entity, id });
-
         if (data.success === true) {
           dispatch({
             type: actionTypes.CURRENT_ITEM,
@@ -132,7 +131,6 @@ export const crud = {
     ({ entity, id, jsonData }) =>
 
       async (dispatch) => {
-        console.log(entity, id, jsonData, 'entity, id, jsonData')
         dispatch({
           type: actionTypes.REQUEST_LOADING,
           keyState: 'update',

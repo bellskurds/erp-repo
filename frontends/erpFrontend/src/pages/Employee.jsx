@@ -136,11 +136,11 @@ const Employees = () => {
             </Typography.Link>
 
             <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-              <a><DeleteOutlined style={{ fontSize: "20px" }} /></a>
+              <DeleteOutlined style={{ fontSize: "20px" }} />
             </Popconfirm>
             <Typography.Link>
+              <Link to={"/employee/details/" + record._id}><EyeOutlined style={{ fontSize: "20px" }} /></Link>
 
-              <Link to={"employee/details/" + record._id}><EyeOutlined style={{ fontSize: "20px" }} /></Link>
             </Typography.Link>
 
           </>
@@ -309,6 +309,7 @@ const Employees = () => {
               dataSource={items}
               columns={mergedColumns}
               rowClassName="editable-row"
+
 
             />
           </Form>
