@@ -237,10 +237,10 @@ export default function Details() {
   ];
   const genderOptions = [
     {
-      label: "Mem", value: 1,
+      label: "Men", value: 1,
     },
     {
-      label: "Womem", value: 2,
+      label: "Women", value: 2,
     },
   ]
   const civilOptions = [
