@@ -45,7 +45,7 @@ export const routesConfig = [
     component: 'Invoice',
   },
   {
-    path: '/details',
+    path: '/employee/details:id',
     component: 'Details',
   },
   {

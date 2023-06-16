@@ -101,12 +101,12 @@ function FixHeaderPanel({ config }) {
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col className="gutter-row" span={21}>
+        {/* <Col className="gutter-row" span={21}>
           <SearchItem config={config} />
-        </Col>
-        <Col className="gutter-row" span={3}>
+        </Col> */}
+        {/* <Col className="gutter-row" span={3}>
           <Button onClick={addNewItem} block={true} icon={<PlusOutlined />}></Button>
-        </Col>
+        </Col> */}
       </Row>
     </div>
   );
@@ -114,7 +114,7 @@ function FixHeaderPanel({ config }) {
 
 function CrudModule({ config, createForm, updateForm }) {
   const dispatch = useDispatch();
-  console.log(config,'cpmfog')
+  console.log(config, 'cpmfog')
   useLayoutEffect(() => {
     dispatch(crud.resetState());
   }, []);
@@ -126,6 +126,7 @@ function CrudModule({ config, createForm, updateForm }) {
       sidePanelBottomContent={<CreateForm config={config} formElements={createForm} />}
       sidePanelTopContent={<SidePanelTopContent config={config} formElements={updateForm} />}
     >
+      <SearchItem config={config} />
       <CrudDataTable config={config} />
       <DeleteModal config={config} />
     </CrudLayout>

@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 const employeeSchema = new mongoose.Schema({
+  personal_id: {
+    type: String,
+  },
   removed: {
     type: Boolean,
     default: false,

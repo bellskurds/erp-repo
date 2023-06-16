@@ -1,6 +1,7 @@
 import React from 'react';
 import { Form, Input, Button, Radio, Select, Switch } from 'antd';
 import { DatePicker, TimePicker, Calendar } from '@/components/CustomAntd';
+import { Link } from 'react-router-dom/cjs/react-router-dom.min';
 
 export default function EmployeeForm() {
   return (
@@ -67,6 +68,17 @@ export default function EmployeeForm() {
         </Select>
       </Form.Item> */}
       <Form.Item
+        name="personal_id"
+        label="Personal ID"
+        rules={[
+          {
+            required: true,
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+      <Form.Item
         name="email"
         label="E-mail"
         rules={[
@@ -94,17 +106,8 @@ export default function EmployeeForm() {
       >
         <Input />
       </Form.Item>
-      {/* <Form.Item
-        name="department"
-        label="department"
-        rules={[
-          {
-            required: true,
-          },
-        ]}
-      >
-        <Input />
-      </Form.Item>
+
+      {/* 
       <Form.Item
         name="position"
         label="position"

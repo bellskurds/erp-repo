@@ -65,8 +65,8 @@ function Customer() {
     entity,
     PANEL_TITLE,
     ENTITY_NAME,
-    CREATE_ENTITY,
-    ADD_NEW_ENTITY,
+    // CREATE_ENTITY,
+    // ADD_NEW_ENTITY,
     UPDATE_ENTITY,
     DATATABLE_TITLE,
     readColumns,
@@ -77,7 +77,7 @@ function Customer() {
   return (
     <CrudModule
       createForm={<CustomerForm />}
-      updateForm={<CustomerForm isUpdateForm={true} />}
+      // updateForm={<CustomerForm isUpdateForm={true} />}
       config={config}
     />
   );

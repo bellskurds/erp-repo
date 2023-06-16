@@ -12,6 +12,8 @@
 
 import dotenv from 'dotenv';
 dotenv.config();
+
+console.log(process, process.env, 'dotenv.config()')
 const isLocalhost = Boolean(
   window.location.hostname === 'localhost' ||
   // [::1] is the IPv6 localhost address.
