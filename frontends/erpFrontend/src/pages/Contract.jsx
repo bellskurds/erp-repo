@@ -1,6 +1,6 @@
 import { crud } from "@/redux/crud/actions";
 import { selectFilteredItemsByParent, selectListItems, selectListsByEmergency, selectListsByMedical, selectReadItem } from "@/redux/crud/selectors";
-import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, EyeOutlined, NumberOutlined } from "@ant-design/icons";
 import { Button, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Table, Tag, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -89,26 +89,27 @@ const Contract = (props) => {
         setIsBankModal(false)
     }
     const saveDetails = (values) => {
-        const parentId = currentEmployeeId;
-        if (currentId && parentId && isUpdate) {
-            const id = currentId;
-            const jsonData = { parent_id: parentId }
-            values["parent_id"] = parentId;
-            dispatch(crud.update({ entity, id, jsonData: values }));
-            setIsBankModal(false)
-            setTimeout(() => {
-                dispatch(crud.listByMedical({ entity, jsonData }));
-            }, 500)
-        } else {
-            const jsonData = { parent_id: parentId }
-            const id = currentId;
-            values["parent_id"] = parentId;
-            dispatch(crud.create({ entity, id, jsonData: values }));
-            setIsBankModal(false)
-            setTimeout(() => {
-                dispatch(crud.listByMedical({ entity, jsonData }));
-            }, 500)
-        }
+        console.log(values, '333343434')
+        // const parentId = currentEmployeeId;
+        // if (currentId && parentId && isUpdate) {
+        //     const id = currentId;
+        //     const jsonData = { parent_id: parentId }
+        //     values["parent_id"] = parentId;
+        //     dispatch(crud.update({ entity, id, jsonData: values }));
+        //     setIsBankModal(false)
+        //     setTimeout(() => {
+        //         dispatch(crud.listByMedical({ entity, jsonData }));
+        //     }, 500)
+        // } else {
+        //     const jsonData = { parent_id: parentId }
+        //     const id = currentId;
+        //     values["parent_id"] = parentId;
+        //     dispatch(crud.create({ entity, id, jsonData: values }));
+        //     setIsBankModal(false)
+        //     setTimeout(() => {
+        //         dispatch(crud.listByMedical({ entity, jsonData }));
+        //     }, 500)
+        // }
     }
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
@@ -125,13 +126,23 @@ const Contract = (props) => {
     const items = Items.items ? Items.items.filter(obj => obj.parent_id === currentEmployeeId) : [];
     console.log(items, 'medical sdfasdfsad')
 
+    const [salaryHour, setSalaryHour] = useState(0);
+    const [hourWeek, setHourWeek] = useState(0);
+    const [salaryMonthly, setSalaryMonthly] = useState(0);
 
+    useEffect(() => {
+        const monthly = (salaryHour * hourWeek * 4.333).toFixed();
+        setSalaryMonthly(monthly)
+        console.log(monthly, 'monthlymonthly')
+    }, [
+        salaryHour, hourWeek
+    ])
     // const items = []
     // console.log(bankItems, 'ItemsItemsItemsItemsItems')
     return (
 
         <div className="whiteBox shadow">
-            <Modal title="Emergency Contact Form" visible={isBankModal} onCancel={handleBankModal} footer={null}>
+            <Modal title="Work Contract" visible={isBankModal} onCancel={handleBankModal} footer={null} width={700}>
                 <Form
                     ref={formRef}
                     name="basic"
@@ -139,89 +150,118 @@ const Contract = (props) => {
                         span: 8,
                     }}
                     wrapperCol={{
-                        span: 16,
+                        span: 24,
                     }}
                     onFinish={saveDetails}
                     onFinishFailed={onFinishFailed}
                     autoComplete="off"
+                    initialValues={{
+                        sal_hr: 0,
+                        hr_week: 0
+                    }}
 
                 >
-                    <Form.Item
-                        name="sal_hr"
-                        label="Sal/Hr"
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
-                    >
-                        <InputNumber />
-                    </Form.Item>
-                    <Form.Item
-                        name="hr_week"
-                        label="Hr / Week"
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
-                    >
-                        <InputNumber />
-                    </Form.Item>
-                    <Form.Item
-                        name="start_date"
-                        label="Start"
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
-                    >
-                        <DatePicker format={"MM/DD/YYYY"} />
-                    </Form.Item>
-                    <Form.Item
-                        name="end_date"
-                        label="End"
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
-                    >
-                        <DatePicker format={"MM/DD/YYYY"} />
-                    </Form.Item>
-                    <Form.Item
-                        name="type"
-                        label="Type"
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
-                    >
-                        <Radio.Group name="radiogroup" options={contractTypes} />
-                    </Form.Item>
-                    <Form.Item
-                        wrapperCol={{
-                            offset: 8,
-                            span: 16,
-                        }}
-                    >
-                        {
-                            isUpdate ?
-                                <Button type="primary" htmlType="submit">
-                                    Update
-                                </Button>
-                                : <Button type="primary" htmlType="submit">
-                                    Save
-                                </Button>
+                    <Row gutter={24}>
+                        <Col span={12}>
 
-                        }
+                            <Form.Item
+                                name="sal_hr"
+                                label="Sal/Hr"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <InputNumber onChange={(e) => { setSalaryHour(e) }} />
+                            </Form.Item>
+                            <Form.Item
+                                name="hr_week"
+                                label="Hr / Week"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <InputNumber onChange={(e) => { setHourWeek(e) }} />
+                            </Form.Item>
+                            <Form.Item
+                                name="start_date"
+                                label="Start"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <DatePicker format={"MM/DD/YYYY"} />
+                            </Form.Item>
+                            <Form.Item
+                                name="end_date"
+                                label="End"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <DatePicker format={"MM/DD/YYYY"} />
+                            </Form.Item>
+                            <Form.Item
+                                name="type"
+                                label="Type"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <Radio.Group name="radiogroup" options={contractTypes} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                // wrapperCol={{
+                                //     offset: 8,
+                                //     span: 16,
+                                // }}
+                                name="sal_monthly"
+                                label="Sal/Mon"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <label>{Number(salaryMonthly).toFixed(2)} </label>
 
-                        <Button type="ghost" onClick={handleBankModal}>
-                            cancel
-                        </Button>
-                    </Form.Item>
+                            </Form.Item>
+                            <Form.Item
+                            // wrapperCol={{
+                            //     offset: 8,
+                            //     span: 16,
+                            // }}
+                            >
+                                {
+                                    isUpdate ?
+                                        <Button type="primary" htmlType="submit">
+                                            Update
+                                        </Button>
+                                        : <Button type="primary" htmlType="submit">
+                                            Save
+                                        </Button>
+
+                                }
+
+                                <Button type="ghost" onClick={handleBankModal}>
+                                    cancel
+                                </Button>
+                            </Form.Item>
+
+                        </Col>
+                    </Row>
+
                 </Form>
                 <>
                 </>
