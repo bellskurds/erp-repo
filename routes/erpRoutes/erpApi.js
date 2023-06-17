@@ -26,6 +26,7 @@ const settingGlobalController = require('@/controllers/erpControllers/settingGlo
 const bankAccountController = require('@/controllers/erpControllers/bankAccountController');
 const relatedPeopleController = require('@/controllers/erpControllers/relatedPeopleController');
 const emergencyContactController = require('@/controllers/erpControllers/emergencyContactController');
+const medicalDetailController = require('@/controllers/erpControllers/medicalDetailController');
 
 // //_______________________________ Admin management_______________________________
 
@@ -227,6 +228,20 @@ router.route('/emergencyContact/search').get(catchErrors(emergencyContactControl
 router.route('/emergencyContact/list').get(catchErrors(emergencyContactController.list));
 router.route('/emergencyContact/filter').get(catchErrors(emergencyContactController.filter));
 router.route('/emergencyContact/byParentId').post(catchErrors(emergencyContactController.getByParentId));
+
+
+
+
+
+// //____________________________________________ API for Emergency Contacts of Employee _________________
+router.route('/medicalDetail/create').post(catchErrors(medicalDetailController.create));
+router.route('/medicalDetail/read/:id').get(catchErrors(medicalDetailController.read));
+router.route('/medicalDetail/update/:id').patch(catchErrors(medicalDetailController.update));
+router.route('/medicalDetail/delete/:id').delete(catchErrors(medicalDetailController.delete));
+router.route('/medicalDetail/search').get(catchErrors(medicalDetailController.search));
+router.route('/medicalDetail/list').get(catchErrors(medicalDetailController.list));
+router.route('/medicalDetail/filter').get(catchErrors(medicalDetailController.filter));
+router.route('/medicalDetail/byParentId').post(catchErrors(medicalDetailController.getByParentId));
 
 
 

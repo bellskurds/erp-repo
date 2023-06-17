@@ -18,3 +18,5 @@ export const selectDeletedItem = createSelector([selectCrud], (crud) => crud.del
 
 export const selectSearchedItems = createSelector([selectCrud], (crud) => crud.search);
 export const selectFilteredItemsByParent = createSelector([selectCrud], (crud) => crud.listById);
+export const selectListsByEmergency = createSelector([selectCrud], (crud) => crud.listByEmergency);
+export const selectListsByMedical = createSelector([selectCrud], (crud) => crud.listByMedical);

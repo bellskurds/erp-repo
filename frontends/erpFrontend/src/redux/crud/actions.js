@@ -68,7 +68,8 @@ export const crud = {
             payload: null,
           });
         }
-      },
+      }
+  ,
   listById:
     ({ entity, jsonData, options = { page: 1 } }) =>
       async (dispatch) => {
@@ -98,6 +99,72 @@ export const crud = {
           dispatch({
             type: actionTypes.REQUEST_FAILED,
             keyState: 'listById',
+            payload: null,
+          });
+        }
+      },
+  listByEmergency:
+    ({ entity, jsonData, options = { page: 1 } }) =>
+      async (dispatch) => {
+        dispatch({
+          type: actionTypes.REQUEST_LOADING,
+          keyState: 'listByEmergency',
+          payload: null,
+        });
+
+        let data = await request.listById({ entity, jsonData, options });
+        if (data.success === true) {
+          const result = {
+            items: data.result,
+            pagination: {
+              current: parseInt(data.pagination.page, 10),
+              pageSize: 10,
+              showSizeChanger: false,
+              total: parseInt(data.pagination.count, 10),
+            },
+          };
+          dispatch({
+            type: actionTypes.REQUEST_SUCCESS,
+            keyState: 'listByEmergency',
+            payload: result,
+          });
+        } else {
+          dispatch({
+            type: actionTypes.REQUEST_FAILED,
+            keyState: 'listByEmergency',
+            payload: null,
+          });
+        }
+      },
+  listByMedical:
+    ({ entity, jsonData, options = { page: 1 } }) =>
+      async (dispatch) => {
+        dispatch({
+          type: actionTypes.REQUEST_LOADING,
+          keyState: 'listByMedical',
+          payload: null,
+        });
+
+        let data = await request.listById({ entity, jsonData, options });
+        if (data.success === true) {
+          const result = {
+            items: data.result,
+            pagination: {
+              current: parseInt(data.pagination.page, 10),
+              pageSize: 10,
+              showSizeChanger: false,
+              total: parseInt(data.pagination.count, 10),
+            },
+          };
+          dispatch({
+            type: actionTypes.REQUEST_SUCCESS,
+            keyState: 'listByMedical',
+            payload: result,
+          });
+        } else {
+          dispatch({
+            type: actionTypes.REQUEST_FAILED,
+            keyState: 'listByMedical',
             payload: null,
           });
         }

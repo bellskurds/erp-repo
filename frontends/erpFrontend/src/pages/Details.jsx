@@ -20,6 +20,8 @@ import moment from 'moment';
 import { selectListItems } from '@/redux/crud/selectors';
 import BankAccount from './BankAccount';
 import RelatedPeople from './RelatedPeople';
+import EmergencyContact from './EmergencyContact';
+import MedicalDetail from './MedicalDetail';
 
 
 export default function Details() {
@@ -564,20 +566,8 @@ export default function Details() {
           </Content>
           <BankAccount parentId={currentEmployeeId} />
           <RelatedPeople parentId={currentEmployeeId} />
-
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Emergency Contacts</h3>
-            </div>
-            <RecentTable entity={'quote'} dataTableColumns={emergencyColumns} />
-          </div>
-
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Medical Details</h3>
-            </div>
-            <RecentTable entity={'quote'} dataTableColumns={medicalColumns} />
-          </div>
+          <EmergencyContact parentId={currentEmployeeId} />
+          <MedicalDetail parentId={currentEmployeeId} />
 
           <div className="whiteBox shadow">
             <div className="pad20">

@@ -1,5 +1,5 @@
 import { crud } from "@/redux/crud/actions";
-import { selectFilteredItemsByParent, selectListItems, selectReadItem } from "@/redux/crud/selectors";
+import { selectFilteredItemsByParent, selectListItems, selectListsByEmergency, selectListsByMedical, selectReadItem } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
 import { Button, Col, Form, Input, Modal, Popconfirm, Row, Table, Tag, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
@@ -7,36 +7,21 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
 
 
-const RelatedPeople = (props) => {
-    const entity = 'relatedPeople';
+const MedicalDetail = (props) => {
+    const entity = 'medicalDetail';
     const dispatch = useDispatch();
     const currentEmployeeId = props.parentId
     const [isBankModal, setIsBankModal] = useState(false);
     const formRef = useRef(null);
     const Columns = [
         {
-            title: 'Name',
-            dataIndex: 'name',
+            title: 'Type',
+            dataIndex: 'type',
         },
         {
-            title: 'Last Name',
-            dataIndex: 'lastname',
+            title: 'Description',
+            dataIndex: 'description',
         },
-
-        {
-            title: 'Relation',
-            dataIndex: 'relation',
-        }
-        ,
-        {
-            title: 'contact',
-            dataIndex: 'contact',
-        },
-        {
-            title: 'Address',
-            dataIndex: 'address',
-        },
-
         {
             title: 'Actions',
             dataIndex: 'operation',
@@ -88,7 +73,7 @@ const RelatedPeople = (props) => {
         console.log(id, 'idididi')
         dispatch(crud.delete({ entity, id }))
         setTimeout(() => {
-            dispatch(crud.listById({ entity, jsonData }));
+            dispatch(crud.listByMedical({ entity, jsonData }));
         }, 500)
     }
     const handleBankModal = () => {
@@ -103,7 +88,7 @@ const RelatedPeople = (props) => {
             dispatch(crud.update({ entity, id, jsonData: values }));
             setIsBankModal(false)
             setTimeout(() => {
-                dispatch(crud.listById({ entity, jsonData }));
+                dispatch(crud.listByMedical({ entity, jsonData }));
             }, 500)
         } else {
             const jsonData = { parent_id: parentId }
@@ -112,24 +97,24 @@ const RelatedPeople = (props) => {
             dispatch(crud.create({ entity, id, jsonData: values }));
             setIsBankModal(false)
             setTimeout(() => {
-                dispatch(crud.listById({ entity, jsonData }));
+                dispatch(crud.listByMedical({ entity, jsonData }));
             }, 500)
         }
     }
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
     };
-    const { result: Items } = useSelector(selectFilteredItemsByParent);
+    const { result: Items } = useSelector(selectListsByMedical);
 
     useEffect(() => {
         const id = currentEmployeeId;
         const jsonData = { parent_id: id }
         // dispatch(crud.resetState());
         console.log(id, jsonData, '3333333')
-        dispatch(crud.listById({ entity, jsonData }));
+        dispatch(crud.listByMedical({ entity, jsonData }));
     }, []);
     const items = Items.items ? Items.items.filter(obj => obj.parent_id === currentEmployeeId) : [];
-    console.log(items, 'realted sdfasdfsad')
+    console.log(items, 'medical sdfasdfsad')
 
 
     // const items = []
@@ -137,7 +122,7 @@ const RelatedPeople = (props) => {
     return (
 
         <div className="whiteBox shadow">
-            <Modal title="Related People Form" visible={isBankModal} onCancel={handleBankModal} footer={null}>
+            <Modal title="Emergency Contact Form" visible={isBankModal} onCancel={handleBankModal} footer={null}>
                 <Form
                     ref={formRef}
                     name="basic"
@@ -150,16 +135,11 @@ const RelatedPeople = (props) => {
                     onFinish={saveDetails}
                     onFinishFailed={onFinishFailed}
                     autoComplete="off"
-                    initialValues={{
-                        gender: 1,
-                        civil_status: 3,
-                        birthplace: "AU",
 
-                    }}
                 >
                     <Form.Item
-                        name="name"
-                        label="Name"
+                        name="type"
+                        label="Type"
                         rules={[
                             {
                                 required: true,
@@ -169,49 +149,15 @@ const RelatedPeople = (props) => {
                         <Input />
                     </Form.Item>
                     <Form.Item
-                        name="lastname"
-                        label="Last Name"
+                        name="description"
+                        label="Description"
                         rules={[
                             {
                                 required: true,
                             },
                         ]}
-                    >
-                        <Input />
-                    </Form.Item>
+                    >        <Input.TextArea showCount maxLength={900} />
 
-                    <Form.Item
-                        name="relation"
-                        label="Relation"
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        name="contact"
-                        label="Contact"
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        name="address"
-                        label="Address"
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
-                    >
-                        <Input />
                     </Form.Item>
                     <Form.Item
                         wrapperCol={{
@@ -239,8 +185,8 @@ const RelatedPeople = (props) => {
                 </>
             </Modal>
             <Row>
-                <Col span={3}>
-                    <h3 style={{ color: '#22075e', marginBottom: 5 }}>Related People</h3>
+                <Col span={5}>
+                    <h3 style={{ color: '#22075e', marginBottom: 5 }}>Medical Details</h3>
                 </Col>
                 <Col span={12}>
                     <Button type="primary" onClick={editBankModal}>Add</Button>
@@ -260,4 +206,4 @@ const RelatedPeople = (props) => {
     );
 }
 
-export default RelatedPeople;
+export default MedicalDetail;
