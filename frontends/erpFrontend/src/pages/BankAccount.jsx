@@ -1,5 +1,5 @@
 import { crud } from "@/redux/crud/actions";
-import { selectListItems, selectReadItem } from "@/redux/crud/selectors";
+import { selectFilteredItemsByParent, selectListItems, selectReadItem } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
 import { Button, Col, Form, Input, Modal, Popconfirm, Row, Table, Tag, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
@@ -56,53 +56,79 @@ const BankAccount = (props) => {
         },
     ];
     const [currentId, setCurrentId] = useState('');
-    const { result: bankItems } = useSelector(selectReadItem);
+    const [isUpdate, setIsUpdate] = useState(false);
 
     const editBankModal = () => {
         setIsBankModal(true);
-        if (formRef) formRef.current.resetFields();
+        setIsUpdate(false);
+        // if (formRef) formRef.current.resetFields();
     }
     const editItem = (item) => {
         if (item) {
-
-            if (formRef.current) formRef.current.setFieldsValue(item);
-            setCurrentId(item._id);
             setIsBankModal(true);
+            setIsUpdate(true);
+            setTimeout(() => {
+
+                if (formRef.current) formRef.current.setFieldsValue(item);
+                setCurrentId(item._id);
+            }, 200);
+
         }
     }
     const deleteItem = (item) => {
         const id = item._id;
+
+
+        const jsonData = { parent_id: currentEmployeeId }
+        console.log(id, 'idididi')
         dispatch(crud.delete({ entity, id }))
         setTimeout(() => {
-            dispatch(crud.list({ entity }));
-        }, 1000)
+            dispatch(crud.listById({ entity, jsonData }));
+        }, 500)
     }
     const handleBankModal = () => {
         setIsBankModal(false)
     }
     const saveBankDetails = (values) => {
-        if (currentEmployeeId) {
-
-            const id = currentEmployeeId;
-            values["parent_id"] = currentEmployeeId;
+        const parentId = currentEmployeeId;
+        if (currentId && parentId && isUpdate) {
+            const id = currentId;
+            const jsonData = { parent_id: parentId }
+            values["parent_id"] = parentId;
+            dispatch(crud.update({ entity, id, jsonData: values }));
+            setIsBankModal(false)
+            setTimeout(() => {
+                dispatch(crud.listById({ entity, jsonData }));
+            }, 500)
+        } else {
+            const jsonData = { parent_id: parentId }
+            const id = currentId;
+            values["parent_id"] = parentId;
             dispatch(crud.create({ entity, id, jsonData: values }));
             setIsBankModal(false)
             setTimeout(() => {
-                dispatch(crud.list({ entity }));
+                dispatch(crud.listById({ entity, jsonData }));
             }, 500)
         }
     }
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
     };
-
+    const { result: bankItems } = useSelector(selectFilteredItemsByParent);
 
     useEffect(() => {
         const id = currentEmployeeId;
-        dispatch(crud.list({ entity }));
-    }, [currentEmployeeId]);
-    const items = bankItems.items
-    console.log(bankItems, 'ItemsItemsItemsItemsItems')
+        const jsonData = { parent_id: id }
+        dispatch(crud.resetState());
+        // console.log(id, jsonData, '3333333')
+        dispatch(crud.listById({ entity, jsonData }));
+    }, []);
+    const items = bankItems.items || [];
+    console.log(bankItems, 'bankItemsbankItemsbankItems')
+
+
+    // const items = []
+    // console.log(bankItems, 'ItemsItemsItemsItemsItems')
     return (
 
         <div className="whiteBox shadow">
@@ -178,10 +204,13 @@ const BankAccount = (props) => {
                         }}
                     >
                         {
-
-                            <Button type="primary" htmlType="submit">
-                                Save
-                            </Button>
+                            isUpdate ?
+                                <Button type="primary" htmlType="submit">
+                                    Update
+                                </Button>
+                                : <Button type="primary" htmlType="submit">
+                                    Save
+                                </Button>
 
                         }
 
@@ -205,7 +234,7 @@ const BankAccount = (props) => {
                 bordered
                 rowKey={(item) => item._id}
                 key={(item) => item._id}
-                dataSource={items ? items : []}
+                dataSource={items}
                 columns={bankColumns}
                 rowClassName="editable-row"
 

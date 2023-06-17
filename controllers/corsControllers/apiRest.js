@@ -46,7 +46,6 @@ exports.create = async (Model, req, res) => {
   try {
     // Creating a new document in the collection
 
-    console.log(req.body, 'req.body');
     const result = await new Model(req.body).save();
 
     // Returning successfull response
@@ -225,18 +224,19 @@ exports.list = async (Model, req, res) => {
 
 exports.getByParentId = async (Model, req, res) => {
   const queryObj = req.body;
+
   const page = req.query.page || 1;
   const limit = parseInt(req.query.items) || 10;
   const skip = page * limit - limit;
   try {
     //  Query the database for a list of all results
-    const resultsPromise = Model.find(queryObj)
+    const resultsPromise = Model.find({ ...queryObj, removed: false })
       .skip(skip)
       .limit(limit)
       .sort({ created: 'desc' })
       .populate();
     // Counting the total documents
-    const countPromise = Model.count(queryObj);
+    const countPromise = Model.count({ ...queryObj, removed: false });
     // Resolving both promises
     const [result, count] = await Promise.all([resultsPromise, countPromise]);
     // Calculating total pages

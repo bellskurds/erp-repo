@@ -10,7 +10,6 @@ exports.getData = (model) => {
   const result = Model.find({ removed: false });
   return result;
 };
-
 exports.getOne = (model, id) => {
   const Model = mongoose.model(model);
   const result = Model.findOne({ _id: id, removed: false });

@@ -119,6 +119,22 @@ const request = {
       return errorHandler(error);
     }
   },
+  listById: async ({ entity, jsonData }) => {
+    try {
+      let query = '?';
+
+
+      const response = await axios.post(entity + '/byParentId', jsonData);
+
+      successHandler(response, {
+        notifyOnSuccess: false,
+        notifyOnFailed: false,
+      });
+      return response.data;
+    } catch (error) {
+      return errorHandler(error);
+    }
+  },
 
   post: async ({ entity, jsonData, options = {} }) => {
     try {
