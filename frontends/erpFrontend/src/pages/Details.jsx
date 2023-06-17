@@ -19,6 +19,7 @@ import { DatePicker } from '@/components/CustomAntd';
 import moment from 'moment';
 import { selectListItems } from '@/redux/crud/selectors';
 import BankAccount from './BankAccount';
+import RelatedPeople from './RelatedPeople';
 
 
 export default function Details() {
@@ -562,13 +563,7 @@ export default function Details() {
 
           </Content>
           <BankAccount parentId={currentEmployeeId} />
-
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Related People</h3>
-            </div>
-            <RecentTable entity={'quote'} dataTableColumns={relatedColumns} />
-          </div>
+          <RelatedPeople parentId={currentEmployeeId} />
 
           <div className="whiteBox shadow">
             <div className="pad20">

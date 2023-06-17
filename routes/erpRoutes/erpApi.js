@@ -24,6 +24,8 @@ const paymentInvoiceController = require('@/controllers/erpControllers/paymentIn
 const settingCommercialController = require('@/controllers/erpControllers/settingCommercialController');
 const settingGlobalController = require('@/controllers/erpControllers/settingGlobalController');
 const bankAccountController = require('@/controllers/erpControllers/bankAccountController');
+const relatedPeopleController = require('@/controllers/erpControllers/relatedPeopleController');
+const emergencyContactController = require('@/controllers/erpControllers/emergencyContactController');
 
 // //_______________________________ Admin management_______________________________
 
@@ -197,6 +199,34 @@ router.route('/bankAccount/search').get(catchErrors(bankAccountController.search
 router.route('/bankAccount/list').get(catchErrors(bankAccountController.list));
 router.route('/bankAccount/filter').get(catchErrors(bankAccountController.filter));
 router.route('/bankAccount/byParentId').post(catchErrors(bankAccountController.getByParentId));
+
+
+
+
+
+
+// //____________________________________________ API for Related People of Employee _________________
+router.route('/relatedPeople/create').post(catchErrors(relatedPeopleController.create));
+router.route('/relatedPeople/read/:id').get(catchErrors(relatedPeopleController.read));
+router.route('/relatedPeople/update/:id').patch(catchErrors(relatedPeopleController.update));
+router.route('/relatedPeople/delete/:id').delete(catchErrors(relatedPeopleController.delete));
+router.route('/relatedPeople/search').get(catchErrors(relatedPeopleController.search));
+router.route('/relatedPeople/list').get(catchErrors(relatedPeopleController.list));
+router.route('/relatedPeople/filter').get(catchErrors(relatedPeopleController.filter));
+router.route('/relatedPeople/byParentId').post(catchErrors(relatedPeopleController.getByParentId));
+
+
+
+
+// //____________________________________________ API for Emergency Contacts of Employee _________________
+router.route('/emergencyContact/create').post(catchErrors(emergencyContactController.create));
+router.route('/emergencyContact/read/:id').get(catchErrors(emergencyContactController.read));
+router.route('/emergencyContact/update/:id').patch(catchErrors(emergencyContactController.update));
+router.route('/emergencyContact/delete/:id').delete(catchErrors(emergencyContactController.delete));
+router.route('/emergencyContact/search').get(catchErrors(emergencyContactController.search));
+router.route('/emergencyContact/list').get(catchErrors(emergencyContactController.list));
+router.route('/emergencyContact/filter').get(catchErrors(emergencyContactController.filter));
+router.route('/emergencyContact/byParentId').post(catchErrors(emergencyContactController.getByParentId));
 
 
 

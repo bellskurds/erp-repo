@@ -7,29 +7,34 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
 
 
-const BankAccount = (props) => {
-    const entity = 'bankAccount';
+const RelatedPeople = (props) => {
+    const entity = 'relatedPeople';
     const dispatch = useDispatch();
     const currentEmployeeId = props.parentId
     const [isBankModal, setIsBankModal] = useState(false);
     const formRef = useRef(null);
-    const bankColumns = [
-        {
-            title: 'Bank',
-            dataIndex: 'bank',
-        },
-        {
-            title: 'Account type',
-            dataIndex: 'account_type',
-        },
-
+    const Columns = [
         {
             title: 'Name',
             dataIndex: 'name',
         },
         {
-            title: 'Account No',
-            dataIndex: 'account_no',
+            title: 'Last Name',
+            dataIndex: 'lastname',
+        },
+
+        {
+            title: 'Relation',
+            dataIndex: 'relation',
+        }
+        ,
+        {
+            title: 'contact',
+            dataIndex: 'contact',
+        },
+        {
+            title: 'Address',
+            dataIndex: 'address',
         },
 
         {
@@ -83,13 +88,13 @@ const BankAccount = (props) => {
         console.log(id, 'idididi')
         dispatch(crud.delete({ entity, id }))
         setTimeout(() => {
-            dispatch(crud.list({ entity, jsonData }));
+            dispatch(crud.listById({ entity, jsonData }));
         }, 500)
     }
     const handleBankModal = () => {
         setIsBankModal(false)
     }
-    const saveBankDetails = (values) => {
+    const saveDetails = (values) => {
         const parentId = currentEmployeeId;
         if (currentId && parentId && isUpdate) {
             const id = currentId;
@@ -98,7 +103,7 @@ const BankAccount = (props) => {
             dispatch(crud.update({ entity, id, jsonData: values }));
             setIsBankModal(false)
             setTimeout(() => {
-                dispatch(crud.list({ entity, jsonData }));
+                dispatch(crud.listById({ entity, jsonData }));
             }, 500)
         } else {
             const jsonData = { parent_id: parentId }
@@ -107,25 +112,24 @@ const BankAccount = (props) => {
             dispatch(crud.create({ entity, id, jsonData: values }));
             setIsBankModal(false)
             setTimeout(() => {
-                dispatch(crud.list({ entity, jsonData }));
+                dispatch(crud.listById({ entity, jsonData }));
             }, 500)
         }
     }
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
     };
-    const { result: Items } = useSelector(selectListItems);
+    const { result: Items } = useSelector(selectFilteredItemsByParent);
 
     useEffect(() => {
         const id = currentEmployeeId;
         const jsonData = { parent_id: id }
-        dispatch(crud.resetState());
-        // console.log(id, jsonData, '3333333')
-        dispatch(crud.list({ entity, jsonData }));
+        // dispatch(crud.resetState());
+        console.log(id, jsonData, '3333333')
+        dispatch(crud.listById({ entity, jsonData }));
     }, []);
-    console.log(Items, '44444333')
     const items = Items.items ? Items.items.filter(obj => obj.parent_id === currentEmployeeId) : [];
-
+    console.log(items, 'realted sdfasdfsad')
 
 
     // const items = []
@@ -143,7 +147,7 @@ const BankAccount = (props) => {
                     wrapperCol={{
                         span: 16,
                     }}
-                    onFinish={saveBankDetails}
+                    onFinish={saveDetails}
                     onFinishFailed={onFinishFailed}
                     autoComplete="off"
                     initialValues={{
@@ -153,29 +157,6 @@ const BankAccount = (props) => {
 
                     }}
                 >
-                    <Form.Item
-                        name="bank"
-                        label="Bank"
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        name="account_type"
-                        label="Account Type"
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
-                    >
-                        <Input />
-                    </Form.Item>
-
                     <Form.Item
                         name="name"
                         label="Name"
@@ -188,8 +169,42 @@ const BankAccount = (props) => {
                         <Input />
                     </Form.Item>
                     <Form.Item
-                        name="account_no"
-                        label="Account No"
+                        name="lastname"
+                        label="Last Name"
+                        rules={[
+                            {
+                                required: true,
+                            },
+                        ]}
+                    >
+                        <Input />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="relation"
+                        label="Relation"
+                        rules={[
+                            {
+                                required: true,
+                            },
+                        ]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item
+                        name="contact"
+                        label="Contact"
+                        rules={[
+                            {
+                                required: true,
+                            },
+                        ]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item
+                        name="address"
+                        label="Address"
                         rules={[
                             {
                                 required: true,
@@ -225,7 +240,7 @@ const BankAccount = (props) => {
             </Modal>
             <Row>
                 <Col span={3}>
-                    <h3 style={{ color: '#22075e', marginBottom: 5 }}>Bank Account</h3>
+                    <h3 style={{ color: '#22075e', marginBottom: 5 }}>Related People</h3>
                 </Col>
                 <Col span={12}>
                     <Button type="primary" onClick={editBankModal}>Add</Button>
@@ -236,7 +251,7 @@ const BankAccount = (props) => {
                 rowKey={(item) => item._id}
                 key={(item) => item._id}
                 dataSource={items}
-                columns={bankColumns}
+                columns={Columns}
                 rowClassName="editable-row"
 
 
@@ -245,4 +260,4 @@ const BankAccount = (props) => {
     );
 }
 
-export default BankAccount;
+export default RelatedPeople;
