@@ -17,6 +17,8 @@ import { Option } from 'antd/lib/mentions';
 import Dropdown from '@/components/outsideClick.js';
 import { DatePicker } from '@/components/CustomAntd';
 import moment from 'moment';
+import { selectListItems } from '@/redux/crud/selectors';
+import BankAccount from './BankAccount';
 
 
 export default function Details() {
@@ -46,60 +48,7 @@ export default function Details() {
       },
     },
   ];
-  const bankColumns = [
-    {
-      title: 'Bank',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Account type',
-      dataIndex: ['client', 'company'],
-    },
 
-    {
-      title: 'Name',
-      dataIndex: 'total',
-
-      render: (total) => `$ ${total}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' '),
-    },
-    {
-      title: 'Account No',
-      dataIndex: 'status',
-      render: (status) => {
-        let color = status === 'Draft' ? 'volcano' : 'green';
-
-        return <Tag color={color}>{status.toUpperCase()}</Tag>;
-      },
-    },
-
-    {
-      title: 'Actions',
-      dataIndex: 'operation',
-      width: "10%",
-      align: 'center',
-      render: (_, record) => {
-        return (
-
-          <>
-            <Typography.Link onClick={() => editItem(record)}>
-              <EditOutlined style={{ fontSize: "20px" }} />
-            </Typography.Link>
-
-            <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-              <DeleteOutlined style={{ fontSize: "20px" }} />
-            </Popconfirm>
-            <Typography.Text>
-              <Link to={`/employee/details/${record._id}`}>
-                <EyeOutlined style={{ fontSize: "20px" }} />
-              </Link>
-            </Typography.Text>
-
-          </>
-        )
-
-      },
-    },
-  ];
   const relatedColumns = [
     {
       title: 'Name',
@@ -303,7 +252,7 @@ export default function Details() {
   const [phone, setPhone] = useState('123-456-7890');
   const [avatar, setAvatar] = useState('');
   const currentEmployeeId = useParams().id;
-  const [isBankModal, setIsBankModal] = useState(false);
+
   const entity = "employee";
   const onFinish = (values) => {
     setName(values.name);
@@ -364,10 +313,6 @@ export default function Details() {
   };
   const formRef = useRef(null);
 
-  const handleOk = () => {
-    // handle ok button click here
-    setIsModalVisible(false);
-  };
   const handleCancel = () => {
     setIsModalVisible(false);
   };
@@ -414,19 +359,6 @@ export default function Details() {
   useEffect(() => {
     dispatch(crud.read({ entity, id }));
   }, [entity, id]);
-
-
-  const editItem = () => { }
-  const deleteItem = () => { }
-  const editBankModal = () => {
-    setIsBankModal(true);
-  }
-  const handleBankModal = () => {
-    setIsBankModal(false)
-  }
-  const saveBankDetails = (values) => {
-    console.log(values, '333333333333333')
-  }
   return (
     <DashboardLayout>
       <Tabs defaultActiveKey="1">
@@ -531,93 +463,7 @@ export default function Details() {
             <>
             </>
           </Modal>
-          <Modal title="Bank Form" visible={isBankModal} onCancel={handleBankModal} footer={null}>
-            <Form
-              ref={formRef}
-              name="basic"
-              labelCol={{
-                span: 8,
-              }}
-              wrapperCol={{
-                span: 16,
-              }}
-              onFinish={saveBankDetails}
-              onFinishFailed={onFinishFailed}
-              autoComplete="off"
-              initialValues={{
-                gender: 1,
-                civil_status: 3,
-                birthplace: "AU",
 
-              }}
-            >
-              <Form.Item
-                name="bank"
-                label="Bank"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                name="account_type"
-                label="Account Type"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-
-              <Form.Item
-                name="name"
-                label="Name"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                name="account_no"
-                label="Account No"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                wrapperCol={{
-                  offset: 8,
-                  span: 16,
-                }}
-              >
-                {
-
-                  <Button type="primary" htmlType="submit">
-                    Save
-                  </Button>
-
-                }
-
-                <Button type="ghost" onClick={handleBankModal}>
-                  cancel
-                </Button>
-              </Form.Item>
-            </Form>
-            <>
-            </>
-          </Modal>
           <Content style={{ padding: '0 0px' }}>
             <Row gutter={[16, 16]}>
               <Col span={6}>
@@ -715,26 +561,7 @@ export default function Details() {
             </div>
 
           </Content>
-          <div className="whiteBox shadow">
-            <Row>
-              <Col span={3}>
-                <h3 style={{ color: '#22075e', marginBottom: 5 }}>Bank Account</h3>
-              </Col>
-              <Col span={12}>
-                <Button type="primary" onClick={editBankModal}>Add</Button>
-              </Col>
-            </Row>
-            <Table
-              bordered
-              rowKey={(item) => item._id}
-              key={(item) => item._id}
-              dataSource={[]}
-              columns={bankColumns}
-              rowClassName="editable-row"
-
-
-            />
-          </div>
+          <BankAccount parentId={currentEmployeeId} />
 
           <div className="whiteBox shadow">
             <div className="pad20">

@@ -50,5 +50,10 @@ exports.createCRUDController = (modelName, filter = []) => {
       apiRest.getFilterbyDate(Model, req, res);
     };
   }
+  if (!filter.includes('byParentId')) {
+    crudMethods.getByParentId = async (req, res) => {
+      apiRest.getByParentId(Model, req, res);
+    };
+  }
   return crudMethods;
 };

@@ -14,6 +14,12 @@ const BankAccountSchema = new mongoose.Schema({
   account_no: {
     type: String,
   },
+  account_no: {
+    type: String,
+  },
+  parent_id: {
+    type: String,
+  },
   removed: {
     type: Boolean,
     default: false,
@@ -28,11 +34,11 @@ const BankAccountSchema = new mongoose.Schema({
   },
 });
 // BankAccountSchema.plugin(require('mongoose-autopopulate'));
-BankAccountSchema.index({
-  name: 'text',
-  surname: 'text',
-  birthday: 'text',
-  status: 'text',
-});
+// BankAccountSchema.index({
+//   name: 'text',
+//   surname: 'text',
+//   birthday: 'text',
+//   status: 'text',
+// });
 
 module.exports = mongoose.model('BankAccount', BankAccountSchema);

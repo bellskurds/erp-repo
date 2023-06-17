@@ -82,12 +82,13 @@ const Employees = () => {
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
     if (item) {
-
-      if (formRef.current) formRef.current.setFieldsValue(item);
-      setCurrentId(item._id);
-      setCurrentItem(item);
-      setIsModalVisible(true);
-      setIsUpdate(true);
+      setTimeout(() => {
+        if (formRef.current) formRef.current.setFieldsValue(item);
+        setCurrentId(item._id);
+        setCurrentItem(item);
+        setIsModalVisible(true);
+        setIsUpdate(true);
+      }, 1000);
     }
   }
   const deleteItem = (item) => {

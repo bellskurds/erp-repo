@@ -72,7 +72,7 @@ const employeeSchema = new mongoose.Schema({
   },
   birthplace: {
     type: String,
-    default: '1',
+    default: 'PA',
   },
   civil_status: {
     type: Number,

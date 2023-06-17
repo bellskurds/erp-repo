@@ -196,6 +196,7 @@ router.route('/bankAccount/delete/:id').delete(catchErrors(bankAccountController
 router.route('/bankAccount/search').get(catchErrors(bankAccountController.search));
 router.route('/bankAccount/list').get(catchErrors(bankAccountController.list));
 router.route('/bankAccount/filter').get(catchErrors(bankAccountController.filter));
+router.route('/bankAccount/byParentId').post(catchErrors(bankAccountController.getByParentId));
 
 
 
