@@ -7,6 +7,7 @@ const MedicalDetailSchema = new mongoose.Schema({
   },
   description: {
     type: String,
+    maxlength: 500
   },
   parent_id: {
     type: String,

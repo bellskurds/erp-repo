@@ -156,8 +156,8 @@ const MedicalDetail = (props) => {
                                 required: true,
                             },
                         ]}
-                    >        <Input.TextArea showCount maxLength={900} />
-
+                    >
+                        <Input.TextArea showCount maxLength={900} style={{ height: "80px" }} />
                     </Form.Item>
                     <Form.Item
                         wrapperCol={{
