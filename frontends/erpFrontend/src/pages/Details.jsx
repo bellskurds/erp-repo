@@ -1,14 +1,14 @@
 import React, { useRef, useState } from 'react';
-import { Form, Input, Row, Col, Tabs, Upload, Avatar, Button, message, Select, Modal, Radio } from 'antd';
+import { Form, Input, Row, Col, Tabs, Upload, Avatar, Button, message, Select, Modal, Radio, Table, Typography, Popconfirm } from 'antd';
 
 import { Tag } from 'antd';
 
-import { UserOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
+import { UserOutlined, MailOutlined, PhoneOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import countryList from 'country-list'
 import { DashboardLayout } from '@/layout';
 import RecentTable from '@/components/RecentTable';
 import { Content } from 'antd/lib/layout/layout';
-import { useParams } from 'react-router-dom/cjs/react-router-dom.min';
+import { Link, useParams } from 'react-router-dom/cjs/react-router-dom.min';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
@@ -69,6 +69,34 @@ export default function Details() {
         let color = status === 'Draft' ? 'volcano' : 'green';
 
         return <Tag color={color}>{status.toUpperCase()}</Tag>;
+      },
+    },
+
+    {
+      title: 'Actions',
+      dataIndex: 'operation',
+      width: "10%",
+      align: 'center',
+      render: (_, record) => {
+        return (
+
+          <>
+            <Typography.Link onClick={() => editItem(record)}>
+              <EditOutlined style={{ fontSize: "20px" }} />
+            </Typography.Link>
+
+            <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+              <DeleteOutlined style={{ fontSize: "20px" }} />
+            </Popconfirm>
+            <Typography.Text>
+              <Link to={`/employee/details/${record._id}`}>
+                <EyeOutlined style={{ fontSize: "20px" }} />
+              </Link>
+            </Typography.Text>
+
+          </>
+        )
+
       },
     },
   ];
@@ -275,6 +303,7 @@ export default function Details() {
   const [phone, setPhone] = useState('123-456-7890');
   const [avatar, setAvatar] = useState('');
   const currentEmployeeId = useParams().id;
+  const [isBankModal, setIsBankModal] = useState(false);
   const entity = "employee";
   const onFinish = (values) => {
     setName(values.name);
@@ -386,7 +415,18 @@ export default function Details() {
     dispatch(crud.read({ entity, id }));
   }, [entity, id]);
 
-  console.log(currentItem, 'currentItemcurrentItemcurrentItemcurrentItem')
+
+  const editItem = () => { }
+  const deleteItem = () => { }
+  const editBankModal = () => {
+    setIsBankModal(true);
+  }
+  const handleBankModal = () => {
+    setIsBankModal(false)
+  }
+  const saveBankDetails = (values) => {
+    console.log(values, '333333333333333')
+  }
   return (
     <DashboardLayout>
       <Tabs defaultActiveKey="1">
@@ -484,6 +524,93 @@ export default function Details() {
                 }
 
                 <Button type="ghost" onClick={handleCancel}>
+                  cancel
+                </Button>
+              </Form.Item>
+            </Form>
+            <>
+            </>
+          </Modal>
+          <Modal title="Bank Form" visible={isBankModal} onCancel={handleBankModal} footer={null}>
+            <Form
+              ref={formRef}
+              name="basic"
+              labelCol={{
+                span: 8,
+              }}
+              wrapperCol={{
+                span: 16,
+              }}
+              onFinish={saveBankDetails}
+              onFinishFailed={onFinishFailed}
+              autoComplete="off"
+              initialValues={{
+                gender: 1,
+                civil_status: 3,
+                birthplace: "AU",
+
+              }}
+            >
+              <Form.Item
+                name="bank"
+                label="Bank"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="account_type"
+                label="Account Type"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+
+              <Form.Item
+                name="name"
+                label="Name"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="account_no"
+                label="Account No"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                wrapperCol={{
+                  offset: 8,
+                  span: 16,
+                }}
+              >
+                {
+
+                  <Button type="primary" htmlType="submit">
+                    Save
+                  </Button>
+
+                }
+
+                <Button type="ghost" onClick={handleBankModal}>
                   cancel
                 </Button>
               </Form.Item>
@@ -589,11 +716,24 @@ export default function Details() {
 
           </Content>
           <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Bank Account</h3>
-            </div>
+            <Row>
+              <Col span={3}>
+                <h3 style={{ color: '#22075e', marginBottom: 5 }}>Bank Account</h3>
+              </Col>
+              <Col span={12}>
+                <Button type="primary" onClick={editBankModal}>Add</Button>
+              </Col>
+            </Row>
+            <Table
+              bordered
+              rowKey={(item) => item._id}
+              key={(item) => item._id}
+              dataSource={[]}
+              columns={bankColumns}
+              rowClassName="editable-row"
 
-            <RecentTable entity={'banks'} dataTableColumns={bankColumns} />
+
+            />
           </div>
 
           <div className="whiteBox shadow">

@@ -23,6 +23,7 @@ const paymentInvoiceController = require('@/controllers/erpControllers/paymentIn
 
 const settingCommercialController = require('@/controllers/erpControllers/settingCommercialController');
 const settingGlobalController = require('@/controllers/erpControllers/settingGlobalController');
+const bankAccountController = require('@/controllers/erpControllers/bankAccountController');
 
 // //_______________________________ Admin management_______________________________
 
@@ -185,6 +186,28 @@ router.route('/settingGlobal/delete/:id').delete(catchErrors(settingGlobalContro
 router.route('/settingGlobal/search').get(catchErrors(settingGlobalController.search));
 router.route('/settingGlobal/list').get(catchErrors(settingGlobalController.list));
 router.route('/settingGlobal/filter').get(catchErrors(settingGlobalController.filter));
+
+
+// //____________________________________________ API for Bank Account of Employee _________________
+router.route('/bankAccount/create').post(catchErrors(bankAccountController.create));
+router.route('/bankAccount/read/:id').get(catchErrors(bankAccountController.read));
+router.route('/bankAccount/update/:id').patch(catchErrors(bankAccountController.update));
+router.route('/bankAccount/delete/:id').delete(catchErrors(bankAccountController.delete));
+router.route('/bankAccount/search').get(catchErrors(bankAccountController.search));
+router.route('/bankAccount/list').get(catchErrors(bankAccountController.list));
+router.route('/bankAccount/filter').get(catchErrors(bankAccountController.filter));
+
+
+
+
+
+
+
+
+
+
+
+
 
 // //______________________________________________ API for Commercial Setting _________________
 
