@@ -22,6 +22,7 @@ import BankAccount from './BankAccount';
 import RelatedPeople from './RelatedPeople';
 import EmergencyContact from './EmergencyContact';
 import MedicalDetail from './MedicalDetail';
+import Contract from './Contract';
 
 
 export default function Details() {
@@ -568,14 +569,7 @@ export default function Details() {
           <RelatedPeople parentId={currentEmployeeId} />
           <EmergencyContact parentId={currentEmployeeId} />
           <MedicalDetail parentId={currentEmployeeId} />
-
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Work Contract</h3>
-            </div>
-            <RecentTable entity={'quote'} dataTableColumns={contractColumns} />
-          </div>
-
+          <Contract parentId={currentEmployeeId} />
         </Tabs.TabPane>
         <Tabs.TabPane tab="Work" key="2">
           <div className="whiteBox shadow">
