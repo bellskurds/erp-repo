@@ -1,14 +1,15 @@
 import { crud } from "@/redux/crud/actions";
-import { selectFilteredItemsByParent, selectListItems, selectListsByEmergency, selectListsByMedical, selectReadItem } from "@/redux/crud/selectors";
+import { selectFilteredItemsByParent, selectListItems, selectListsByContract, selectListsByEmergency, selectListsByMedical, selectReadItem } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined, EyeOutlined, NumberOutlined } from "@ant-design/icons";
 import { Button, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Table, Tag, Typography } from "antd";
+import moment from "moment";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
 
 
 const Contract = (props) => {
-    const entity = 'medicalDetail';
+    const entity = 'workContract';
     const dispatch = useDispatch();
     const currentEmployeeId = props.parentId
     const [isBankModal, setIsBankModal] = useState(false);
@@ -24,12 +25,28 @@ const Contract = (props) => {
     ]
     const Columns = [
         {
-            title: 'Type',
-            dataIndex: 'type',
+            title: 'Start',
+            dataIndex: 'start_date',
         },
         {
-            title: 'Description',
-            dataIndex: 'description',
+            title: 'End',
+            dataIndex: 'end_date',
+        },
+        {
+            title: 'Sal/HR',
+            dataIndex: 'sal_hr',
+        },
+        {
+            title: 'HR/sem',
+            dataIndex: 'hr_week',
+        },
+        {
+            title: 'Sal/Mes',
+            dataIndex: 'sal_monthly',
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
         },
         {
             title: 'Actions',
@@ -67,10 +84,12 @@ const Contract = (props) => {
             setIsBankModal(true);
             setIsUpdate(true);
             setTimeout(() => {
-
+                item.start_date = moment(new Date(item.start_date), 'mm/dd/yyyy')
+                item.end_date = moment(new Date(item.end_date), 'mm/dd/yyyy')
+                console.log(item, 'itemitemitemitem')
                 if (formRef.current) formRef.current.setFieldsValue(item);
                 setCurrentId(item._id);
-            }, 200);
+            }, 1000);
 
         }
     }
@@ -82,63 +101,70 @@ const Contract = (props) => {
         console.log(id, 'idididi')
         dispatch(crud.delete({ entity, id }))
         setTimeout(() => {
-            dispatch(crud.listByMedical({ entity, jsonData }));
+            dispatch(crud.listByContract({ entity, jsonData }));
         }, 500)
     }
     const handleBankModal = () => {
         setIsBankModal(false)
     }
+    const formatDate = (date) => {
+        date = date._d;
+        const day = date.getDate().toString().padStart(2, '0'); // padStart adds a zero if the length of the string is less than 2 characters
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+
+        // combine the day, month and year into a single string in mm/dd/yyyy format
+        const formattedDate = `${month}/${day}/${year}`;
+        return formattedDate;
+    }
     const saveDetails = (values) => {
+        values['start_date'] = formatDate(values['start_date']);
+        values['end_date'] = formatDate(values['end_date']);
         console.log(values, '333343434')
-        // const parentId = currentEmployeeId;
-        // if (currentId && parentId && isUpdate) {
-        //     const id = currentId;
-        //     const jsonData = { parent_id: parentId }
-        //     values["parent_id"] = parentId;
-        //     dispatch(crud.update({ entity, id, jsonData: values }));
-        //     setIsBankModal(false)
-        //     setTimeout(() => {
-        //         dispatch(crud.listByMedical({ entity, jsonData }));
-        //     }, 500)
-        // } else {
-        //     const jsonData = { parent_id: parentId }
-        //     const id = currentId;
-        //     values["parent_id"] = parentId;
-        //     dispatch(crud.create({ entity, id, jsonData: values }));
-        //     setIsBankModal(false)
-        //     setTimeout(() => {
-        //         dispatch(crud.listByMedical({ entity, jsonData }));
-        //     }, 500)
-        // }
+        const parentId = currentEmployeeId;
+        if (currentId && parentId && isUpdate) {
+            const id = currentId;
+            const jsonData = { parent_id: parentId }
+            values["parent_id"] = parentId;
+            dispatch(crud.update({ entity, id, jsonData: values }));
+            setIsBankModal(false)
+            setTimeout(() => {
+                dispatch(crud.listByContract({ entity, jsonData }));
+            }, 500)
+        } else {
+            const jsonData = { parent_id: parentId }
+            const id = currentId;
+            values["parent_id"] = parentId;
+            dispatch(crud.create({ entity, id, jsonData: values }));
+            setIsBankModal(false)
+            setTimeout(() => {
+                dispatch(crud.listByContract({ entity, jsonData }));
+            }, 500)
+        }
     }
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
     };
-    const { result: Items } = useSelector(selectListsByMedical);
+    const { result: Items } = useSelector(selectListsByContract);
 
     useEffect(() => {
         const id = currentEmployeeId;
         const jsonData = { parent_id: id }
-        // dispatch(crud.resetState());
-        console.log(id, jsonData, '3333333')
-        dispatch(crud.listByMedical({ entity, jsonData }));
+        dispatch(crud.listByContract({ entity, jsonData }));
     }, []);
     const items = Items.items ? Items.items.filter(obj => obj.parent_id === currentEmployeeId) : [];
-    console.log(items, 'medical sdfasdfsad')
-
     const [salaryHour, setSalaryHour] = useState(0);
     const [hourWeek, setHourWeek] = useState(0);
-    const [salaryMonthly, setSalaryMonthly] = useState(0);
-
     useEffect(() => {
-        const monthly = (salaryHour * hourWeek * 4.333).toFixed();
-        setSalaryMonthly(monthly)
-        console.log(monthly, 'monthlymonthly')
+        if (salaryHour && hourWeek) {
+            const monthly = (salaryHour * hourWeek * 4.333).toFixed();
+            formRef.current.setFieldsValue({
+                sal_monthly: monthly,
+            });
+        }
     }, [
         salaryHour, hourWeek
     ])
-    // const items = []
-    // console.log(bankItems, 'ItemsItemsItemsItemsItems')
     return (
 
         <div className="whiteBox shadow">
@@ -157,7 +183,7 @@ const Contract = (props) => {
                     autoComplete="off"
                     initialValues={{
                         sal_hr: 0,
-                        hr_week: 0
+                        hr_week: 0,
                     }}
 
                 >
@@ -234,8 +260,7 @@ const Contract = (props) => {
                                     },
                                 ]}
                             >
-                                <label>{Number(salaryMonthly).toFixed(2)} </label>
-
+                                <Input />
                             </Form.Item>
                             <Form.Item
                             // wrapperCol={{

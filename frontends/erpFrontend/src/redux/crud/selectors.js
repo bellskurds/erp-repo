@@ -20,3 +20,4 @@ export const selectSearchedItems = createSelector([selectCrud], (crud) => crud.s
 export const selectFilteredItemsByParent = createSelector([selectCrud], (crud) => crud.listById);
 export const selectListsByEmergency = createSelector([selectCrud], (crud) => crud.listByEmergency);
 export const selectListsByMedical = createSelector([selectCrud], (crud) => crud.listByMedical);
+export const selectListsByContract = createSelector([selectCrud], (crud) => crud.listByContract);

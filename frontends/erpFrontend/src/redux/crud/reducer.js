@@ -63,6 +63,19 @@ const INITIAL_STATE = {
     isLoading: false,
     isSuccess: false,
   },
+  listByContract: {
+    result: {
+      items: [],
+      pagination: {
+        current: 1,
+        pageSize: 10,
+        total: 1,
+        showSizeChanger: false,
+      },
+    },
+    isLoading: false,
+    isSuccess: false,
+  },
   create: INITIAL_KEY_STATE,
   update: INITIAL_KEY_STATE,
   delete: INITIAL_KEY_STATE,

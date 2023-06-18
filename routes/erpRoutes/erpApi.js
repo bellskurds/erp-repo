@@ -27,6 +27,7 @@ const bankAccountController = require('@/controllers/erpControllers/bankAccountC
 const relatedPeopleController = require('@/controllers/erpControllers/relatedPeopleController');
 const emergencyContactController = require('@/controllers/erpControllers/emergencyContactController');
 const medicalDetailController = require('@/controllers/erpControllers/medicalDetailController');
+const workContractController = require('@/controllers/erpControllers/workContractController');
 
 // //_______________________________ Admin management_______________________________
 
@@ -233,7 +234,7 @@ router.route('/emergencyContact/byParentId').post(catchErrors(emergencyContactCo
 
 
 
-// //____________________________________________ API for Emergency Contacts of Employee _________________
+// //____________________________________________ API for medical Details of Employee _________________
 router.route('/medicalDetail/create').post(catchErrors(medicalDetailController.create));
 router.route('/medicalDetail/read/:id').get(catchErrors(medicalDetailController.read));
 router.route('/medicalDetail/update/:id').patch(catchErrors(medicalDetailController.update));
@@ -242,6 +243,20 @@ router.route('/medicalDetail/search').get(catchErrors(medicalDetailController.se
 router.route('/medicalDetail/list').get(catchErrors(medicalDetailController.list));
 router.route('/medicalDetail/filter').get(catchErrors(medicalDetailController.filter));
 router.route('/medicalDetail/byParentId').post(catchErrors(medicalDetailController.getByParentId));
+
+
+
+
+
+// //____________________________________________ API for Work Contract of Employee _________________
+router.route('/workContract/create').post(catchErrors(workContractController.create));
+router.route('/workContract/read/:id').get(catchErrors(workContractController.read));
+router.route('/workContract/update/:id').patch(catchErrors(workContractController.update));
+router.route('/workContract/delete/:id').delete(catchErrors(workContractController.delete));
+router.route('/workContract/search').get(catchErrors(workContractController.search));
+router.route('/workContract/list').get(catchErrors(workContractController.list));
+router.route('/workContract/filter').get(catchErrors(workContractController.filter));
+router.route('/workContract/byParentId').post(catchErrors(workContractController.getByParentId));
 
 
 

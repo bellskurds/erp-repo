@@ -169,6 +169,39 @@ export const crud = {
           });
         }
       },
+  listByContract:
+    ({ entity, jsonData, options = { page: 1 } }) =>
+      async (dispatch) => {
+        dispatch({
+          type: actionTypes.REQUEST_LOADING,
+          keyState: 'listByContract',
+          payload: null,
+        });
+
+        let data = await request.listById({ entity, jsonData, options });
+        if (data.success === true) {
+          const result = {
+            items: data.result,
+            pagination: {
+              current: parseInt(data.pagination.page, 10),
+              pageSize: 10,
+              showSizeChanger: false,
+              total: parseInt(data.pagination.count, 10),
+            },
+          };
+          dispatch({
+            type: actionTypes.REQUEST_SUCCESS,
+            keyState: 'listByContract',
+            payload: result,
+          });
+        } else {
+          dispatch({
+            type: actionTypes.REQUEST_FAILED,
+            keyState: 'listByContract',
+            payload: null,
+          });
+        }
+      },
   create:
     ({ entity, jsonData }) =>
       async (dispatch) => {
