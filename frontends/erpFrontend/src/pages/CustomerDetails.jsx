@@ -1,139 +1,46 @@
 import React, { useRef, useState } from 'react';
-import { Form, Input, InputNumber, Space, Divider, Row, Col, Tabs, Upload, message, Avatar, Button } from 'antd';
+import { Form, Input, Row, Col, Tabs, Upload, Avatar, Button, message, Select, Modal, Radio, Table, Typography, Popconfirm } from 'antd';
 
-import { Layout, Breadcrumb, Statistic, Progress, Tag } from 'antd';
+import { Tag } from 'antd';
 
-import { ArrowUpOutlined, ArrowDownOutlined, UserOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
-
+import { UserOutlined, MailOutlined, PhoneOutlined, EditOutlined, DeleteOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
+import countryList from 'country-list'
 import { DashboardLayout } from '@/layout';
 import RecentTable from '@/components/RecentTable';
 import { Content } from 'antd/lib/layout/layout';
+import { Link, useParams } from 'react-router-dom/cjs/react-router-dom.min';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { crud } from '@/redux/crud/actions';
+import { selectReadItem } from '@/redux/crud/selectors';
+import { Option } from 'antd/lib/mentions';
+import Dropdown from '@/components/outsideClick.js';
+import { DatePicker } from '@/components/CustomAntd';
+import moment from 'moment';
+import { selectListItems } from '@/redux/crud/selectors';
+import BankAccount from './BankAccount';
+import RelatedPeople from './RelatedPeople';
+import EmergencyContact from './EmergencyContact';
+import MedicalDetail from './MedicalDetail';
+import Contract from './Contract';
+import CustomerContacts from './CustomerContacts';
+import CustomerStores from './CustomerStores';
 
 
-export default function CustomerDetails() {
-  const entity = 'invoice213';
-  const dataTableColumns = [
+export default function Details() {
+
+
+  const customerColumns = [
     {
-      title: 'N#',
+      title: 'Customer',
       dataIndex: 'number',
     },
     {
-      title: 'Client',
-      dataIndex: ['client', 'company'],
-    },
-
-    {
-      title: 'Total',
-      dataIndex: 'total',
-
-      render: (total) => `$ ${total}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' '),
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      render: (status) => {
-        let color = status === 'Draft' ? 'volcano' : 'green';
-
-        return <Tag color={color}>{status.toUpperCase()}</Tag>;
-      },
-    },
-  ];
-  const bankColumns = [
-    {
-      title: 'Bank',
+      title: 'Store',
       dataIndex: 'number',
     },
     {
-      title: 'Account type',
-      dataIndex: ['client', 'company'],
-    },
-
-    {
-      title: 'Name',
-      dataIndex: 'total',
-
-      render: (total) => `$ ${total}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' '),
-    },
-    {
-      title: 'Account No',
-      dataIndex: 'status',
-      render: (status) => {
-        let color = status === 'Draft' ? 'volcano' : 'green';
-
-        return <Tag color={color}>{status.toUpperCase()}</Tag>;
-      },
-    },
-  ];
-  const relatedColumns = [
-    {
-      title: 'Name',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Last Name',
-      dataIndex: ['client', 'company'],
-    },
-
-    {
-      title: 'Relation',
-      dataIndex: 'total',
-
-      render: (total) => `$ ${total}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' '),
-    },
-    {
-      title: 'Contact',
-      dataIndex: 'status',
-      render: (status) => {
-        let color = status === 'Draft' ? 'volcano' : 'green';
-
-        return <Tag color={color}>{status.toUpperCase()}</Tag>;
-      },
-    },
-    {
-      title: 'Address',
-      dataIndex: 'total',
-
-      render: (total) => `$ ${total}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' '),
-    },
-  ];
-  const emergencyColumns = [
-    {
-      title: 'Name',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Last Name',
-      dataIndex: ['client', 'company'],
-    },
-
-    {
-      title: 'Phone',
-      dataIndex: 'total',
-
-      render: (total) => `$ ${total}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' '),
-    },
-  ];
-  const medicalColumns = [
-    {
-      title: 'Type',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Description',
-      dataIndex: ['client', 'company'],
-    },
-  ];
-  const contractColumns = [
-    {
-      title: 'Start',
-      dataIndex: 'number',
-    },
-    {
-      title: 'End',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Sal/Hr',
+      title: 'Hours',
       dataIndex: 'number',
     },
     {
@@ -141,32 +48,13 @@ export default function CustomerDetails() {
       dataIndex: 'number',
     },
     {
-      title: 'Sal/Monthly',
+      title: 'Sal/Hr',
       dataIndex: ['client', 'company'],
     },
     {
-      title: 'status',
+      title: 'Type',
       dataIndex: ['client', 'company'],
     },
-  ];
-  const contactsColumns = [
-    {
-      title: 'Name',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Position',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Email',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Phone',
-      dataIndex: 'number',
-    },
-
   ];
   const scheduleColumns = [
     {
@@ -220,136 +108,48 @@ export default function CustomerDetails() {
       dataIndex: 'number',
     },
   ];
-  const storesColumns = [
+  const genderOptions = [
     {
-      title: 'Store',
-      dataIndex: 'number',
+      label: "Men", value: 1,
     },
     {
-      title: 'Hours',
-      dataIndex: 'number',
+      label: "Women", value: 2,
+    },
+  ]
+  const civilOptions = [
+    {
+      label: "Soltero", value: 1
     },
     {
-      title: 'Hr/week',
-      dataIndex: 'number',
+      label: "Casado", value: 2
     },
     {
-      title: 'Location',
-      dataIndex: 'number',
+      label: "Unido", value: 3
     },
     {
-      title: 'Billing',
-      dataIndex: 'number',
+      label: "Separado", value: 4
+    },
+  ]
+  const statusOptions = [
+    {
+      label: "Active", value: 1,
     },
     {
-      title: 'Products',
-      dataIndex: 'number',
-    },
-  ];
-  const assignedEmployeeColumns = [
+      label: "InActive", value: 2,
+    }
+    ,
     {
-      title: 'Name',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Branch',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Time',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Hr/week',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Type',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Sal/hr',
-      dataIndex: 'number',
-    },
-  ];
-  const documentsColumns = [
-    {
-      title: 'Name',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Date',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Comments',
-      dataIndex: 'number',
-    },
-    {
-      title: 'By',
-      dataIndex: 'number',
-    },
-  ];
-  const recurrentBillingColumns = [
-    {
-      title: 'Description',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Amount',
-      dataIndex: 'number',
-    },
-    {
-      title: 'taxes',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Frequency',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Start',
-      dataIndex: 'number',
-    },
-    {
-      title: 'End',
-      dataIndex: 'number',
-    },
-  ];
-  const InvoiceHistoryColumns = [
-    {
-      title: 'Date',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Description',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Amount',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Details',
-      dataIndex: 'number',
-    },
-  ];
-  const BillingEstimationColumns = [
-    {
-      title: 'Month',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Amount',
-      dataIndex: 'number',
-    },
-  ];
+      label: "reject", value: 3,
+    }
+  ]
   const [form] = Form.useForm();
   const [name, setName] = useState('John Doe');
   const [email, setEmail] = useState('johndoe@example.com');
   const [phone, setPhone] = useState('123-456-7890');
   const [avatar, setAvatar] = useState('');
+  const currentCustomerId = useParams().id;
 
+  const entity = "client";
   const onFinish = (values) => {
     setName(values.name);
     setEmail(values.email);
@@ -370,134 +170,316 @@ export default function CustomerDetails() {
     return isJpgOrPng && isLt2M;
   };
 
-  const handleChange = (info) => {
 
-    console.log(info,'dfinfo')
-    if (info.file.status === 'done') {
-      getBase64(info.file.originFileObj, (imageUrl) =>
-        setAvatar(imageUrl),
-      );
+
+  const id = useParams().id;
+
+
+  console.log(id, '33333333333333333334444444444444444')
+  const dispatch = useDispatch();
+
+  const { result: currentItem } = useSelector(selectReadItem);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  // const { pagination, items } = currentResult;
+  const changeStatus = (e) => {
+    const id = currentCustomerId;
+    dispatch(crud.update({ entity, id, jsonData: { status: e } }));
+    setTimeout(() => {
+      dispatch(crud.read({ entity, id }));
+    }, 500)
+    return true;
+  }
+
+
+
+  const onFinishFailed = (errorInfo) => {
+    console.log('Failed:', errorInfo);
+  };
+  const formRef = useRef(null);
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+  const editModal = () => {
+    if (formRef.current)
+      console.log(formRef.current.getFieldValue(), 'formRef.current')
+    //formRef.current.setFieldsValue(currentItem);
+
+    setIsModalVisible(true)
+    setTimeout(() => {
+
+      formRef.current.setFieldsValue({
+        gender: currentItem.gender,
+        address: currentItem.address,
+        birthplace: currentItem.birthplace,
+        civil_status: currentItem.civil_status,
+        school: currentItem.school,
+        // birthday:moment(new Date(currentItem.birthday),'mm/dd/yyyy')
+      })
+    }, 600)
+  }
+  const onChange = (value) => {
+    console.log(`selected ${value}`);
+  };
+
+  const onSearch = (value) => {
+    // const id = 
+
+    console.log('search:', value);
+  };
+
+  const countryLists = countryList.getData().map((item) => ({
+    value: item.code,
+    label: item.name
+  }))
+  const formatDate = (date) => {
+    date = date.$d;
+    const day = date.getDate().toString().padStart(2, '0'); // padStart adds a zero if the length of the string is less than 2 characters
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+
+    // combine the day, month and year into a single string in mm/dd/yyyy format
+    const formattedDate = `${month}/${day}/${year}`;
+    return formattedDate;
+  }
+  const saveDetails = (values) => {
+    console.log(values, 'valuesvalues')
+    values['birthday'] = formatDate(values['birthday']);
+    dispatch(crud.update({ entity, id, jsonData: values }));
+    setTimeout(() => {
+      dispatch(crud.read({ entity, id }));
+    }, 500)
+    setIsModalVisible(false)
+  }
+  useEffect(() => {
+    dispatch(crud.read({ entity, id }));
+  }, [entity, id]);
+
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const [fileList, setFileList] = useState([]);
+
+  const handlePreview = async file => {
+    if (!file.url && !file.preview) {
+      file.preview = await getBase64(file.originFileObj);
     }
-  };
 
-  const getBase64 = (img, callback) => {
-    const reader = new FileReader();
-    reader.addEventListener('load', () => callback(reader.result));
-    reader.readAsDataURL(img);
+    setPreviewImage(file.url || file.preview);
+    setPreviewVisible(true);
   };
+  const handleChange = ({ fileList }) => setFileList(fileList);
+  const uploadButton = (
+    <div>
+      <PlusOutlined />
+      <div style={{ marginTop: 8 }}>Upload</div>
+    </div>
+  );
+  function getBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  }
+  const handlePreviewImageCancel = () => {
+    setPreviewVisible(false);
+  }
+  const handleUpload = () => {
+    const formData = new FormData();
+    fileList.forEach(file => {
+      formData.append('avatar', file);
+    });
+
+    console.log(formData, 'formDataformDataformDataformData')
+    dispatch(crud.avatarUpload(formData));  // dispatch the action to upload the avatar
+    setFileList([]);  // clear uploaded files
+  };
+  console.log(currentItem, 'currentItemcurrentItemcurrentItemcurrentItemcurrentItemcurrentItem')
+
   return (
     <DashboardLayout>
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="Details" key="1">
+          <Modal title="Create Form" visible={isModalVisible} onCancel={handleCancel} footer={null}>
+            <Form
+              ref={formRef}
+              name="basic"
+              labelCol={{
+                span: 8,
+              }}
+              wrapperCol={{
+                span: 16,
+              }}
+              onFinish={saveDetails}
+              onFinishFailed={onFinishFailed}
+              autoComplete="off"
+              initialValues={{
+                gender: 1,
+                civil_status: 3,
+                birthplace: "AU",
+
+              }}
+            >
+              <Form.Item
+                name="gender"
+                label="Gender"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Radio.Group name="radiogroup" options={genderOptions} />
+              </Form.Item>
+              <Form.Item
+                name="birthplace"
+                label="Birthplace"
+              >
+                <Select
+                  showSearch
+                  placeholder="Select a person"
+                  optionFilterProp="children"
+                  onChange={onChange}
+                  onSearch={onSearch}
+                  filterOption={(input, option) =>
+                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  }
+                  options={countryLists}
+                />
+              </Form.Item>
+              <Form.Item
+                name="birthday"
+                label="BirthDay"
+              >
+                <DatePicker style={{ width: '50%' }} format={"MM/DD/YYYY"} />
+              </Form.Item>
+
+              <Form.Item
+                name="civil_status"
+                label="Civil Status"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Radio.Group name="civil_status" options={civilOptions} />
+              </Form.Item>
+              <Form.Item
+                name="school"
+                label="School"
+              >
+                <Input />
+
+              </Form.Item>
+              <Form.Item
+                name="address"
+                label="Address"
+              >
+                <Input value={"addddr"} />
+              </Form.Item>
+              <Form.Item
+                wrapperCol={{
+                  offset: 8,
+                  span: 16,
+                }}
+              >
+                {
+
+                  <Button type="primary" htmlType="submit">
+                    Save
+                  </Button>
+
+                }
+
+                <Button type="ghost" onClick={handleCancel}>
+                  cancel
+                </Button>
+              </Form.Item>
+            </Form>
+            <>
+            </>
+          </Modal>
+
           <Content style={{ padding: '0 0px' }}>
             <Row gutter={[16, 16]}>
               <Col span={6}>
                 <div className="profile-card">
                   <Upload
-                    name="avatar"
+                    action=""
+                    autoUpload={false}
                     listType="picture-card"
-                    className="avatar-uploader"
-                    showUploadList={false}
-                    beforeUpload={beforeUpload}
+                    fileList={fileList}
+                    onPreview={handlePreview}
                     onChange={handleChange}
                   >
-                    {avatar ? <Avatar shape="circle" src={avatar} size={128} /> : <UserOutlined style={{ fontSize: '44px' }} />}
-                    <div style={{ marginTop: 8 }}>Change Avatar</div>
+                    {fileList.length >= 1 ? null : uploadButton}
                   </Upload>
+                  <Modal visible={previewVisible} footer={null} onCancel={handlePreviewImageCancel}>
+                    <img alt="Preview" style={{ width: '100%' }} src={previewImage} />
+                  </Modal>
+                  {fileList.length > 0 && (
+                    <button onClick={handleUpload}>Upload</button>  // add a button to handle upload
+                  )}
                 </div>
               </Col>
-              <Col span={18}>
-                <p>Name:{name}</p>
-                <p>Personal ID:{name}</p>
-                <p>Phone:{phone}</p>
-                <p>Email:{email}</p>
+              <Col span={12}>
+                <p>Name : {currentItem ? currentItem.name : ""}</p>
+                <p>Customer ID : {currentItem ? currentItem.customer_id : ""}</p>
+                <p>Phone : {currentItem ? currentItem.phone : ""}</p>
+                <p>Email : {currentItem ? currentItem.email : ""}</p>
+              </Col>
+              <Col span={6}>
+                <Select style={{ width: 120 }} onChange={changeStatus} value={currentItem ? currentItem.status : 4} options={statusOptions} />
+
               </Col>
             </Row>
-            <div className="profile-details">
-              <h2>Edit Details</h2>
-              <Form form={form} onFinish={onFinish}>
-                <Form.Item
-                  name="name"
-                  rules={[{ required: true, message: 'Please input your name' }]}
-                  initialValue={name}
-                >
-                  <Input prefix={<UserOutlined />} placeholder="Name" />
-                </Form.Item>
-                <Form.Item
-                  name="email"
-                  rules={[{ required: true, message: 'Please input your email!' }]}
-                  initialValue={email}
-                >
-                  <Input prefix={<MailOutlined />} type="email" placeholder="Email" />
-                </Form.Item>
-                <Form.Item
-                  name="phone"
-                  rules={[{ required: true, message: 'Please input your phone number!' }]}
-                  initialValue={phone}
-                >
-                  <Input prefix={<PhoneOutlined />} type="tel" placeholder="Phone Number" />
-                </Form.Item>
-                <Form.Item>
-                  <Button type="primary" htmlType="submit">Save Chang es</Button>
-                </Form.Item>
-              </Form>
-            </div>
+            {/* <div className="profile-details">
+              <Row>
+                <Col span={3}>
+                  <h2>Details</h2>
+                </Col>
+                <Col span={12}>
+                  <Button type="primary" onClick={editModal}>Edit</Button>
+                </Col>
+              </Row>
+
+
+            </div> */}
 
           </Content>
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Contacts</h3>
-            </div>
-
-            <RecentTable entity={'banks'} dataTableColumns={contactsColumns} />
-          </div>
-
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Stores</h3>
-            </div>
-            <RecentTable entity={'quote'} dataTableColumns={storesColumns} />
-          </div>
-
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Assigned Employees</h3>
-            </div>
-            <RecentTable entity={'quote'} dataTableColumns={assignedEmployeeColumns} />
-          </div>
-
+          <CustomerContacts parentId={currentCustomerId} />
+          <CustomerStores parentId={currentCustomerId} />
+          {/* <RelatedPeople parentId={currentCustomerId} /> */}
+          {/* <EmergencyContact parentId={currentCustomerId} /> */}
+          {/* <MedicalDetail parentId={currentCustomerId} /> */}
+          {/* <Contract parentId={currentCustomerId} /> */}
         </Tabs.TabPane>
-        <Tabs.TabPane tab="Documentes" key="2">
+        <Tabs.TabPane tab="Work" key="2">
           <div className="whiteBox shadow">
             <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Documents</h3>
+              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Assigned Customers</h3>
             </div>
 
-            <RecentTable entity={'invoice'} dataTableColumns={documentsColumns} />
+            <RecentTable entity={'invoice'} dataTableColumns={customerColumns} />
+          </div>
+          <div className="whiteBox shadow">
+            <div className="pad20">
+              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Schedule</h3>
+            </div>
+            <RecentTable entity={'quote'} dataTableColumns={scheduleColumns} />
+          </div>
+          <div className="whiteBox shadow">
+            <div className="pad20">
+              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Payment history</h3>
+            </div>
+            <RecentTable entity={'quote'} dataTableColumns={paymentColumns} />
           </div>
         </Tabs.TabPane>
-        <Tabs.TabPane tab="Biling" key="3">
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Recurrent Billing</h3>
-            </div>
-
-            <RecentTable entity={'invoice'} dataTableColumns={recurrentBillingColumns} />
-          </div>
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Invoice History</h3>
-            </div>
-
-            <RecentTable entity={'invoice'} dataTableColumns={InvoiceHistoryColumns} />
-          </div>
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Billing Estimation</h3>
-            </div>
-
-            <RecentTable entity={'invoice'} dataTableColumns={BillingEstimationColumns} />
-          </div>
+        <Tabs.TabPane tab="Documents" key="3">
+          Content of Tab Pane 3
         </Tabs.TabPane>
       </Tabs>
 

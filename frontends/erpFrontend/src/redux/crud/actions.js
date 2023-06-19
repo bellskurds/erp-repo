@@ -1,6 +1,10 @@
+import axios from 'axios';
+import { REQUEST_LOADING } from '../erp/types';
 import * as actionTypes from './types';
 import { request } from '@/request';
-
+import { API_BASE_URL } from '@/config/serverApiConfig';
+axios.defaults.baseURL = API_BASE_URL;
+axios.defaults.withCredentials = true;
 export const crud = {
   resetState:
     (props = {}) =>
@@ -202,6 +206,105 @@ export const crud = {
           });
         }
       },
+  listByCustomer:
+    ({ entity, jsonData, options = { page: 1 } }) =>
+      async (dispatch) => {
+        dispatch({
+          type: actionTypes.REQUEST_LOADING,
+          keyState: 'listByCustomer',
+          payload: null,
+        });
+
+        let data = await request.listById({ entity, jsonData, options });
+        if (data.success === true) {
+          const result = {
+            items: data.result,
+            pagination: {
+              current: parseInt(data.pagination.page, 10),
+              pageSize: 10,
+              showSizeChanger: false,
+              total: parseInt(data.pagination.count, 10),
+            },
+          };
+          dispatch({
+            type: actionTypes.REQUEST_SUCCESS,
+            keyState: 'listByCustomer',
+            payload: result,
+          });
+        } else {
+          dispatch({
+            type: actionTypes.REQUEST_FAILED,
+            keyState: 'listByCustomer',
+            payload: null,
+          });
+        }
+      },
+  listByCustomerContact:
+    ({ entity, jsonData, options = { page: 1 } }) =>
+      async (dispatch) => {
+        dispatch({
+          type: actionTypes.REQUEST_LOADING,
+          keyState: 'listByCustomerContact',
+          payload: null,
+        });
+
+        let data = await request.listById({ entity, jsonData, options });
+        if (data.success === true) {
+          const result = {
+            items: data.result,
+            pagination: {
+              current: parseInt(data.pagination.page, 10),
+              pageSize: 10,
+              showSizeChanger: false,
+              total: parseInt(data.pagination.count, 10),
+            },
+          };
+          dispatch({
+            type: actionTypes.REQUEST_SUCCESS,
+            keyState: 'listByCustomerContact',
+            payload: result,
+          });
+        } else {
+          dispatch({
+            type: actionTypes.REQUEST_FAILED,
+            keyState: 'listByCustomerContact',
+            payload: null,
+          });
+        }
+      },
+  listByCustomerStores:
+    ({ entity, jsonData, options = { page: 1 } }) =>
+      async (dispatch) => {
+        dispatch({
+          type: actionTypes.REQUEST_LOADING,
+          keyState: 'listByCustomerStores',
+          payload: null,
+        });
+
+        let data = await request.listById({ entity, jsonData, options });
+        if (data.success === true) {
+          const result = {
+            items: data.result,
+            pagination: {
+              current: parseInt(data.pagination.page, 10),
+              pageSize: 10,
+              showSizeChanger: false,
+              total: parseInt(data.pagination.count, 10),
+            },
+          };
+          dispatch({
+            type: actionTypes.REQUEST_SUCCESS,
+            keyState: 'listByCustomerStores',
+            payload: result,
+          });
+        } else {
+          dispatch({
+            type: actionTypes.REQUEST_FAILED,
+            keyState: 'listByCustomerStores',
+            payload: null,
+          });
+        }
+      },
   create:
     ({ entity, jsonData }) =>
       async (dispatch) => {
@@ -342,4 +445,30 @@ export const crud = {
           });
         }
       },
+  avatarUpload:
+    (avatar) =>
+      async (dispatch) => {
+        dispatch({
+          type: actionTypes.REQUEST_LOADING,
+          keyState: 'avatarUpload',
+          payload: null
+        });
+        try {
+          let res = await axios.post('/employee/details', avatar);
+          dispatch({
+            type: 'UPLOAD_AVATAR_SUCCESS',
+            payload: res.data,
+          })
+        } catch (error) {
+          dispatch({
+            type: 'UPLOAD_AVATAR_FAIL',
+            payload:
+              error.response && error.response.data.message
+                ? error.response.data.message
+                : error.message,
+          });
+
+        }
+
+      }
 };

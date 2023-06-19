@@ -49,6 +49,10 @@ export const routesConfig = [
     component: 'Details',
   },
   {
+    path: '/customer/details/:id',
+    component: 'CustomerDetails',
+  },
+  {
     path: '/customer_details',
     component: 'CustomerDetails',
   },

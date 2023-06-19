@@ -72,26 +72,26 @@ export default function Navigation() {
             <Link to={'/invoice'} />
             Invoice
           </Menu.Item> */}
-          <Menu.Item key={'details'} icon={<ProfileOutlined />}>
+          {/* <Menu.Item key={'details'} icon={<ProfileOutlined />}>
             <Link to={'/details'} />
             Employee Details
-          </Menu.Item>
+          </Menu.Item> */}
           <Menu.Item key={'Customer'} icon={<CustomerServiceOutlined />}>
             <Link to={'/customer'} />
             Customer
           </Menu.Item>
-          <Menu.Item key={'customer_details'} icon={<ProfileOutlined />}>
+          {/* <Menu.Item key={'customer_details'} icon={<ProfileOutlined />}>
             <Link to={'/customer_details'} />
             Customer Details
-          </Menu.Item>
-          <Menu.Item key={'Quote'} icon={<FileSyncOutlined />}>
+          </Menu.Item> */}
+          {/* <Menu.Item key={'Quote'} icon={<FileSyncOutlined />}>
             <Link to={'/quote'} />
             Quote
           </Menu.Item>
           <Menu.Item key={'PaymentInvoice'} icon={<CreditCardOutlined />}>
             <Link to={'/payment/invoice'} />
             Payment Invoice
-          </Menu.Item>
+          </Menu.Item> */}
 
           <Menu.Item key={'Admin'} icon={<TeamOutlined />}>
             <Link to={'/admin'} />

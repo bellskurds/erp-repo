@@ -24,11 +24,8 @@ const employeeSchema = new mongoose.Schema({
     // required: true,
   },
   birthday: {
-    type: Date,
-    // required: true,
-  },
-  birthplace: {
     type: String,
+    // required: true,
   },
 
   photo: {

@@ -3,7 +3,7 @@ import { Form, Input, Row, Col, Tabs, Upload, Avatar, Button, message, Select, M
 
 import { Tag } from 'antd';
 
-import { UserOutlined, MailOutlined, PhoneOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { UserOutlined, MailOutlined, PhoneOutlined, EditOutlined, DeleteOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
 import countryList from 'country-list'
 import { DashboardLayout } from '@/layout';
 import RecentTable from '@/components/RecentTable';
@@ -26,118 +26,8 @@ import Contract from './Contract';
 
 
 export default function Details() {
-  const dataTableColumns = [
-    {
-      title: 'N#',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Client',
-      dataIndex: ['client', 'company'],
-    },
 
-    {
-      title: 'Total',
-      dataIndex: 'total',
 
-      render: (total) => `$ ${total}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' '),
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      render: (status) => {
-        let color = status === 'Draft' ? 'volcano' : 'green';
-
-        return <Tag color={color}>{status.toUpperCase()}</Tag>;
-      },
-    },
-  ];
-
-  const relatedColumns = [
-    {
-      title: 'Name',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Last Name',
-      dataIndex: ['client', 'company'],
-    },
-
-    {
-      title: 'Relation',
-      dataIndex: 'total',
-
-      render: (total) => `$ ${total}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' '),
-    },
-    {
-      title: 'Contact',
-      dataIndex: 'status',
-      render: (status) => {
-        let color = status === 'Draft' ? 'volcano' : 'green';
-
-        return <Tag color={color}>{status.toUpperCase()}</Tag>;
-      },
-    },
-    {
-      title: 'Address',
-      dataIndex: 'total',
-
-      render: (total) => `$ ${total}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' '),
-    },
-  ];
-  const emergencyColumns = [
-    {
-      title: 'Name',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Last Name',
-      dataIndex: ['client', 'company'],
-    },
-
-    {
-      title: 'Phone',
-      dataIndex: 'total',
-
-      render: (total) => `$ ${total}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' '),
-    },
-  ];
-  const medicalColumns = [
-    {
-      title: 'Type',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Description',
-      dataIndex: ['client', 'company'],
-    },
-  ];
-  const contractColumns = [
-    {
-      title: 'Start',
-      dataIndex: 'number',
-    },
-    {
-      title: 'End',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Sal/Hr',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Hr/Week',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Sal/Monthly',
-      dataIndex: ['client', 'company'],
-    },
-    {
-      title: 'status',
-      dataIndex: ['client', 'company'],
-    },
-  ];
   const customerColumns = [
     {
       title: 'Customer',
@@ -278,27 +168,17 @@ export default function Details() {
     return isJpgOrPng && isLt2M;
   };
 
-  const handleChange = (info) => {
 
-    console.log(info, 'dfinfo')
-    if (info.file.status === 'done') {
-      getBase64(info.file.originFileObj, (imageUrl) =>
-        setAvatar(imageUrl),
-      );
-    }
-  };
-
-  const getBase64 = (img, callback) => {
-    const reader = new FileReader();
-    reader.addEventListener('load', () => callback(reader.result));
-    reader.readAsDataURL(img);
-  };
 
   const id = useParams().id;
   const dispatch = useDispatch();
 
   const { result: currentItem } = useSelector(selectReadItem);
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  // const currentItem = _currentItem || {
+  //   gender: 1
+  // }
 
   // const { pagination, items } = currentResult;
   const changeStatus = (e) => {
@@ -309,7 +189,6 @@ export default function Details() {
     }, 500)
     return true;
   }
-
 
 
   const onFinishFailed = (errorInfo) => {
@@ -327,14 +206,14 @@ export default function Details() {
 
     setIsModalVisible(true)
     setTimeout(() => {
-      console.log(formRef.current.getFieldValue(), 'formRef.current.getFieldValue()')
-      console.log(moment(currentItem.birthday, 'YYYY-MM-DD'), 'sdfsdddddddddddddddddddddddddd')
+
       formRef.current.setFieldsValue({
         gender: currentItem.gender,
         address: currentItem.address,
         birthplace: currentItem.birthplace,
         civil_status: currentItem.civil_status,
         school: currentItem.school,
+        // birthday:moment(new Date(currentItem.birthday),'mm/dd/yyyy')
       })
     }, 600)
   }
@@ -352,8 +231,19 @@ export default function Details() {
     value: item.code,
     label: item.name
   }))
-  const saveDetails = (values) => {
+  const formatDate = (date) => {
+    date = date.$d;
+    const day = date.getDate().toString().padStart(2, '0'); // padStart adds a zero if the length of the string is less than 2 characters
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
 
+    // combine the day, month and year into a single string in mm/dd/yyyy format
+    const formattedDate = `${month}/${day}/${year}`;
+    return formattedDate;
+  }
+  const saveDetails = (values) => {
+    console.log(values, 'valuesvalues')
+    values['birthday'] = formatDate(values['birthday']);
     dispatch(crud.update({ entity, id, jsonData: values }));
     setTimeout(() => {
       dispatch(crud.read({ entity, id }));
@@ -361,8 +251,52 @@ export default function Details() {
     setIsModalVisible(false)
   }
   useEffect(() => {
+    dispatch(crud.resetState())
     dispatch(crud.read({ entity, id }));
   }, [entity, id]);
+
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const [fileList, setFileList] = useState([]);
+
+  const handlePreview = async file => {
+    if (!file.url && !file.preview) {
+      file.preview = await getBase64(file.originFileObj);
+    }
+
+    setPreviewImage(file.url || file.preview);
+    setPreviewVisible(true);
+  };
+  const handleChange = ({ fileList }) => setFileList(fileList);
+  const uploadButton = (
+    <div>
+      <PlusOutlined />
+      <div style={{ marginTop: 8 }}>Upload</div>
+    </div>
+  );
+  function getBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  }
+  const handlePreviewImageCancel = () => {
+    setPreviewVisible(false);
+  }
+  const handleUpload = () => {
+    const formData = new FormData();
+    fileList.forEach(file => {
+      formData.append('avatar', file);
+    });
+
+    console.log(formData, 'formDataformDataformDataformData')
+    dispatch(crud.avatarUpload(formData));  // dispatch the action to upload the avatar
+    setFileList([]);  // clear uploaded files
+  };
+
+  console.log(currentItem, 'currentItemcurrentItem')
   return (
     <DashboardLayout>
       <Tabs defaultActiveKey="1">
@@ -418,7 +352,7 @@ export default function Details() {
                 name="birthday"
                 label="BirthDay"
               >
-                <DatePicker style={{ width: '50%' }} mode='date' format="YYYY-MM-DD" />
+                <DatePicker style={{ width: '50%' }} format={"MM/DD/YYYY"} />
               </Form.Item>
 
               <Form.Item
@@ -473,16 +407,21 @@ export default function Details() {
               <Col span={6}>
                 <div className="profile-card">
                   <Upload
-                    name="avatar"
+                    action=""
+                    autoUpload={false}
                     listType="picture-card"
-                    className="avatar-uploader"
-                    showUploadList={false}
-                    beforeUpload={beforeUpload}
+                    fileList={fileList}
+                    onPreview={handlePreview}
                     onChange={handleChange}
                   >
-                    {avatar ? <Avatar shape="circle" src={avatar} size={128} /> : <UserOutlined style={{ fontSize: '44px' }} />}
-                    <div style={{ marginTop: 8 }}>Change Avatar</div>
+                    {fileList.length >= 1 ? null : uploadButton}
                   </Upload>
+                  <Modal visible={previewVisible} footer={null} onCancel={handlePreviewImageCancel}>
+                    <img alt="Preview" style={{ width: '100%' }} src={previewImage} />
+                  </Modal>
+                  {fileList.length > 0 && (
+                    <button onClick={handleUpload}>Upload</button>  // add a button to handle upload
+                  )}
                 </div>
               </Col>
               <Col span={12}>

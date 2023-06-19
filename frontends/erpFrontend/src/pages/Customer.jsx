@@ -1,86 +1,335 @@
-import React from 'react';
+import { DashboardLayout, DefaultLayout } from '@/layout';
+import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { Button, Col, Form, Input, InputNumber, Layout, Modal, Popconfirm, Row, Space, Table, Tag, Typography } from 'antd';
+import Search from 'antd/lib/transfer/search';
+import React, { useEffect, useRef, useState } from 'react';
+import CustomModal from 'modules/CustomModal'
+import { useDispatch, useSelector } from 'react-redux';
+import { crud } from '@/redux/crud/actions';
+import { selectListItems } from '@/redux/crud/selectors';
+import { Link } from 'react-router-dom/cjs/react-router-dom';
+const originData = [];
+for (let i = 0; i < 100; i++) {
+  originData.push({
+    key: i.toString(),
+    name: `Edrward ${i}`,
+    age: 32,
+    address: `London Park no. ${i}`,
+  });
+}
+const EditableCell = ({
+  editing,
+  dataIndex,
+  title,
+  inputType,
+  record,
+  index,
+  children,
+  ...restProps
+}) => {
+  const inputNode = inputType === 'number' ? <InputNumber /> : <Input />;
+  return (
+    <td {...restProps}>
+      {editing ? (
+        <Form.Item
+          name={dataIndex}
+          style={{
+            margin: 0,
+          }}
+          rules={[
+            {
+              required: true,
+              message: `Please Input ${title}!`,
+            },
+          ]}
+        >
+          {inputNode}
+        </Form.Item>
+      ) : (
+        children
+      )}
+    </td>
+  );
+};
 
-import CrudModule from '@/modules/CrudModule';
-import CustomerForm from '@/forms/CustomerForm';
 
-function Customer() {
-  const entity = 'client';
-  const searchConfig = {
-    displayLabels: ['company'],
-    searchFields: 'company,managerSurname,managerName',
-    outputValue: '_id',
+const Customers = () => {
+  const entity = "client"
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const [isUpdate, setIsUpdate] = useState(false);
+  const showModal = () => {
+
+    setCurrentId(new Date().valueOf())
+    setIsModalVisible(true);
+    setIsUpdate(false);
+    if (formRef.current) formRef.current.resetFields();
+
+  };
+  const dispatch = useDispatch();
+
+  const handleOk = () => {
+    // handle ok button click here
+    setIsModalVisible(false);
   };
 
-  const entityDisplayLabels = ['company'];
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+  const generateCustomerId = () => {
+    return new Date().valueOf();
+  }
+  const [customerId, setCustomerId] = useState(generateCustomerId());
 
-  const readColumns = [
+  const [form] = Form.useForm();
+  const [data, setData] = useState(originData);
+  const [editingKey, setEditingKey] = useState('');
+  const [currentId, setCurrentId] = useState('');
+  const [currentItem, setCurrentItem] = useState({});
+  const isEditing = (record) => record._id === editingKey;
+  const editItem = (item) => {
+    if (item) {
+      setTimeout(() => {
+        if (formRef.current) formRef.current.setFieldsValue(item);
+      }, 400);
+      setCurrentId(item._id);
+      setCurrentItem(item);
+      setIsModalVisible(true);
+      setIsUpdate(true);
+    }
+  }
+  const deleteItem = (item) => {
+    const id = item._id;
+    dispatch(crud.delete({ entity, id }))
+    setTimeout(() => {
+      dispatch(crud.resetState());
+      dispatch(crud.list({ entity }));
+    }, 1000)
+  }
+  const columns = [
     {
-      title: 'Company',
-      dataIndex: 'company',
+      title: 'Customer Id',
+      dataIndex: 'customer_id',
+      width: '15%',
+      editable: true,
     },
     {
-      title: 'Manager Surname',
-      dataIndex: 'managerSurname',
-    },
-    {
-      title: 'Manager Name',
-      dataIndex: 'managerName',
+      title: 'Name',
+      dataIndex: 'name',
+      width: '15%',
+      editable: true,
     },
     {
       title: 'Email',
       dataIndex: 'email',
+      width: '15%',
+      editable: true,
     },
     {
       title: 'Phone',
       dataIndex: 'phone',
-    },
-  ];
-  const dataTableColumns = [
-    {
-      title: 'Company',
-      dataIndex: 'company',
+      width: '15%',
+      editable: true,
     },
     {
-      title: 'Manager Surname',
-      dataIndex: 'managerSurname',
-    },
-    {
-      title: 'Manager Name',
-      dataIndex: 'managerName',
-    },
-    {
-      title: 'Email',
-      dataIndex: 'email',
-    },
-  ];
+      title: 'Actions',
+      dataIndex: 'operation',
+      width: "10%",
+      align: 'center',
+      render: (_, record) => {
+        return (
 
-  const ADD_NEW_ENTITY = 'Add new customer';
-  const DATATABLE_TITLE = 'customers List';
-  const ENTITY_NAME = 'customer';
-  const CREATE_ENTITY = 'Create customer';
-  const UPDATE_ENTITY = 'Update customer';
-  const PANEL_TITLE = 'Customer Panel';
+          <>
+            <Typography.Link onClick={() => editItem(record)}>
+              <EditOutlined style={{ fontSize: "20px" }} />
+            </Typography.Link>
 
-  const config = {
-    entity,
-    PANEL_TITLE,
-    ENTITY_NAME,
-    // CREATE_ENTITY,
-    // ADD_NEW_ENTITY,
-    UPDATE_ENTITY,
-    DATATABLE_TITLE,
-    readColumns,
-    dataTableColumns,
-    searchConfig,
-    entityDisplayLabels,
+            <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+              <DeleteOutlined style={{ fontSize: "20px" }} />
+            </Popconfirm>
+            <Typography.Text>
+              <Link to={`/customer/details/${record._id}`}>
+                <EyeOutlined style={{ fontSize: "20px" }} />
+              </Link>
+            </Typography.Text>
+
+          </>
+        )
+
+      },
+    },
+
+  ];
+  const mergedColumns = columns.map((col) => {
+    if (!col.editable) {
+      return col;
+    }
+    return {
+      ...col,
+      onCell: (record) => ({
+        record,
+        inputType: col.dataIndex === 'age' ? 'number' : 'text',
+        dataIndex: col.dataIndex,
+        title: col.title,
+        editing: isEditing(record),
+      }),
+    };
+  });
+  const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
+
+  const { pagination, items } = listResult;
+  const onSearch = (value) => console.log(value);
+  const onFinish = (values) => {
+    if (isUpdate && currentId) {
+      const id = currentId;
+      dispatch(crud.update({ entity, id, jsonData: values }));
+    } else {
+      dispatch(crud.create({ entity, jsonData: values }));
+    }
+    formRef.current.resetFields();
+    dispatch(crud.resetState());
+    dispatch(crud.list({ entity }));
+    handleCancel()
   };
-  return (
-    <CrudModule
-      createForm={<CustomerForm />}
-      // updateForm={<CustomerForm isUpdateForm={true} />}
-      config={config}
-    />
-  );
-}
+  const formRef = useRef(null);
+  const onFinishFailed = (errorInfo) => {
+    console.log('Failed:', errorInfo);
+  };
+  useEffect(() => {
+    dispatch(crud.resetState());
+    dispatch(crud.list({ entity }));
+  }, []);
 
-export default Customer;
+  console.log(items, '33333434343')
+  return (
+
+    <DashboardLayout>
+      <Layout style={{ minHeight: '100vh' }}>
+        <Modal title="Create Form" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null}>
+          <>
+            <Form
+              ref={formRef}
+              name="basic"
+              labelCol={{
+                span: 8,
+              }}
+              wrapperCol={{
+                span: 16,
+              }}
+              initialValues={{
+                remember: true,
+              }}
+              onFinish={onFinish}
+              onFinishFailed={onFinishFailed}
+              autoComplete="off"
+            >
+              <Form.Item
+                name="customer_id"
+                label="Customer ID"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Input value={customerId} />
+              </Form.Item>
+              <Form.Item
+                name="name"
+                label="name"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please input your name!',
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="email"
+                label="E-mail"
+                rules={[
+                  {
+                    type: 'email',
+                    message: 'The input is not valid E-mail!',
+                  },
+                  {
+                    required: true,
+                    message: 'Please input your E-mail!',
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="phone"
+                label="Phone Number"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please input your phone!',
+                  },
+                ]}
+              >
+                <Input type='number' />
+              </Form.Item>
+              <Form.Item
+                wrapperCol={{
+                  offset: 8,
+                  span: 16,
+                }}
+              >
+                {
+                  isUpdate ? <Button type="primary" htmlType="submit">
+                    Update
+                  </Button> :
+                    <Button type="primary" htmlType="submit">
+                      Save
+                    </Button>
+
+                }
+
+                <Button type="ghost" onClick={handleCancel}>
+                  cancel
+                </Button>
+              </Form.Item>
+            </Form>
+          </>
+        </Modal>
+        <Layout>
+          <Row>
+            {/* <Col span={10}>
+              <Search placeholder="input search text" onSearch={onSearch} enterButton />
+            </Col> */}
+            <Col>
+              <Button onClick={showModal} type="primary">Create Customer</Button>
+            </Col>
+
+          </Row>
+
+          <Form form={form} component={false}>
+            <Table
+              components={{
+                body: {
+                  cell: EditableCell,
+                },
+              }}
+              bordered
+              rowKey={(item) => item._id}
+              key={(item) => item._id}
+              dataSource={items}
+              columns={mergedColumns}
+              rowClassName="editable-row"
+
+
+            />
+          </Form>
+
+
+        </Layout>
+      </Layout>
+    </DashboardLayout>
+  );
+};
+export default Customers;

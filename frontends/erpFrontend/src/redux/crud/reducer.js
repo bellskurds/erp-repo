@@ -76,6 +76,45 @@ const INITIAL_STATE = {
     isLoading: false,
     isSuccess: false,
   },
+  listByCustomer: {
+    result: {
+      items: [],
+      pagination: {
+        current: 1,
+        pageSize: 10,
+        total: 1,
+        showSizeChanger: false,
+      },
+    },
+    isLoading: false,
+    isSuccess: false,
+  },
+  listByCustomerContact: {
+    result: {
+      items: [],
+      pagination: {
+        current: 1,
+        pageSize: 10,
+        total: 1,
+        showSizeChanger: false,
+      },
+    },
+    isLoading: false,
+    isSuccess: false,
+  },
+  listByCustomerStores: {
+    result: {
+      items: [],
+      pagination: {
+        current: 1,
+        pageSize: 10,
+        total: 1,
+        showSizeChanger: false,
+      },
+    },
+    isLoading: false,
+    isSuccess: false,
+  },
   create: INITIAL_KEY_STATE,
   update: INITIAL_KEY_STATE,
   delete: INITIAL_KEY_STATE,

@@ -83,7 +83,16 @@ exports.create = async (Model, req, res) => {
 
 exports.update = async (Model, req, res) => {
   try {
+
     // Find document by id and updates with the required fields
+
+    const param = req.body;
+    if (param.primary) {
+      await Model.updateMany({ removed: false }, { primary: false }, {
+        new: true, // return the new result instead of the old one
+        runValidators: true,
+      }).exec();
+    }
     const result = await Model.findOneAndUpdate({ _id: req.params.id, removed: false }, req.body, {
       new: true, // return the new result instead of the old one
       runValidators: true,

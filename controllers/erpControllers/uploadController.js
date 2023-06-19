@@ -7,7 +7,7 @@ exports.uploadsView = async (req, res, next) => {
 };
 
 exports.upload = async (req, res, next) => {
-  console.warn(req);
+  // console.warn(req);
   upload.single('imageupload');
   res.send('File upload sucessfully.');
 };

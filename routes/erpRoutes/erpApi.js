@@ -28,6 +28,9 @@ const relatedPeopleController = require('@/controllers/erpControllers/relatedPeo
 const emergencyContactController = require('@/controllers/erpControllers/emergencyContactController');
 const medicalDetailController = require('@/controllers/erpControllers/medicalDetailController');
 const workContractController = require('@/controllers/erpControllers/workContractController');
+const { upload } = require('@/controllers/erpControllers/uploadController');
+const customerContactsController = require('@/controllers/erpControllers/customerContactsController');
+const customerStoresController = require('@/controllers/erpControllers/customerStoresController');
 
 // //_______________________________ Admin management_______________________________
 
@@ -51,12 +54,12 @@ router.route('/admin/search').get(catchErrors(adminController.search));
 router.route('/admin/list').get(catchErrors(adminController.list));
 router.route('/admin/profile').get(catchErrors(adminController.profile));
 router.route('/admin/status/:id').patch(catchErrors(adminController.status));
-// router
-//   .route("/admin/photo")
-//   .post(
-//     [adminPhotoUpload.single("photo"), setFilePathToBody],
-//     catchErrors(adminController.photo)
-//   );
+router
+  .route("/admin/photo")
+  .post(
+    [adminPhotoUpload.single("photo"), setFilePathToBody],
+    catchErrors(adminController.photo)
+  );
 // router
 //   .route("/admin/password-update/:id")
 //   .patch(catchErrors(adminController.updatePassword));
@@ -79,6 +82,12 @@ router.route('/employee/delete/:id').delete(catchErrors(employeeController.delet
 router.route('/employee/search').get(catchErrors(employeeController.search));
 router.route('/employee/list').get(catchErrors(employeeController.list));
 router.route('/employee/filter').get(catchErrors(employeeController.filter));
+router.route('/employee/details').post(adminPhotoUpload.single('avatar'), (req, res) => {
+  console.log(req.body.avatar);
+});
+
+
+
 
 // //_____________________________________ API for payment mode_____________________
 router.route('/paymentMode/create').post(catchErrors(paymentModeController.create));
@@ -97,6 +106,33 @@ router.route('/client/delete/:id').delete(catchErrors(clientController.delete));
 router.route('/client/search').get(catchErrors(clientController.search));
 router.route('/client/list').get(catchErrors(clientController.list));
 router.route('/client/filter').get(catchErrors(clientController.filter));
+router.route('/client/byParentId').post(catchErrors(clientController.getByParentId));
+
+
+
+// //_____________________________________ API for clients of customer contacts __________________________________________________
+router.route('/customerContacts/create').post(catchErrors(customerContactsController.create));
+router.route('/customerContacts/read/:id').get(catchErrors(customerContactsController.read));
+router.route('/customerContacts/update/:id').patch(catchErrors(customerContactsController.update));
+router.route('/customerContacts/delete/:id').delete(catchErrors(customerContactsController.delete));
+router.route('/customerContacts/search').get(catchErrors(customerContactsController.search));
+router.route('/customerContacts/list').get(catchErrors(customerContactsController.list));
+router.route('/customerContacts/filter').get(catchErrors(customerContactsController.filter));
+router.route('/customerContacts/byParentId').post(catchErrors(customerContactsController.getByParentId));
+
+
+
+// //_____________________________________ API for clients of customer contacts __________________________________________________
+router.route('/customerStores/create').post(catchErrors(customerStoresController.create));
+router.route('/customerStores/read/:id').get(catchErrors(customerStoresController.read));
+router.route('/customerStores/update/:id').patch(catchErrors(customerStoresController.update));
+router.route('/customerStores/delete/:id').delete(catchErrors(customerStoresController.delete));
+router.route('/customerStores/search').get(catchErrors(customerStoresController.search));
+router.route('/customerStores/list').get(catchErrors(customerStoresController.list));
+router.route('/customerStores/filter').get(catchErrors(customerStoresController.filter));
+router.route('/customerStores/byParentId').post(catchErrors(customerStoresController.getByParentId));
+
+
 
 // //_________________________________________________________________API for invoices_____________________
 router.route('/invoice/create').post(catchErrors(invoiceController.create));

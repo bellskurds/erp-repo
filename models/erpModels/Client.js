@@ -13,17 +13,27 @@ const clientSchema = new mongoose.Schema({
   company: {
     type: String,
     trim: true,
-    required: true,
+    // required: true,
+  },
+  customer_id: {
+    type: String,
+    trim: true,
+    // required: true,
+  },
+  name: {
+    type: String,
+    trim: true,
+    // required: true,
   },
   managerName: {
     type: String,
     trim: true,
-    required: true,
+    // required: true,
   },
   managerSurname: {
     type: String,
     trim: true,
-    required: true,
+    // required: true,
   },
   bankAccount: {
     type: String,
@@ -82,6 +92,10 @@ const clientSchema = new mongoose.Schema({
   website: {
     type: String,
     trim: true,
+  },
+  status: {
+    type: Number,
+    default: 1,
   },
   created: {
     type: Date,
