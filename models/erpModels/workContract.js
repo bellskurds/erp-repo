@@ -19,6 +19,7 @@ const WorkContractSchema = new mongoose.Schema({
   },
   status: {
     type: String,
+    default: "active"
   },
   type: {
     type: Number,

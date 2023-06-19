@@ -1,6 +1,6 @@
 import { crud } from "@/redux/crud/actions";
 import { selectFilteredItemsByParent, selectListItems, selectListsByContract, selectListsByEmergency, selectListsByMedical, selectReadItem } from "@/redux/crud/selectors";
-import { DeleteOutlined, EditOutlined, EyeOutlined, NumberOutlined } from "@ant-design/icons";
+import { CheckOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, NumberOutlined } from "@ant-design/icons";
 import { Button, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Table, Tag, Typography } from "antd";
 import moment from "moment";
 import { useEffect, useRef, useState } from "react";
@@ -61,8 +61,11 @@ const Contract = (props) => {
                             <EditOutlined style={{ fontSize: "20px" }} />
                         </Typography.Link>
 
-                        <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-                            <DeleteOutlined style={{ fontSize: "20px" }} />
+                        <Popconfirm title="Sure to cancel?" onConfirm={() => updateStatus('canceled')}>
+                            <CloseCircleOutlined style={{ fontSize: "20px" }} />
+                        </Popconfirm>
+                        <Popconfirm title="Sure to end?" onConfirm={() => updateStatus('terminated')}>
+                            <CheckOutlined style={{ fontSize: "20px" }} />
                         </Popconfirm>
 
                     </>
@@ -74,6 +77,17 @@ const Contract = (props) => {
     const [currentId, setCurrentId] = useState('');
     const [isUpdate, setIsUpdate] = useState(false);
 
+    const updateStatus = (statusValue) => {
+        const id = currentId;
+        const parentId = currentEmployeeId;
+        const jsonData = { status: statusValue }
+        dispatch(crud.update({ entity, id, jsonData }));
+        setIsBankModal(false)
+        setTimeout(() => {
+            const jsonData = { parent_id: parentId }
+            dispatch(crud.listByContract({ entity, jsonData }));
+        }, 500)
+    }
     const editBankModal = () => {
         setIsBankModal(true);
         setIsUpdate(false);
@@ -89,7 +103,7 @@ const Contract = (props) => {
                 console.log(item, 'itemitemitemitem')
                 if (formRef.current) formRef.current.setFieldsValue(item);
                 setCurrentId(item._id);
-            }, 1000);
+            }, 500);
 
         }
     }
