@@ -25,6 +25,7 @@ import MedicalDetail from './MedicalDetail';
 import Contract from './Contract';
 import CustomerContacts from './CustomerContacts';
 import CustomerStores from './CustomerStores';
+import AssignedEmployee from './AssignedEmployee';
 
 
 export default function Details() {
@@ -452,6 +453,7 @@ export default function Details() {
           </Content>
           <CustomerContacts parentId={currentCustomerId} />
           <CustomerStores parentId={currentCustomerId} />
+          <AssignedEmployee parentId={currentCustomerId} />
           {/* <RelatedPeople parentId={currentCustomerId} /> */}
           {/* <EmergencyContact parentId={currentCustomerId} /> */}
           {/* <MedicalDetail parentId={currentCustomerId} /> */}

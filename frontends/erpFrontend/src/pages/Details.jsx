@@ -172,9 +172,16 @@ export default function Details() {
 
   const id = useParams().id;
   const dispatch = useDispatch();
-
   const { result: currentItem } = useSelector(selectReadItem);
+
+
+  useEffect(() => {
+    dispatch(crud.resetState())
+    dispatch(crud.read({ entity, id }));
+  }, [entity, id]);
+
   const [isModalVisible, setIsModalVisible] = useState(false);
+
 
   // const currentItem = _currentItem || {
   //   gender: 1
@@ -250,10 +257,7 @@ export default function Details() {
     }, 500)
     setIsModalVisible(false)
   }
-  useEffect(() => {
-    dispatch(crud.resetState())
-    dispatch(crud.read({ entity, id }));
-  }, [entity, id]);
+
 
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState('');

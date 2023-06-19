@@ -1,15 +1,14 @@
 import { crud } from "@/redux/crud/actions";
 import { selectFilteredItemsByParent, selectListItems, selectListsByCustomerContact, selectListsByCustomerStores, selectListsBylistByCustomerStores, selectReadItem } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined, EyeOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Tag, TimePicker, Typography } from "antd";
+import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Tag, TimePicker, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
 import countryList from 'country-list'
-import moment from "moment";
 
 
-const CustomerStores = (props) => {
+const AssignedEmployee = (props) => {
     const entity = 'customerStores';
     const dispatch = useDispatch();
     const currentEmployeeId = props.parentId
@@ -17,29 +16,29 @@ const CustomerStores = (props) => {
     const formRef = useRef(null);
     const bankColumns = [
         {
-            title: 'Store',
-            dataIndex: 'store',
+            title: 'Name',
+            dataIndex: 'name',
         },
         {
-            title: 'Hours',
-            dataIndex: 'hours',
+            title: 'Branch',
+            dataIndex: 'branch',
         },
 
         {
-            title: 'Hr/sem',
+            title: 'Time',
+            dataIndex: 'time',
+        },
+        {
+            title: 'Hr/Week',
             dataIndex: 'hr_week',
         },
         {
-            title: 'Location',
-            dataIndex: 'location',
+            title: 'Type',
+            dataIndex: 'type',
         },
         {
-            title: 'Billing',
-            dataIndex: 'billing',
-        },
-        {
-            title: 'Products',
-            dataIndex: 'product',
+            title: 'Sal/Hr',
+            dataIndex: 'sal_hr',
         },
         {
             title: 'Actions',
@@ -71,47 +70,12 @@ const CustomerStores = (props) => {
         setIsUpdate(false);
         // if (formRef) formRef.current.resetFields();
     }
-    const getFormattedHours = (days) => {
-        const dayLabels = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
-        const hours = [];
-
-        for (let i = 0; i < days.length; i++) {
-            const [start, end] = days[i];
-
-            if (start === end) {
-                hours.push(dayLabels[i] + ' ' + start);
-            } else if (i === 0 || start !== days[i - 1][0] || end !== days[i - 1][1]) {
-                hours.push(dayLabels[i] + ' ' + start + '-' + end);
-            }
-        }
-        return hours.join(', ');
-    }
-
-    const days = [
-        ['11.10', '20.10'],
-        ['5am', '10pm'],
-        ['5am', '10pm'],
-        ['5am', '13pm'],
-        ['5am', '14pm'],
-        ['5am', '14pm'],
-        ['5am', '13pm']
-    ];
-    const formattedHours = getFormattedHours(days);
-    console.log(formattedHours, 'formattedHoursformattedHours');
     const editItem = (item) => {
         if (item) {
             setIsBankModal(true);
             setIsUpdate(true);
             setTimeout(() => {
-                item.monday = moment(item.monday) || null;
-                item.tuesday = moment(item.tuesday) || null;
-                item.wednesday = moment(item.wednesday) || null;
-                item.thursday = moment(item.thursday) || null;
-                item.friday = moment(item.friday) || null;
-                item.saturday = moment(item.saturday) || null;
-                item.sunday = moment(item.sunday) || null;
 
-                console.log(item, 'fffffffffffffffffffsssffffff')
                 if (formRef.current) formRef.current.setFieldsValue(item);
                 setCurrentId(item._id);
             }, 200);
@@ -133,29 +97,28 @@ const CustomerStores = (props) => {
         setIsBankModal(false)
     }
     const saveBankDetails = (values) => {
+        console.log(values, '33333333333333333333');
 
-        // console.log(values, '33333333333333333333');
-
-        const parentId = currentEmployeeId;
-        if (currentId && parentId && isUpdate) {
-            const id = currentId;
-            const jsonData = { parent_id: parentId }
-            values["parent_id"] = parentId;
-            dispatch(crud.update({ entity, id, jsonData: values }));
-            setIsBankModal(false)
-            setTimeout(() => {
-                dispatch(crud.listByCustomerStores({ entity, jsonData }));
-            }, 500)
-        } else {
-            const jsonData = { parent_id: parentId }
-            const id = currentId;
-            values["parent_id"] = parentId;
-            dispatch(crud.create({ entity, id, jsonData: values }));
-            setIsBankModal(false)
-            setTimeout(() => {
-                dispatch(crud.listByCustomerStores({ entity, jsonData }));
-            }, 500)
-        }
+        // const parentId = currentEmployeeId;
+        // if (currentId && parentId && isUpdate) {
+        //     const id = currentId;
+        //     const jsonData = { parent_id: parentId }
+        //     values["parent_id"] = parentId;
+        //     dispatch(crud.update({ entity, id, jsonData: values }));
+        //     setIsBankModal(false)
+        //     setTimeout(() => {
+        //         dispatch(crud.listByCustomerStores({ entity, jsonData }));
+        //     }, 500)
+        // } else {
+        //     const jsonData = { parent_id: parentId }
+        //     const id = currentId;
+        //     values["parent_id"] = parentId;
+        //     dispatch(crud.create({ entity, id, jsonData: values }));
+        //     setIsBankModal(false)
+        //     setTimeout(() => {
+        //         dispatch(crud.listByCustomerStores({ entity, jsonData }));
+        //     }, 500)
+        // }
     }
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
@@ -208,12 +171,7 @@ const CustomerStores = (props) => {
     const [fridayValue, setFridayValue] = useState(null);
     const [saturdayValue, setSaturdayValue] = useState(null);
     const [sundayValue, setSundayValue] = useState(null);
-    const [timeRange, setTimeRange] = useState([]);
 
-
-    useEffect(() => {
-        console.log(timeRange, '--------------------')
-    }, [timeRange])
     // const items = []
     // console.log(bankItems, 'ItemsItemsItemsItemsItems')
     return (
@@ -288,104 +246,125 @@ const CustomerStores = (props) => {
                             <Form.Item
                                 name="monday"
                                 label={<Checkbox onChange={(e) => { e.target.checked ? setMondayValue(true) : setMondayValue(false) }}>Monday</Checkbox>}
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //     },
-                            // ]}
+                                rules={[
+                                    {
+                                        // required: true,
+                                    },
+                                ]}
                             >
                                 {mondayValue &&
 
-                                    <TimePicker.RangePicker format={"HH:mm"} />
+                                    <>
+                                        <TimePicker format={"HH:mm"} />
+                                        <TimePicker format={"HH:mm"} />
+                                    </>
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="tuesday"
                                 label={<Checkbox onChange={(e) => { e.target.checked ? setTuesdayValue(true) : setTuesdayValue(false) }}>Tuesday</Checkbox>}
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //     },
-                            // ]}
+                                rules={[
+                                    {
+                                        // required: true,
+                                    },
+                                ]}
                             >
                                 {tuesdayValue &&
 
-                                    <TimePicker.RangePicker format={"HH:mm"} />
+                                    <>
+                                        <TimePicker format={"HH:mm"} />
+                                        <TimePicker format={"HH:mm"} />
+                                    </>
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="wednesday"
                                 label={<Checkbox onChange={(e) => { e.target.checked ? setWednesdayValue(true) : setWednesdayValue(false) }}>Wednesday</Checkbox>}
 
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //     },
-                            // ]}
+                                rules={[
+                                    {
+                                        // required: true,
+                                    },
+                                ]}
                             >
                                 {wednesdayValue &&
 
-                                    <TimePicker.RangePicker format={"HH:mm"} />
+                                    <>
+                                        <TimePicker format={"HH:mm"} />
+                                        <TimePicker format={"HH:mm"} />
+                                    </>
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="thursday"
                                 label={<Checkbox onChange={(e) => { e.target.checked ? setTursdayValue(true) : setTursdayValue(false) }}>Thursday</Checkbox>}
 
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //     },
-                            // ]}
+                                rules={[
+                                    {
+                                        // required: true,
+                                    },
+                                ]}
                             >
                                 {tursdayValue &&
 
-                                    <TimePicker.RangePicker format={"HH:mm"} />
+                                    <>
+                                        <TimePicker format={"HH:mm"} />
+                                        <TimePicker format={"HH:mm"} />
+                                    </>
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="friday"
 
                                 label={<Checkbox onChange={(e) => { e.target.checked ? setFridayValue(true) : setFridayValue(false) }}>Friday</Checkbox>}
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //     },
-                            // ]}
+                                rules={[
+                                    {
+                                        // required: true,
+                                    },
+                                ]}
                             >
                                 {fridayValue &&
 
-                                    <TimePicker.RangePicker format={"HH:mm"} />
+                                    <>
+                                        <TimePicker format={"HH:mm"} />
+                                        <TimePicker format={"HH:mm"} />
+                                    </>
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="saturday"
 
                                 label={<Checkbox onChange={(e) => { e.target.checked ? setSaturdayValue(true) : setSaturdayValue(false) }}>Saturday</Checkbox>}
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //     },
-                            // ]}
+                                rules={[
+                                    {
+                                        // required: true,
+                                    },
+                                ]}
                             >
                                 {saturdayValue &&
 
-                                    <TimePicker.RangePicker format={"HH:mm"} />
+                                    <>
+                                        <TimePicker format={"HH:mm"} />
+                                        <TimePicker format={"HH:mm"} />
+                                    </>
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="sunday"
 
                                 label={<Checkbox onChange={(e) => { e.target.checked ? setSundayValue(true) : setSundayValue(false) }}>Sunday</Checkbox>}
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //     },
-                            // ]}
+                                rules={[
+                                    {
+                                        // required: true,
+                                    },
+                                ]}
                             >
                                 {sundayValue &&
 
-                                    <TimePicker.RangePicker format={"HH:mm"} />
+                                    <>
+                                        <TimePicker format={"HH:mm"} />
+                                        <TimePicker format={"HH:mm"} />
+                                    </>
                                 }
                             </Form.Item>
 
@@ -405,17 +384,17 @@ const CustomerStores = (props) => {
 
                                     {
                                         label: "Active",
-                                        value: 0
+                                        value: 'active'
                                     },
 
                                     {
                                         label: "Inactive",
-                                        value: 1
+                                        value: 'inactive'
                                     }
                                 ]} />
                             </Form.Item>
                             <Form.Item
-                                name="rest_hr"
+                                name="rest"
                                 label="Rest(Hr)"
                                 rules={[
                                     {
@@ -487,10 +466,10 @@ const CustomerStores = (props) => {
             </Modal>
             <Row>
                 <Col span={3}>
-                    <h3 style={{ color: '#22075e', marginBottom: 5 }}>Stores</h3>
+                    <h3 style={{ color: '#22075e', marginBottom: 5 }}>Assigned Employees</h3>
                 </Col>
                 <Col span={12}>
-                    <Button type="primary" onClick={editBankModal}>Add</Button>
+                    <Button type="primary" onClick={editBankModal}>Assign</Button>
                 </Col>
             </Row>
             <Table
@@ -507,4 +486,4 @@ const CustomerStores = (props) => {
     );
 }
 
-export default CustomerStores;
+export default AssignedEmployee;

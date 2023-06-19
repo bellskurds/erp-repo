@@ -17,9 +17,46 @@ const CustomerStoresSchema = new mongoose.Schema({
   billing: {
     type: Number,
   },
+  status: {
+    type: Number,
+  },
+  rest_hr: {
+    type: Number,
+  },
+  hr_day: {
+    type: Number,
+  },
+  days_week: {
+    type: Number,
+  },
+  days_week: {
+    type: Number,
+  },
   products: {
     type: String
   },
+  monday: {
+    type: Object
+  },
+  tuesday: {
+    type: Object
+  },
+  wednesday: {
+    type: Object
+  },
+  thursday: {
+    type: Object
+  },
+  friday: {
+    type: Object
+  },
+  saturday: {
+    type: Object
+  },
+  sunday: {
+    type: Object
+  },
+
   parent_id: {
     type: String,
   },

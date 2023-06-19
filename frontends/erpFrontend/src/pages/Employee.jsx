@@ -187,6 +187,7 @@ const Employees = () => {
     console.log('Failed:', errorInfo);
   };
   useEffect(() => {
+    dispatch(crud.resetState())
     dispatch(crud.list({ entity }));
   }, []);
 
