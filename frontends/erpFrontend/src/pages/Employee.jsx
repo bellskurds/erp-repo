@@ -84,11 +84,11 @@ const Employees = () => {
     if (item) {
       setTimeout(() => {
         if (formRef.current) formRef.current.setFieldsValue(item);
-        setCurrentId(item._id);
-        setCurrentItem(item);
-        setIsModalVisible(true);
-        setIsUpdate(true);
-      }, 1000);
+      }, 400);
+      setCurrentId(item._id);
+      setCurrentItem(item);
+      setIsModalVisible(true);
+      setIsUpdate(true);
     }
   }
   const deleteItem = (item) => {
@@ -289,9 +289,9 @@ const Employees = () => {
         </Modal>
         <Layout>
           <Row>
-            <Col span={10}>
+            {/* <Col span={10}>
               <Search placeholder="input search text" onSearch={onSearch} enterButton />
-            </Col>
+            </Col> */}
             <Col>
               <Button onClick={showModal} type="primary">Create Employee</Button>
             </Col>

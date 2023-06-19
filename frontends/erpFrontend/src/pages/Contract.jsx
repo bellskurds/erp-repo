@@ -61,10 +61,10 @@ const Contract = (props) => {
                             <EditOutlined style={{ fontSize: "20px" }} />
                         </Typography.Link>
 
-                        <Popconfirm title="Sure to cancel?" onConfirm={() => updateStatus('canceled')}>
+                        <Popconfirm title="Sure to cancel?" onConfirm={() => updateStatus('canceled', record._id)}>
                             <CloseCircleOutlined style={{ fontSize: "20px" }} />
                         </Popconfirm>
-                        <Popconfirm title="Sure to end?" onConfirm={() => updateStatus('terminated')}>
+                        <Popconfirm title="Sure to end?" onConfirm={() => updateStatus('terminated', record._id)}>
                             <CheckOutlined style={{ fontSize: "20px" }} />
                         </Popconfirm>
 
@@ -77,16 +77,18 @@ const Contract = (props) => {
     const [currentId, setCurrentId] = useState('');
     const [isUpdate, setIsUpdate] = useState(false);
 
-    const updateStatus = (statusValue) => {
-        const id = currentId;
+    const updateStatus = (statusValue, _id) => {
+        const id = currentId || _id;
         const parentId = currentEmployeeId;
-        const jsonData = { status: statusValue }
-        dispatch(crud.update({ entity, id, jsonData }));
-        setIsBankModal(false)
-        setTimeout(() => {
-            const jsonData = { parent_id: parentId }
-            dispatch(crud.listByContract({ entity, jsonData }));
-        }, 500)
+        if (id) {
+            const jsonData = { status: statusValue }
+            dispatch(crud.update({ entity, id, jsonData }));
+            setIsBankModal(false)
+            setTimeout(() => {
+                const jsonData = { parent_id: parentId }
+                dispatch(crud.listByContract({ entity, jsonData }));
+            }, 500)
+        }
     }
     const editBankModal = () => {
         setIsBankModal(true);
