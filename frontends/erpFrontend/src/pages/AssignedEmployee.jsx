@@ -151,10 +151,7 @@ const AssignedEmployee = (props) => {
     // const items = Items.items
     // const items = Items.items ? Items.items.filter(obj => obj.parent_id === currentEmployeeId) : [];
 
-    const countryLists = countryList.getData().map((item) => ({
-        value: item.code,
-        label: item.name
-    }))
+
     const [mondayValue, setMondayValue] = useState(null);
     const [tuesdayValue, setTuesdayValue] = useState(null);
     const [wednesdayValue, setWednesdayValue] = useState(null);
@@ -179,7 +176,7 @@ const AssignedEmployee = (props) => {
         if (contractOptions) {
             const contracts = contractOptions.map(item => ({
                 value: item._id,
-                label: item._id
+                label: `${item.start_date}~${item.end_date}`
             }))
             setWorkContract(contracts);
         } else {
