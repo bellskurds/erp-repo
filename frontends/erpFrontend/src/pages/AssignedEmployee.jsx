@@ -255,125 +255,104 @@ const AssignedEmployee = (props) => {
                             <Form.Item
                                 name="monday"
                                 label={<Checkbox onChange={(e) => { e.target.checked ? setMondayValue(true) : setMondayValue(false) }}>Monday</Checkbox>}
-                                rules={[
-                                    {
-                                        // required: true,
-                                    },
-                                ]}
+                            // rules={[
+                            //     {
+                            //         required: true,
+                            //     },
+                            // ]}
                             >
                                 {mondayValue &&
 
-                                    <>
-                                        <TimePicker format={"HH:mm"} />
-                                        <TimePicker format={"HH:mm"} />
-                                    </>
+                                    <TimePicker.RangePicker format={"HH:mm"} />
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="tuesday"
                                 label={<Checkbox onChange={(e) => { e.target.checked ? setTuesdayValue(true) : setTuesdayValue(false) }}>Tuesday</Checkbox>}
-                                rules={[
-                                    {
-                                        // required: true,
-                                    },
-                                ]}
+                            // rules={[
+                            //     {
+                            //         required: true,
+                            //     },
+                            // ]}
                             >
                                 {tuesdayValue &&
 
-                                    <>
-                                        <TimePicker format={"HH:mm"} />
-                                        <TimePicker format={"HH:mm"} />
-                                    </>
+                                    <TimePicker.RangePicker format={"HH:mm"} />
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="wednesday"
                                 label={<Checkbox onChange={(e) => { e.target.checked ? setWednesdayValue(true) : setWednesdayValue(false) }}>Wednesday</Checkbox>}
 
-                                rules={[
-                                    {
-                                        // required: true,
-                                    },
-                                ]}
+                            // rules={[
+                            //     {
+                            //         required: true,
+                            //     },
+                            // ]}
                             >
                                 {wednesdayValue &&
 
-                                    <>
-                                        <TimePicker format={"HH:mm"} />
-                                        <TimePicker format={"HH:mm"} />
-                                    </>
+                                    <TimePicker.RangePicker format={"HH:mm"} />
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="thursday"
                                 label={<Checkbox onChange={(e) => { e.target.checked ? setTursdayValue(true) : setTursdayValue(false) }}>Thursday</Checkbox>}
 
-                                rules={[
-                                    {
-                                        // required: true,
-                                    },
-                                ]}
+                            // rules={[
+                            //     {
+                            //         required: true,
+                            //     },
+                            // ]}
                             >
                                 {tursdayValue &&
 
-                                    <>
-                                        <TimePicker format={"HH:mm"} />
-                                        <TimePicker format={"HH:mm"} />
-                                    </>
+                                    <TimePicker.RangePicker format={"HH:mm"} />
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="friday"
 
                                 label={<Checkbox onChange={(e) => { e.target.checked ? setFridayValue(true) : setFridayValue(false) }}>Friday</Checkbox>}
-                                rules={[
-                                    {
-                                        // required: true,
-                                    },
-                                ]}
+                            // rules={[
+                            //     {
+                            //         required: true,
+                            //     },
+                            // ]}
                             >
                                 {fridayValue &&
 
-                                    <>
-                                        <TimePicker format={"HH:mm"} />
-                                        <TimePicker format={"HH:mm"} />
-                                    </>
+                                    <TimePicker.RangePicker format={"HH:mm"} />
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="saturday"
 
                                 label={<Checkbox onChange={(e) => { e.target.checked ? setSaturdayValue(true) : setSaturdayValue(false) }}>Saturday</Checkbox>}
-                                rules={[
-                                    {
-                                        // required: true,
-                                    },
-                                ]}
+                            // rules={[
+                            //     {
+                            //         required: true,
+                            //     },
+                            // ]}
                             >
                                 {saturdayValue &&
 
-                                    <>
-                                        <TimePicker format={"HH:mm"} />
-                                        <TimePicker format={"HH:mm"} />
-                                    </>
+                                    <TimePicker.RangePicker format={"HH:mm"} />
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="sunday"
 
                                 label={<Checkbox onChange={(e) => { e.target.checked ? setSundayValue(true) : setSundayValue(false) }}>Sunday</Checkbox>}
-                                rules={[
-                                    {
-                                        // required: true,
-                                    },
-                                ]}
+                            // rules={[
+                            //     {
+                            //         required: true,
+                            //     },
+                            // ]}
                             >
                                 {sundayValue &&
 
-                                    <>
-                                        <TimePicker format={"HH:mm"} />
-                                        <TimePicker format={"HH:mm"} />
-                                    </>
+                                    <TimePicker.RangePicker format={"HH:mm"} />
                                 }
                             </Form.Item>
 
