@@ -6,4 +6,6 @@ package-lock.json
 .idea
 notes.md
 .variables.env
-
+setup
+server.js
+app.js
