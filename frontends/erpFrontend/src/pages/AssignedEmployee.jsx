@@ -1,11 +1,12 @@
 import { crud } from "@/redux/crud/actions";
-import { selectFilteredItemsByParent, selectListItems, selectListsByCustomerContact, selectListsByCustomerStores, selectListsBylistByCustomerStores, selectReadItem } from "@/redux/crud/selectors";
+import { selectFilteredItemsByParent, selectListItems, selectListsByContract, selectListsByCustomerContact, selectListsByCustomerStores, selectListsBylistByCustomerStores, selectReadItem } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined, EyeOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
 import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Tag, TimePicker, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
 import countryList from 'country-list'
+import SelectAsync from "@/components/SelectAsync";
 
 
 const AssignedEmployee = (props) => {
@@ -123,16 +124,6 @@ const AssignedEmployee = (props) => {
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
     };
-    const setPrimary = (record) => {
-        const id = record._id;
-        const jsonData = { primary: true }
-        const entity = 'customerContacts'
-        dispatch(crud.update({ entity, id, jsonData }));
-        setTimeout(() => {
-            const jsonData = { parent_id: currentEmployeeId }
-            dispatch(crud.listByCustomerStores({ entity, jsonData }))
-        }, [500])
-    }
 
     const { result: Items } = useSelector(selectListsByCustomerStores);
 
@@ -172,6 +163,30 @@ const AssignedEmployee = (props) => {
     const [saturdayValue, setSaturdayValue] = useState(null);
     const [sundayValue, setSundayValue] = useState(null);
 
+    const [workContract, setWorkContract] = useState([]);
+    const { result: Contracts } = useSelector(selectListsByContract);
+
+    const changeEmployee = (value) => {
+        if (value) {
+            const entity = 'workContract';
+            const jsonData = { parent_id: value }
+            dispatch(crud.resetState());
+            dispatch(crud.listByContract({ entity, jsonData }))
+        }
+    }
+    useEffect(() => {
+        const contractOptions = Contracts.items || [];
+        if (contractOptions) {
+            const contracts = contractOptions.map(item => ({
+                value: item._id,
+                label: item._id
+            }))
+            setWorkContract(contracts);
+        } else {
+            setWorkContract([]);
+        }
+
+    }, [Contracts])
     // const items = []
     // console.log(bankItems, 'ItemsItemsItemsItemsItems')
     return (
@@ -201,19 +216,20 @@ const AssignedEmployee = (props) => {
                     <Row gutter={24}>
                         <Col span={15}>
                             <Form.Item
-                                name="store"
-                                label="Store Name"
+                                name="employee"
+                                label="Employee"
                                 rules={[
                                     {
                                         required: true,
                                     },
                                 ]}
                             >
-                                <Input />
+                                <SelectAsync onChange={changeEmployee} entity={'employee'} displayLabels={['name']}></SelectAsync>
+
                             </Form.Item>
                             <Form.Item
-                                name="location"
-                                label="Location"
+                                name="Contract"
+                                label="contract"
                                 rules={[
                                     {
                                         required: true,
@@ -229,20 +245,10 @@ const AssignedEmployee = (props) => {
                                     filterOption={(input, option) =>
                                         (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                                     }
-                                    options={countryLists}
+                                    options={workContract}
                                 />
                             </Form.Item>
-                            <Form.Item
-                                name="billing"
-                                label="Billing"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
-                            >
-                                <InputNumber />
-                            </Form.Item>
+
                             <Form.Item
                                 name="monday"
                                 label={<Checkbox onChange={(e) => { e.target.checked ? setMondayValue(true) : setMondayValue(false) }}>Monday</Checkbox>}
@@ -372,30 +378,19 @@ const AssignedEmployee = (props) => {
                         </Col>
                         <Col span={9}>
                             <Form.Item
-                                name="status"
-                                label="Status"
+                                name="store"
+                                label="Store"
                                 rules={[
                                     {
                                         required: true,
                                     },
                                 ]}
                             >
-                                <Radio.Group options={[
-
-                                    {
-                                        label: "Active",
-                                        value: 'active'
-                                    },
-
-                                    {
-                                        label: "Inactive",
-                                        value: 'inactive'
-                                    }
-                                ]} />
+                                <SelectAsync entity={'customerStores'} displayLabels={['store']}></SelectAsync>
                             </Form.Item>
                             <Form.Item
-                                name="rest"
-                                label="Rest(Hr)"
+                                name="sal_hr"
+                                label="Sal/Hr"
                                 rules={[
                                     {
                                         required: true,
@@ -405,8 +400,8 @@ const AssignedEmployee = (props) => {
                                 <InputNumber />
                             </Form.Item>
                             <Form.Item
-                                name="hr_day"
-                                label="Hr/Day"
+                                name="hr_week"
+                                label="Hr/sem"
                                 rules={[
                                     {
                                         required: true,
@@ -414,28 +409,6 @@ const AssignedEmployee = (props) => {
                                 ]}
                             >
                                 <InputNumber />
-                            </Form.Item>
-                            <Form.Item
-                                name="days_week"
-                                label="Days * week"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
-                            >
-                                <InputNumber />
-                            </Form.Item>
-                            <Form.Item
-                                name="products"
-                                label="Products"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
-                            >
-                                <Input.TextArea />
                             </Form.Item>
                         </Col>
                     </Row>
