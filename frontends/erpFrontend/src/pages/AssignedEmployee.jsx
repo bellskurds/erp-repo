@@ -1,5 +1,5 @@
 import { crud } from "@/redux/crud/actions";
-import { selectFilteredItemsByParent, selectListItems, selectListsByContract, selectListsByCustomerContact, selectListsByCustomerStores, selectListsBylistByCustomerStores, selectReadItem } from "@/redux/crud/selectors";
+import { selectFilteredItemsByParent, selectListItems, selectListsByAssignedEmployee, selectListsByContract, selectListsByCustomerContact, selectListsByCustomerStores, selectListsBylistByAssignedEmployee, selectReadItem } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined, EyeOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
 import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Tag, TimePicker, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
@@ -10,7 +10,7 @@ import SelectAsync from "@/components/SelectAsync";
 
 
 const AssignedEmployee = (props) => {
-    const entity = 'customerStores';
+    const entity = 'assignedEmployee';
     const dispatch = useDispatch();
     const currentEmployeeId = props.parentId
     const [isBankModal, setIsBankModal] = useState(false);
@@ -91,7 +91,7 @@ const AssignedEmployee = (props) => {
         console.log(id, 'idididi')
         dispatch(crud.delete({ entity, id }))
         setTimeout(() => {
-            dispatch(crud.listByCustomerStores({ entity, jsonData }));
+            dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
         }, 500)
     }
     const handleBankModal = () => {
@@ -100,53 +100,53 @@ const AssignedEmployee = (props) => {
     const saveBankDetails = (values) => {
         console.log(values, '33333333333333333333');
 
-        // const parentId = currentEmployeeId;
-        // if (currentId && parentId && isUpdate) {
-        //     const id = currentId;
-        //     const jsonData = { parent_id: parentId }
-        //     values["parent_id"] = parentId;
-        //     dispatch(crud.update({ entity, id, jsonData: values }));
-        //     setIsBankModal(false)
-        //     setTimeout(() => {
-        //         dispatch(crud.listByCustomerStores({ entity, jsonData }));
-        //     }, 500)
-        // } else {
-        //     const jsonData = { parent_id: parentId }
-        //     const id = currentId;
-        //     values["parent_id"] = parentId;
-        //     dispatch(crud.create({ entity, id, jsonData: values }));
-        //     setIsBankModal(false)
-        //     setTimeout(() => {
-        //         dispatch(crud.listByCustomerStores({ entity, jsonData }));
-        //     }, 500)
-        // }
+        const parentId = currentEmployeeId;
+        if (currentId && parentId && isUpdate) {
+            const id = currentId;
+            const jsonData = { parent_id: parentId }
+            values["parent_id"] = parentId;
+            dispatch(crud.update({ entity, id, jsonData: values }));
+            setIsBankModal(false)
+            setTimeout(() => {
+                dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
+            }, 500)
+        } else {
+            const jsonData = { parent_id: parentId }
+            const id = currentId;
+            values["parent_id"] = parentId;
+            dispatch(crud.create({ entity, id, jsonData: values }));
+            setIsBankModal(false)
+            setTimeout(() => {
+                dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
+            }, 500)
+        }
     }
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
     };
 
-    const { result: Items } = useSelector(selectListsByCustomerStores);
+    const { result: Items } = useSelector(selectListsByAssignedEmployee);
 
     useEffect(() => {
         const id = currentEmployeeId;
         const jsonData = { parent_id: id }
         // dispatch(crud.resetState());
         console.log(id, jsonData, '333333333333')
-        dispatch(crud.listByCustomerStores({ entity, jsonData }));
+        dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
     }, []);
 
     const items = Items.items || [];
 
-    const compare = (a, b) => {
-        if (a.primary && !b.primary) {
-            return -1; // a comes before b
-        } else if (!a.primary && b.primary) {
-            return 1; // b comes before a
-        } else {
-            return 0; // no change in order
-        }
-    };
-    items.sort(compare);
+    // const compare = (a, b) => {
+    //     if (a.primary && !b.primary) {
+    //         return -1; // a comes before b
+    //     } else if (!a.primary && b.primary) {
+    //         return 1; // b comes before a
+    //     } else {
+    //         return 0; // no change in order
+    //     }
+    // };
+    // items.sort(compare);
     // console.log(Items, '44444333')
     // const items = Items.items
     // const items = Items.items ? Items.items.filter(obj => obj.parent_id === currentEmployeeId) : [];
@@ -164,14 +164,22 @@ const AssignedEmployee = (props) => {
     const { result: Contracts } = useSelector(selectListsByContract);
 
     const changeEmployee = (value) => {
+
+        console.log(value, 'value------------')
+        formRef.current.setFieldsValue({
+            contract: undefined
+        })
+        setWorkContract([])
         if (value) {
             const entity = 'workContract';
             const jsonData = { parent_id: value }
-            dispatch(crud.resetState());
+            // dispatch(crud.resetState());
             dispatch(crud.listByContract({ entity, jsonData }))
         }
     }
     useEffect(() => {
+
+        console.log(Contracts, 'ContractsContracts')
         const contractOptions = Contracts.items || [];
         if (contractOptions) {
             const contracts = contractOptions.map(item => {
@@ -186,7 +194,9 @@ const AssignedEmployee = (props) => {
             })
             setWorkContract(contracts);
         } else {
-            setWorkContract([]);
+
+            console.log('12222222222222222222')
+            setWorkContract(undefined);
         }
 
     }, [Contracts])
@@ -231,8 +241,8 @@ const AssignedEmployee = (props) => {
 
                             </Form.Item>
                             <Form.Item
-                                name="Contract"
-                                label="contract"
+                                name="contract"
+                                label="Contract"
                                 rules={[
                                     {
                                         required: true,

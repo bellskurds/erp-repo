@@ -31,6 +31,7 @@ const workContractController = require('@/controllers/erpControllers/workContrac
 const { upload } = require('@/controllers/erpControllers/uploadController');
 const customerContactsController = require('@/controllers/erpControllers/customerContactsController');
 const customerStoresController = require('@/controllers/erpControllers/customerStoresController');
+const assignedEmployeeController = require('@/controllers/erpControllers/assignedEmployeeController');
 
 // //_______________________________ Admin management_______________________________
 
@@ -107,6 +108,18 @@ router.route('/client/search').get(catchErrors(clientController.search));
 router.route('/client/list').get(catchErrors(clientController.list));
 router.route('/client/filter').get(catchErrors(clientController.filter));
 router.route('/client/byParentId').post(catchErrors(clientController.getByParentId));
+
+
+
+// //_____________________________________ API for Assigned Employeed __________________________________________________
+router.route('/assignedEmployee/create').post(catchErrors(assignedEmployeeController.create));
+router.route('/assignedEmployee/read/:id').get(catchErrors(assignedEmployeeController.read));
+router.route('/assignedEmployee/update/:id').patch(catchErrors(assignedEmployeeController.update));
+router.route('/assignedEmployee/delete/:id').delete(catchErrors(assignedEmployeeController.delete));
+router.route('/assignedEmployee/search').get(catchErrors(assignedEmployeeController.search));
+router.route('/assignedEmployee/list').get(catchErrors(assignedEmployeeController.list));
+router.route('/assignedEmployee/filter').get(catchErrors(assignedEmployeeController.filter));
+router.route('/assignedEmployee/byParentId').post(catchErrors(assignedEmployeeController.getByParentId));
 
 
 
