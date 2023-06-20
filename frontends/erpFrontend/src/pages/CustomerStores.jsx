@@ -23,15 +23,51 @@ const CustomerStores = (props) => {
         {
             title: 'Hours',
             dataIndex: 'hours',
+            render: (text, record) => (
+                <>
+                    {getFormattedHours(
+                        [
+                            record.monday ? [record.monday[0], record.monday[1]] : "",
+                            record.tuesday ? [record.tuesday[0], record.tuesday[1]] : "",
+                            record.wednesday ? [record.wednesday[0], record.wednesday[1]] : "",
+                            record.thursday ? [record.thursday[0], record.thursday[1]] : "",
+                            record.friday ? [record.friday[0], record.friday[1]] : "",
+                            record.saturday ? [record.saturday[0], record.saturday[1]] : "",
+                            record.sunday ? [record.sunday[0], record.sunday[1]] : "",
+                        ]
+                    )}
+                </>
+            ),
+
         },
 
         {
             title: 'Hr/sem',
             dataIndex: 'hr_week',
+            render: (text, record) => (
+                <>
+                    {getTotalWeekHours(
+                        [
+                            record.monday ? [new Date(record.monday[0]).getHours(), new Date(record.monday[1]).getHours()] : "",
+                            record.tuesday ? [new Date(record.tuesday[0]).getHours(), new Date(record.tuesday[1]).getHours()] : "",
+                            record.wednesday ? [new Date(record.wednesday[0]).getHours(), new Date(record.wednesday[1]).getHours()] : "",
+                            record.thursday ? [new Date(record.thursday[0]).getHours(), new Date(record.thursday[1]).getHours()] : "",
+                            record.friday ? [new Date(record.friday[0]).getHours(), new Date(record.friday[1]).getHours()] : "",
+                            record.saturday ? [new Date(record.saturday[0]).getHours(), new Date(record.saturday[1]).getHours()] : "",
+                            record.sunday ? [new Date(record.sunday[0]).getHours(), new Date(record.sunday[1]).getHours()] : "",
+                        ]
+                    )}
+                </>
+            ),
         },
         {
             title: 'Location',
             dataIndex: 'location',
+            render: (text, record) => (
+                <>
+                    {record.location && countryLists.find(obj => obj.value === record.location).label}
+                </>
+            )
         },
         {
             title: 'Billing',
@@ -39,7 +75,12 @@ const CustomerStores = (props) => {
         },
         {
             title: 'Products',
-            dataIndex: 'product',
+            dataIndex: 'products',
+            render: (text, record) => (
+                <Typography.Link onClick={() => showProducts(record.products)}>
+                    <EyeOutlined style={{ fontSize: "20px" }} />
+                </Typography.Link>
+            ),
         },
         {
             title: 'Actions',
@@ -76,41 +117,55 @@ const CustomerStores = (props) => {
         const hours = [];
 
         for (let i = 0; i < days.length; i++) {
+            if (!days[i]) continue
             const [start, end] = days[i];
 
             if (start === end) {
-                hours.push(dayLabels[i] + ' ' + start);
+                hours.push(dayLabels[i] + ' ' + new Date(start).getHours());
             } else if (i === 0 || start !== days[i - 1][0] || end !== days[i - 1][1]) {
-                hours.push(dayLabels[i] + ' ' + start + '-' + end);
+                hours.push(dayLabels[i] + '( ' + new Date(start).getHours() + '-' + new Date(end).getHours() + ')');
             }
         }
         return hours.join(', ');
     }
+    const getTotalWeekHours = (days) => {
+        let totalHours = 0;
 
-    const days = [
-        ['11.10', '20.10'],
-        ['5am', '10pm'],
-        ['5am', '10pm'],
-        ['5am', '13pm'],
-        ['5am', '14pm'],
-        ['5am', '14pm'],
-        ['5am', '13pm']
-    ];
-    const formattedHours = getFormattedHours(days);
-    console.log(formattedHours, 'formattedHoursformattedHours');
+        for (const day of days) {
+            const startTime = day[0];
+            const endTime = day[1];
+
+            const startHour = parseInt(startTime);
+            const endHour = parseInt(endTime);
+
+            const hours = endHour - startHour;
+            totalHours += hours;
+        }
+        return totalHours;
+
+    }
     const editItem = (item) => {
         if (item) {
             setIsBankModal(true);
             setIsUpdate(true);
             setTimeout(() => {
-                item.monday = moment(item.monday) || null;
-                item.tuesday = moment(item.tuesday) || null;
-                item.wednesday = moment(item.wednesday) || null;
-                item.thursday = moment(item.thursday) || null;
-                item.friday = moment(item.friday) || null;
-                item.saturday = moment(item.saturday) || null;
-                item.sunday = moment(item.sunday) || null;
 
+
+                if (item.monday) setMondayValue(true);
+                if (item.tuesday) setTuesdayValue(true);
+                if (item.wednesday) setWednesdayValue(true);
+                if (item.thursday) setTursdayValue(true);
+                if (item.friday) setFridayValue(true);
+                if (item.saturday) setSaturdayValue(true);
+                if (item.sunday) setSundayValue(true);
+
+                item.monday = item.monday ? [moment(item.monday[0]), moment(item.monday[1])] : null;
+                item.tuesday = item.tuesday ? [moment(item.tuesday[0]), moment(item.tuesday[1])] : null;
+                item.wednesday = item.wednesday ? [moment(item.wednesday[0]), moment(item.wednesday[1])] : null;
+                item.thursday = item.thursday ? [moment(item.thursday[0]), moment(item.thursday[1])] : null;
+                item.friday = item.friday ? [moment(item.friday[0]), moment(item.friday[1])] : null;
+                item.saturday = item.saturday ? [moment(item.saturday[0]), moment(item.saturday[1])] : null;
+                item.sunday = item.sunday ? [moment(item.sunday[0]), moment(item.sunday[1])] : null;
                 console.log(item, 'fffffffffffffffffffsssffffff')
                 if (formRef.current) formRef.current.setFieldsValue(item);
                 setCurrentId(item._id);
@@ -177,7 +232,7 @@ const CustomerStores = (props) => {
         const id = currentEmployeeId;
         const jsonData = { parent_id: id }
         // dispatch(crud.resetState());
-        console.log(id, jsonData, '333333333333')
+        console.log(id, jsonData, '333333333334343433')
         dispatch(crud.listByCustomerStores({ entity, jsonData }));
     }, []);
 
@@ -209,8 +264,15 @@ const CustomerStores = (props) => {
     const [saturdayValue, setSaturdayValue] = useState(null);
     const [sundayValue, setSundayValue] = useState(null);
     const [timeRange, setTimeRange] = useState([]);
-
-
+    const [isProducts, setIsProducts] = useState(false);
+    const [products, setProducts] = useState("");
+    const handleProducts = () => {
+        setIsProducts(false)
+    }
+    const showProducts = (products) => {
+        setIsProducts(true);
+        setProducts(products || "")
+    }
     useEffect(() => {
         console.log(timeRange, '--------------------')
     }, [timeRange])
@@ -219,6 +281,9 @@ const CustomerStores = (props) => {
     return (
 
         <div className="whiteBox shadow">
+            <Modal title="Products" visible={isProducts} onCancel={handleProducts} footer={null}>
+                <h3>{products}</h3>
+            </Modal>
             <Modal title="Create Form" visible={isBankModal} onCancel={handleBankModal} footer={null} width={1000}>
                 <Form
                     ref={formRef}
