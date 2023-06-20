@@ -48,13 +48,13 @@ const CustomerStores = (props) => {
                 <>
                     {getTotalWeekHours(
                         [
-                            record.monday ? [new Date(record.monday[0]).getHours(), new Date(record.monday[1]).getHours()] : "",
-                            record.tuesday ? [new Date(record.tuesday[0]).getHours(), new Date(record.tuesday[1]).getHours()] : "",
-                            record.wednesday ? [new Date(record.wednesday[0]).getHours(), new Date(record.wednesday[1]).getHours()] : "",
-                            record.thursday ? [new Date(record.thursday[0]).getHours(), new Date(record.thursday[1]).getHours()] : "",
-                            record.friday ? [new Date(record.friday[0]).getHours(), new Date(record.friday[1]).getHours()] : "",
-                            record.saturday ? [new Date(record.saturday[0]).getHours(), new Date(record.saturday[1]).getHours()] : "",
-                            record.sunday ? [new Date(record.sunday[0]).getHours(), new Date(record.sunday[1]).getHours()] : "",
+                            record.monday ? [new Date(record.monday[0]).getHours(), new Date(record.monday[1]).getHours()] : [0, 0],
+                            record.tuesday ? [new Date(record.tuesday[0]).getHours(), new Date(record.tuesday[1]).getHours()] : [0, 0],
+                            record.wednesday ? [new Date(record.wednesday[0]).getHours(), new Date(record.wednesday[1]).getHours()] : [0, 0],
+                            record.thursday ? [new Date(record.thursday[0]).getHours(), new Date(record.thursday[1]).getHours()] : [0, 0],
+                            record.friday ? [new Date(record.friday[0]).getHours(), new Date(record.friday[1]).getHours()] : [0, 0],
+                            record.saturday ? [new Date(record.saturday[0]).getHours(), new Date(record.saturday[1]).getHours()] : [0, 0],
+                            record.sunday ? [new Date(record.sunday[0]).getHours(), new Date(record.sunday[1]).getHours()] : [0, 0],
                         ]
                     )}
                 </>
