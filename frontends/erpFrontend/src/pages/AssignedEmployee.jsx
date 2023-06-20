@@ -174,10 +174,16 @@ const AssignedEmployee = (props) => {
     useEffect(() => {
         const contractOptions = Contracts.items || [];
         if (contractOptions) {
-            const contracts = contractOptions.map(item => ({
-                value: item._id,
-                label: `${item.start_date}~${item.end_date}`
-            }))
+            const contracts = contractOptions.map(item => {
+                if (item.status === "active") {
+                    return {
+                        value: item._id,
+                        label: `${item.start_date}~${item.end_date}`
+                    }
+                } else {
+                    return {}
+                }
+            })
             setWorkContract(contracts);
         } else {
             setWorkContract([]);
