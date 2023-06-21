@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-const AssignedEmployeeSchema = new mongoose.Schema({
+const AssignedCustomerSchema = new mongoose.Schema({
   employee:
     { type: mongoose.Schema.ObjectId, ref: 'Employee', autopopulate: true },
   contract:
@@ -51,12 +51,15 @@ const AssignedEmployeeSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
-AssignedEmployeeSchema.plugin(require('mongoose-autopopulate'));
+AssignedCustomerSchema.plugin(require('mongoose-autopopulate'));
 // AssignedEmployeeSchema.index({
 //   name: 'text',
 //   surname: 'text',
 //   birthday: 'text',
 //   status: 'text',
-// });
 
-module.exports = mongoose.model('AssignedEmployee', AssignedEmployeeSchema);
+// });
+console.log(mongoose.Schema, 'mongoose.connection.modelsmongoose.connection.models')
+
+
+module.exports = mongoose.model('AssignedCustomer', AssignedCustomerSchema);

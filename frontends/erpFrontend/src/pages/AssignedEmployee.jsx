@@ -1,5 +1,5 @@
 import { crud } from "@/redux/crud/actions";
-import { selectListsByAssignedEmployee, selectListsByContract, } from "@/redux/crud/selectors";
+import { selectListsByAssignedEmployee, selectListsByContract, selectListsByCustomerStores, } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined, } from "@ant-design/icons";
 import { Button, Checkbox, Col, Form, InputNumber, Modal, Popconfirm, Row, Select, Table, TimePicker, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
@@ -177,11 +177,13 @@ const AssignedEmployee = (props) => {
     };
 
     const { result: Items } = useSelector(selectListsByAssignedEmployee);
+    const { result: Stores } = useSelector(selectListsByCustomerStores);
 
     useEffect(() => {
         const id = currentEmployeeId;
         const jsonData = { parent_id: id }
         dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
+        dispatch(crud.listByCustomerStores({ entity: "customerStores", jsonData: { parent_id: currentEmployeeId } }))
     }, []);
 
     const items = Items.items || [];
@@ -195,6 +197,7 @@ const AssignedEmployee = (props) => {
     const [sundayValue, setSundayValue] = useState(null);
 
     const [workContract, setWorkContract] = useState([]);
+    const [stores, setStores] = useState([]);
     const { result: Contracts } = useSelector(selectListsByContract);
 
     const changeEmployee = (value) => {
@@ -206,9 +209,27 @@ const AssignedEmployee = (props) => {
             const entity = 'workContract';
             const jsonData = { parent_id: value }
             // dispatch(crud.resetState());
-            dispatch(crud.listByContract({ entity, jsonData }))
+            dispatch(crud.listByContract({ entity, jsonData }));
+
         }
     }
+
+    useEffect(() => {
+        const storesOptions = Stores.items || [];
+
+        if (storesOptions) {
+            const stores = storesOptions.map(item => {
+                return {
+                    value: item._id,
+                    label: item.store
+                }
+            })
+            setStores(stores);
+        } else {
+            setStores([]);
+        }
+
+    }, [Stores])
     useEffect(() => {
 
         console.log(Contracts, 'ContractsContracts')
@@ -406,7 +427,18 @@ const AssignedEmployee = (props) => {
                                     },
                                 ]}
                             >
-                                <SelectAsync entity={'customerStores'} displayLabels={['store']}></SelectAsync>
+                                <Select
+                                    showSearch
+                                    placeholder="Select a person"
+                                    optionFilterProp="children"
+                                    // onChange={onChange}
+                                    // onSearch={onSearch}
+                                    filterOption={(input, option) =>
+                                        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                    }
+                                    options={stores}
+                                />
+                                {/* <SelectAsync entity={'customerStores'} displayLabels={['store']}></SelectAsync> */}
                             </Form.Item>
                             <Form.Item
                                 name="sal_hr"

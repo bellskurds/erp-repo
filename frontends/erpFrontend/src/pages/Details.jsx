@@ -1,28 +1,22 @@
 import React, { useRef, useState } from 'react';
-import { Form, Input, Row, Col, Tabs, Upload, Avatar, Button, message, Select, Modal, Radio, Table, Typography, Popconfirm } from 'antd';
-
-import { Tag } from 'antd';
-
-import { UserOutlined, MailOutlined, PhoneOutlined, EditOutlined, DeleteOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
+import { Form, Input, Row, Col, Tabs, Upload, Button, message, Select, Modal, Radio } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import countryList from 'country-list'
 import { DashboardLayout } from '@/layout';
 import RecentTable from '@/components/RecentTable';
 import { Content } from 'antd/lib/layout/layout';
-import { Link, useParams } from 'react-router-dom/cjs/react-router-dom.min';
+import { useParams } from 'react-router-dom/cjs/react-router-dom.min';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
 import { selectReadItem } from '@/redux/crud/selectors';
-import { Option } from 'antd/lib/mentions';
-import Dropdown from '@/components/outsideClick.js';
 import { DatePicker } from '@/components/CustomAntd';
-import moment from 'moment';
-import { selectListItems } from '@/redux/crud/selectors';
 import BankAccount from './BankAccount';
 import RelatedPeople from './RelatedPeople';
 import EmergencyContact from './EmergencyContact';
 import MedicalDetail from './MedicalDetail';
 import Contract from './Contract';
+import AssignedCustomer from './AssignedCustomer';
 
 
 export default function Details() {
@@ -515,13 +509,7 @@ export default function Details() {
           <Contract parentId={currentEmployeeId} />
         </Tabs.TabPane>
         <Tabs.TabPane tab="Work" key="2">
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Assigned Customers</h3>
-            </div>
-
-            <RecentTable entity={'invoice'} dataTableColumns={customerColumns} />
-          </div>
+          <AssignedCustomer parentId={currentEmployeeId} />
           <div className="whiteBox shadow">
             <div className="pad20">
               <h3 style={{ color: '#22075e', marginBottom: 5 }}>Schedule</h3>

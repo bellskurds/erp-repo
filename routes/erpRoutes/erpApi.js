@@ -32,6 +32,7 @@ const { upload } = require('@/controllers/erpControllers/uploadController');
 const customerContactsController = require('@/controllers/erpControllers/customerContactsController');
 const customerStoresController = require('@/controllers/erpControllers/customerStoresController');
 const assignedEmployeeController = require('@/controllers/erpControllers/assignedEmployeeController');
+const assignedCustomerController = require('@/controllers/erpControllers/assignedCustomerController');
 
 // //_______________________________ Admin management_______________________________
 
@@ -120,6 +121,19 @@ router.route('/assignedEmployee/search').get(catchErrors(assignedEmployeeControl
 router.route('/assignedEmployee/list').get(catchErrors(assignedEmployeeController.list));
 router.route('/assignedEmployee/filter').get(catchErrors(assignedEmployeeController.filter));
 router.route('/assignedEmployee/byParentId').post(catchErrors(assignedEmployeeController.getByParentId));
+
+
+
+
+// //_____________________________________ API for Assigned Customer __________________________________________________
+router.route('/assignedCustomer/create').post(catchErrors(assignedCustomerController.create));
+router.route('/assignedCustomer/read/:id').get(catchErrors(assignedCustomerController.read));
+router.route('/assignedCustomer/update/:id').patch(catchErrors(assignedCustomerController.update));
+router.route('/assignedCustomer/delete/:id').delete(catchErrors(assignedCustomerController.delete));
+router.route('/assignedCustomer/search').get(catchErrors(assignedCustomerController.search));
+router.route('/assignedCustomer/list').get(catchErrors(assignedCustomerController.list));
+router.route('/assignedCustomer/filter').get(catchErrors(assignedCustomerController.filter));
+router.route('/assignedCustomer/byParentId').post(catchErrors(assignedCustomerController.getByParentId));
 
 
 
