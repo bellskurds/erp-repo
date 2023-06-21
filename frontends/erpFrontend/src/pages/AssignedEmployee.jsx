@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
 import countryList from 'country-list'
 import SelectAsync from "@/components/SelectAsync";
+import moment from "moment";
 
 
 const AssignedEmployee = (props) => {
@@ -15,19 +16,36 @@ const AssignedEmployee = (props) => {
     const currentEmployeeId = props.parentId
     const [isBankModal, setIsBankModal] = useState(false);
     const formRef = useRef(null);
+
+    const contractType = ["Payroll", "Services"];
     const bankColumns = [
         {
             title: 'Name',
-            dataIndex: 'name',
+            dataIndex: ['employee', 'name'],
         },
         {
             title: 'Branch',
-            dataIndex: 'branch',
+            dataIndex: ['store', 'store'],
         },
 
         {
             title: 'Time',
             dataIndex: 'time',
+            render: (text, record) => (
+                <>
+                    {getFormattedHours(
+                        [
+                            record.monday ? [record.monday[0], record.monday[1]] : "",
+                            record.tuesday ? [record.tuesday[0], record.tuesday[1]] : "",
+                            record.wednesday ? [record.wednesday[0], record.wednesday[1]] : "",
+                            record.thursday ? [record.thursday[0], record.thursday[1]] : "",
+                            record.friday ? [record.friday[0], record.friday[1]] : "",
+                            record.saturday ? [record.saturday[0], record.saturday[1]] : "",
+                            record.sunday ? [record.sunday[0], record.sunday[1]] : "",
+                        ]
+                    )}
+                </>
+            ),
         },
         {
             title: 'Hr/Week',
@@ -35,7 +53,12 @@ const AssignedEmployee = (props) => {
         },
         {
             title: 'Type',
-            dataIndex: 'type',
+            dataIndex: ['contract', 'type'],
+            render: (text, record) => (
+                <>
+                    {contractType[text]}
+                </>
+            )
         },
         {
             title: 'Sal/Hr',
@@ -71,12 +94,44 @@ const AssignedEmployee = (props) => {
         setIsUpdate(false);
         // if (formRef) formRef.current.resetFields();
     }
+
+    const getFormattedHours = (days) => {
+        const dayLabels = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
+        const hours = [];
+
+        for (let i = 0; i < days.length; i++) {
+            if (!days[i]) continue
+            const [start, end] = days[i];
+
+            if (start === end) {
+                hours.push(dayLabels[i] + ' ' + new Date(start).getHours());
+            } else if (i === 0 || start !== days[i - 1][0] || end !== days[i - 1][1]) {
+                hours.push(dayLabels[i] + '( ' + new Date(start).getHours() + '-' + new Date(end).getHours() + ')');
+            }
+        }
+        return hours.join(', ');
+    }
     const editItem = (item) => {
         if (item) {
             setIsBankModal(true);
             setIsUpdate(true);
             setTimeout(() => {
+                if (item.monday) setMondayValue(true);
+                if (item.tuesday) setTuesdayValue(true);
+                if (item.wednesday) setWednesdayValue(true);
+                if (item.thursday) setTursdayValue(true);
+                if (item.friday) setFridayValue(true);
+                if (item.saturday) setSaturdayValue(true);
+                if (item.sunday) setSundayValue(true);
 
+                item.monday = item.monday ? [moment(item.monday[0]), moment(item.monday[1])] : null;
+                item.tuesday = item.tuesday ? [moment(item.tuesday[0]), moment(item.tuesday[1])] : null;
+                item.wednesday = item.wednesday ? [moment(item.wednesday[0]), moment(item.wednesday[1])] : null;
+                item.thursday = item.thursday ? [moment(item.thursday[0]), moment(item.thursday[1])] : null;
+                item.friday = item.friday ? [moment(item.friday[0]), moment(item.friday[1])] : null;
+                item.saturday = item.saturday ? [moment(item.saturday[0]), moment(item.saturday[1])] : null;
+                item.sunday = item.sunday ? [moment(item.sunday[0]), moment(item.sunday[1])] : null;
+                console.log(item, 'fffffffffffffffffffsssffffff')
                 if (formRef.current) formRef.current.setFieldsValue(item);
                 setCurrentId(item._id);
             }, 200);

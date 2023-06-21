@@ -2,15 +2,12 @@ const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 const AssignedEmployeeSchema = new mongoose.Schema({
-  employee: {
-    type: String,
-  },
-  contract: {
-    type: String,
-  },
-  store: {
-    type: String,
-  },
+  employee:
+    { type: mongoose.Schema.ObjectId, ref: 'Employee', autopopulate: true },
+  contract:
+    { type: mongoose.Schema.ObjectId, ref: 'WorkContract', autopopulate: true },
+  store:
+    { type: mongoose.Schema.ObjectId, ref: 'CustomerStores', autopopulate: true },
   monday: {
     type: Object,
   },
@@ -54,7 +51,7 @@ const AssignedEmployeeSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
-// AssignedEmployeeSchema.plugin(require('mongoose-autopopulate'));
+AssignedEmployeeSchema.plugin(require('mongoose-autopopulate'));
 // AssignedEmployeeSchema.index({
 //   name: 'text',
 //   surname: 'text',

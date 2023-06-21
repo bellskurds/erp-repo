@@ -72,5 +72,7 @@ function DropDownRowMenu({ row }) {
 }
 
 export default function AdminCrudModule({ config }) {
+
+  console.log(config, 'config,,,,,,,,,,,,,,,,,,,,')
   return <DataTable config={config} DropDownRowMenu={DropDownRowMenu} AddNewItem={AddNewItem} />;
 }
