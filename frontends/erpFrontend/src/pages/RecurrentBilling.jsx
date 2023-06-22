@@ -211,7 +211,7 @@ const RecurrentBilling = (props) => {
     }, [currentItem])
     const generateInvoices = (item) => {
         console.log(item, 'items,,,,');
-        const { start_date, end_date, frequency, amount, taxes, description, _id, parent_id } = item;
+        const { start_date, end_date, frequency, amount, taxes, description, _id, parent_id, unlimited } = item;
         const invoices = [];
 
         console.log(frequency, 'items,,,,');
@@ -222,14 +222,15 @@ const RecurrentBilling = (props) => {
                 start_date: currentDate.format('MM/DD/YYYY'),
                 description: description,
                 amount: amount + (amount * taxes / 100),
-                parent_id: _id,
-                customer_id: parent_id._id
+                parent_id: parent_id._id,
+                recurrent_id: _id
             })
         }
         if (start_date && end_date && frequency > 0) {
             let currentDate = moment(start_date);
-            const end = moment(end_date);
-
+            var date = new Date(start_date);
+            date.setMonth(date.getMonth() + 12);
+            const end = !unlimited ? moment(end_date) : moment(date);
             while (currentDate.isSameOrBefore(end)) {
                 // invoices.push(currentDate.format('MM/DD/YYYY'));
 
@@ -237,8 +238,8 @@ const RecurrentBilling = (props) => {
                     start_date: currentDate.format('MM/DD/YYYY'),
                     description: description,
                     amount: amount + (amount * taxes / 100),
-                    parent_id: _id,
-                    customer_id: parent_id._id
+                    parent_id: parent_id._id,
+                    recurrent_id: _id
                 })
                 currentDate = currentDate.add(frequency, 'months');
             }
@@ -246,8 +247,7 @@ const RecurrentBilling = (props) => {
         }
 
         dispatch(crud.create({ entity: "invoiceHistory", jsonData: invoices }))
-        console.log(invoices); // Replace with your logic to save or process the invoices
-
+        dispatch(crud.listByInvoice({ entity: "invoiceHistory", jsonData: { parent_id: currentEmployeeId } }))
 
 
 

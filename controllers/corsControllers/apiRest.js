@@ -48,7 +48,7 @@ exports.create = async (Model, req, res) => {
     if (req.body.length) {
       const _Model = new Model();
       console.log(req.body, 'dddd')
-      const filter = { parent_id: req.body[0].parent_id }
+      const filter = { recurrent_id: req.body[0].recurrent_id }
       const result = await Model.deleteMany(filter)
       Model.insertMany(req.body, (err, result) => {
         if (err) console.log(err)

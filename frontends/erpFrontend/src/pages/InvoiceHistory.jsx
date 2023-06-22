@@ -1,5 +1,5 @@
 import { crud } from "@/redux/crud/actions";
-import { selectListsByCustomerStores, selectListsByRecurrent, } from "@/redux/crud/selectors";
+import { selectListsByCustomerStores, selectListsByInvoice, selectListsByRecurrent, } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
@@ -8,7 +8,7 @@ import moment from "moment";
 
 
 const InvoiceHistory = (props) => {
-    const entity = 'recurrentInvoice';
+    const entity = 'invoiceHistory';
     const dispatch = useDispatch();
     const currentEmployeeId = props.parentId
     const [isModal, setIsModal] = useState(false);
@@ -20,7 +20,7 @@ const InvoiceHistory = (props) => {
         },
         {
             title: 'Description',
-            dataIndex: 'description',
+            dataIndex: ['recurrent_id', 'description'],
         },
 
         {
@@ -99,8 +99,8 @@ const InvoiceHistory = (props) => {
             const jsonData = { parent_id: currentEmployeeId }
             dispatch(crud.delete({ entity, id }))
             setTimeout(() => {
-                const updateData = recurrents.filter(row => row._id !== id);
-                setRecurrents(updateData);
+                const updateData = Invoices.filter(row => row._id !== id);
+                setInvoices(updateData);
                 dispatch(crud.listByRecurrent({ entity, jsonData }));
             }, 500)
         }
@@ -138,47 +138,24 @@ const InvoiceHistory = (props) => {
         console.log('Failed:', errorInfo);
     };
     const [stores, setStores] = useState([]);
-    const [recurrents, setRecurrents] = useState([]);
-    const { result: Stores } = useSelector(selectListsByCustomerStores);
-    const { result: Recurrents } = useSelector(selectListsByRecurrent);
-    useEffect(() => {
-        const storesOptions = Stores.items || [];
-
-        if (storesOptions) {
-            const stores = storesOptions.map(item => {
-                return {
-                    value: item._id,
-                    label: item.store
-                }
-            })
-            setStores(stores);
-        } else {
-            setStores([]);
-        }
-
-    }, [Stores])
-    useEffect(() => {
-        const recurrentOptions = Recurrents.items || [];
-        if (recurrentOptions) {
-            setRecurrents(recurrentOptions);
-        } else {
-            setStores([]);
-        }
-
-    }, [Recurrents])
+    const [invoices, setInvoices] = useState([]);
+    const { result: Invoices } = useSelector(selectListsByInvoice);
 
 
     useEffect(() => {
         const id = currentEmployeeId;
         const jsonData = { parent_id: id }
-        dispatch(crud.listByCustomerStores({ entity: "customerStores", jsonData: { parent_id: currentEmployeeId } }))
-        dispatch(crud.listByRecurrent({ entity, jsonData }));
+        dispatch(crud.listByInvoice({ entity, jsonData }));
     }, []);
     const [unlimited, setUnlimited] = useState(false);
     const [taxesStatus, setTaxesStatus] = useState(false);
     useEffect(() => {
-        console.log(unlimited, 'sdfhsjdflahsldfkjhalsdhfjhalskdhfjkl')
-    }, [unlimited])
+
+        if (Invoices.items) {
+            setInvoices(Invoices.items)
+            console.log(Invoices.items, 'sdfhsjdflahsldfkjhalsdhfjhalskdhfjkl')
+        }
+    }, [Invoices])
     const UnlimitedStatus = (e) => {
         setUnlimited(e.target.checked)
     }
@@ -364,7 +341,7 @@ const InvoiceHistory = (props) => {
                 bordered
                 rowKey={(item) => item._id}
                 key={(item) => item._id}
-                dataSource={[]}
+                dataSource={invoices || []}
                 columns={Columns}
                 rowClassName="editable-row"
             />

@@ -2,10 +2,10 @@ const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 const InvoiceHistorySchema = new mongoose.Schema({
-  customer_id:
-    { type: mongoose.Schema.ObjectId, ref: 'Client', autopopulate: true },
-  parent_id:
+  recurrent_id:
     { type: mongoose.Schema.ObjectId, ref: 'RecurrentInvoice', autopopulate: true },
+  parent_id:
+    { type: mongoose.Schema.ObjectId, ref: 'Client', autopopulate: true },
 
   start_date: {
     type: String,
