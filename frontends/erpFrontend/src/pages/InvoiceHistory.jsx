@@ -45,9 +45,9 @@ const InvoiceHistory = (props) => {
                             <EditOutlined style={{ fontSize: "20px" }} />
                         </Typography.Link>
 
-                        <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+                        {/* <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
                             <DeleteOutlined style={{ fontSize: "20px" }} />
-                        </Popconfirm>
+                        </Popconfirm> */}
                     </>
                 )
 
@@ -77,14 +77,8 @@ const InvoiceHistory = (props) => {
                 if (RecurrentRef.current) {
                     RecurrentRef.current.resetFields();
                     RecurrentRef.current.setFieldsValue({
-                        start_date: moment(item.start_date),
-                        end_date: moment(item.end_date),
-                        description: item.description,
                         amount: item.amount,
-                        frequency: item.frequency,
-                        store: item.store._id,
-                        taxes: item.taxes,
-                        taxes_flag: item.taxes_flag
+                        details: item.details
                     });
                     setTaxesStatus(item.taxes_flag)
                     setCurrentId(item._id);
@@ -121,7 +115,7 @@ const InvoiceHistory = (props) => {
             dispatch(crud.update({ entity, id, jsonData: values }));
             setIsModal(false)
             setTimeout(() => {
-                dispatch(crud.listByRecurrent({ entity, jsonData }));
+                dispatch(crud.listByInvoice({ entity, jsonData }));
             }, 500)
         } else {
             const jsonData = { parent_id: parentId }
@@ -130,7 +124,7 @@ const InvoiceHistory = (props) => {
             dispatch(crud.create({ entity, id, jsonData: values }));
             setIsModal(false)
             setTimeout(() => {
-                dispatch(crud.listByRecurrent({ entity, jsonData }));
+                dispatch(crud.listByInvoice({ entity, jsonData }));
             }, 500)
         }
     }
@@ -184,126 +178,35 @@ const InvoiceHistory = (props) => {
 
                     }}
                 >
-                    <Row gutter={24}>
-                        <Col span={12}>
-                            <Form.Item
-                                name="description"
-                                label="Description"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
-                            >
-                                <Input.TextArea />
-                            </Form.Item>
-                            <Form.Item
-                                name="amount"
-                                label="Amount"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
-                            >
-                                <InputNumber />
-                            </Form.Item>
-                            <Form.Item
-                                name="taxes_flag"
-                                label="Taxes"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
-                            >
-                                <Radio.Group value={isTaxes} onChange={isTaxes} options={[{
-                                    label: "Yes",
-                                    value: true
-                                }, {
-                                    label: "No",
-                                    value: false
-                                }]} />
-                            </Form.Item>
-                            {taxesStatus &&
-                                <Form.Item
-                                    name="taxes"
-                                    label=" "
-                                    rules={[
-                                        {
-                                            required: true,
-                                        },
-                                    ]}
-                                >
-                                    <InputNumber />
-                                </Form.Item>
-                            }
-                            <Form.Item
-                                name="frequency"
-                                label="Frequency"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
-                            >
-                                <InputNumber />
-                            </Form.Item>
-                            <Form.Item
-                                name="store"
-                                label="Store"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
-                            >
-                                <Select
-                                    showSearch
-                                    placeholder="Select a person"
-                                    optionFilterProp="children"
-                                    filterOption={(input, option) =>
-                                        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                                    }
-                                    options={stores}
-                                />
-                            </Form.Item>
+                    <Form.Item
+                        name="amount"
+                        label="Amount"
+                        rules={[
+                            {
+                                required: true,
+                            },
+                        ]}
+                    >
+                        <InputNumber width={1000} />
+                    </Form.Item>
+                    <Form.Item
+                        name="details"
+                        label="Details"
+                        rules={[
+                            {
+                                required: true,
+                            },
+                        ]}
+                    >
+                        <Input.TextArea />
+                    </Form.Item>
+                    {/* <Row gutter={24}>
+                        <Col span={24}>
+
+
                         </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="start_date"
 
-                                label="start"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
-                            >
-                                <DatePicker format={"MM/DD/YYYY"} />
-                            </Form.Item>
-
-                            {!unlimited &&
-                                <Form.Item
-                                    name="end_date"
-
-                                    label="End"
-                                    rules={[
-                                        {
-                                            required: true,
-                                        },
-                                    ]}
-                                >
-                                    <DatePicker format={"MM/DD/YYYY"} />
-                                </Form.Item>}
-                            <Form.Item
-                                name="unlimited"
-                                label="Unlimited"
-                            >
-                                <Checkbox checked={unlimited} onChange={UnlimitedStatus} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                    </Row> */}
                     <Form.Item
                         wrapperCol={{
                             offset: 8,
