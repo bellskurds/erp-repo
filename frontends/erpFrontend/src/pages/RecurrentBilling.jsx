@@ -246,8 +246,10 @@ const RecurrentBilling = (props) => {
 
         }
 
-        dispatch(crud.create({ entity: "invoiceHistory", jsonData: invoices }))
-        dispatch(crud.listByInvoice({ entity: "invoiceHistory", jsonData: { parent_id: currentEmployeeId } }))
+        dispatch(crud.create({ entity: "invoiceHistory", jsonData: invoices }));
+        setTimeout(() => {
+            dispatch(crud.listByInvoice({ entity: "invoiceHistory", jsonData: { parent_id: currentEmployeeId } }))
+        }, 1000);
 
 
 

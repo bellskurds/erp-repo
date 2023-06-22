@@ -104,14 +104,10 @@ const InvoiceHistory = (props) => {
         setIsModal(false)
     }
     const saveDetails = (values) => {
-        values["unlimited"] = unlimited;
-        values["start_date"] = formattedDateFunc(values["start_date"]);
-        if (!unlimited) values["end_date"] = formattedDateFunc(values["end_date"]);
         const parentId = currentEmployeeId;
         if (currentId && parentId && isUpdate) {
             const id = currentId;
             const jsonData = { parent_id: parentId }
-            values["parent_id"] = parentId;
             dispatch(crud.update({ entity, id, jsonData: values }));
             setIsModal(false)
             setTimeout(() => {
