@@ -1,39 +1,33 @@
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-const AssignedCustomerSchema = new mongoose.Schema({
-  employee:
-    { type: mongoose.Schema.ObjectId, ref: 'Employee', autopopulate: true },
-  contract:
-    { type: mongoose.Schema.ObjectId, ref: 'WorkContract', autopopulate: true },
+const RecurrentInvoiceSchema = new mongoose.Schema({
   store:
     { type: mongoose.Schema.ObjectId, ref: 'CustomerStores', autopopulate: true },
-  monday: {
-    type: Object,
+
+  description: {
+    type: String,
   },
-  tuesday: {
-    type: Object,
-  },
-  wednesday: {
-    type: Object,
-  },
-  thursday: {
-    type: Object,
-  },
-  friday: {
-    type: Object,
-  },
-  saturday: {
-    type: Object,
-  },
-  sunday: {
-    type: Object,
-  },
-  sal_hr: {
+  amount: {
     type: Number,
   },
-  hr_week: {
+  taxes: {
     type: Number,
+  },
+  frequency: {
+    type: Number,
+  },
+  start_date: {
+    type: Object,
+  },
+  end_date: {
+    type: Object,
+  },
+  unlimited: {
+    type: Boolean,
+  },
+  taxes_flag: {
+    type: Boolean,
   },
   parent_id: {
     type: mongoose.Schema.ObjectId, ref: 'Client', autopopulate: true
@@ -51,7 +45,7 @@ const AssignedCustomerSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
-AssignedCustomerSchema.plugin(require('mongoose-autopopulate'));
+RecurrentInvoiceSchema.plugin(require('mongoose-autopopulate'));
 // AssignedEmployeeSchema.index({
 //   name: 'text',
 //   surname: 'text',
@@ -61,4 +55,4 @@ AssignedCustomerSchema.plugin(require('mongoose-autopopulate'));
 // });
 
 
-module.exports = mongoose.model('AssignedCustomer', AssignedCustomerSchema);
+module.exports = mongoose.model('RecurrentInvoice', RecurrentInvoiceSchema);

@@ -26,6 +26,7 @@ import Contract from './Contract';
 import CustomerContacts from './CustomerContacts';
 import CustomerStores from './CustomerStores';
 import AssignedEmployee from './AssignedEmployee';
+import RecurrentBilling from './RecurrentBilling';
 
 
 export default function Details() {
@@ -459,14 +460,11 @@ export default function Details() {
           {/* <MedicalDetail parentId={currentCustomerId} /> */}
           {/* <Contract parentId={currentCustomerId} /> */}
         </Tabs.TabPane>
-        <Tabs.TabPane tab="Work" key="2">
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Assigned Customers</h3>
-            </div>
-
-            <RecentTable entity={'invoice'} dataTableColumns={customerColumns} />
-          </div>
+        <Tabs.TabPane tab="Documents" key="2">
+          Content of Tab Pane 3
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="Billing" key="3">
+          <RecurrentBilling parentId={currentCustomerId} />
           <div className="whiteBox shadow">
             <div className="pad20">
               <h3 style={{ color: '#22075e', marginBottom: 5 }}>Schedule</h3>
@@ -480,9 +478,7 @@ export default function Details() {
             <RecentTable entity={'quote'} dataTableColumns={paymentColumns} />
           </div>
         </Tabs.TabPane>
-        <Tabs.TabPane tab="Documents" key="3">
-          Content of Tab Pane 3
-        </Tabs.TabPane>
+
       </Tabs>
 
     </DashboardLayout>

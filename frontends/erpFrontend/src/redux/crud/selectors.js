@@ -25,3 +25,4 @@ export const selectListsByCustomer = createSelector([selectCrud], (crud) => crud
 export const selectListsByCustomerContact = createSelector([selectCrud], (crud) => crud.listByCustomerContact);
 export const selectListsByCustomerStores = createSelector([selectCrud], (crud) => crud.listByCustomerStores);
 export const selectListsByAssignedEmployee = createSelector([selectCrud], (crud) => crud.listByAssignedEmployee);
+export const selectListsByRecurrent = createSelector([selectCrud], (crud) => crud.listByRecurrent);

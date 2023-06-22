@@ -269,6 +269,8 @@ exports.getByParentId = async (Model, req, res) => {
       });
     }
   } catch (err) {
+    console.log(err, '333')
+
     return res.status(500).json({
       success: false,
       result: [],
