@@ -27,6 +27,7 @@ import CustomerContacts from './CustomerContacts';
 import CustomerStores from './CustomerStores';
 import AssignedEmployee from './AssignedEmployee';
 import RecurrentBilling from './RecurrentBilling';
+import InvoiceHistory from './InvoiceHistory';
 
 
 export default function Details() {
@@ -465,12 +466,7 @@ export default function Details() {
         </Tabs.TabPane>
         <Tabs.TabPane tab="Billing" key="3">
           <RecurrentBilling parentId={currentCustomerId} />
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Schedule</h3>
-            </div>
-            <RecentTable entity={'quote'} dataTableColumns={scheduleColumns} />
-          </div>
+          <InvoiceHistory parentId={currentCustomerId} />
           <div className="whiteBox shadow">
             <div className="pad20">
               <h3 style={{ color: '#22075e', marginBottom: 5 }}>Payment history</h3>

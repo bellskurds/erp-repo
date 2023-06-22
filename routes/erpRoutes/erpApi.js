@@ -34,6 +34,7 @@ const customerStoresController = require('@/controllers/erpControllers/customerS
 const assignedEmployeeController = require('@/controllers/erpControllers/assignedEmployeeController');
 const assignedCustomerController = require('@/controllers/erpControllers/assignedCustomerController');
 const recurrentInvoiceController = require('@/controllers/erpControllers/recurrentInvoiceController');
+const invoiceHistoryController = require('@/controllers/erpControllers/invoiceHistoryController');
 
 // //_______________________________ Admin management_______________________________
 
@@ -158,6 +159,18 @@ router.route('/recurrentInvoice/search').get(catchErrors(recurrentInvoiceControl
 router.route('/recurrentInvoice/list').get(catchErrors(recurrentInvoiceController.list));
 router.route('/recurrentInvoice/filter').get(catchErrors(recurrentInvoiceController.filter));
 router.route('/recurrentInvoice/byParentId').post(catchErrors(recurrentInvoiceController.getByParentId));
+
+
+
+// //_____________________________________ API for Invoice History __________________________________________________
+router.route('/invoiceHistory/create').post(catchErrors(invoiceHistoryController.create));
+router.route('/invoiceHistory/read/:id').get(catchErrors(invoiceHistoryController.read));
+router.route('/invoiceHistory/update/:id').patch(catchErrors(invoiceHistoryController.update));
+router.route('/invoiceHistory/delete/:id').delete(catchErrors(invoiceHistoryController.delete));
+router.route('/invoiceHistory/search').get(catchErrors(invoiceHistoryController.search));
+router.route('/invoiceHistory/list').get(catchErrors(invoiceHistoryController.list));
+router.route('/invoiceHistory/filter').get(catchErrors(invoiceHistoryController.filter));
+router.route('/invoiceHistory/byParentId').post(catchErrors(invoiceHistoryController.getByParentId));
 
 
 

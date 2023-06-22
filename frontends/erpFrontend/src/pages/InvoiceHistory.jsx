@@ -1,5 +1,5 @@
 import { crud } from "@/redux/crud/actions";
-import { selectCurrentItem, selectListsByCustomerStores, selectListsByRecurrent, } from "@/redux/crud/selectors";
+import { selectListsByCustomerStores, selectListsByRecurrent, } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
@@ -7,48 +7,31 @@ import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 
 
-const RecurrentBilling = (props) => {
+const InvoiceHistory = (props) => {
     const entity = 'recurrentInvoice';
     const dispatch = useDispatch();
     const currentEmployeeId = props.parentId
-    const [isBankModal, setIsBankModal] = useState(false);
+    const [isModal, setIsModal] = useState(false);
     const RecurrentRef = useRef(null);
-    const bankColumns = [
+    const Columns = [
+        {
+            title: 'Date',
+            dataIndex: 'start_date',
+        },
         {
             title: 'Description',
             dataIndex: 'description',
         },
+
         {
             title: 'Amount',
             dataIndex: 'amount',
         },
+        {
+            title: 'Details',
+            dataIndex: 'details',
+        },
 
-        {
-            title: 'Taxes',
-            dataIndex: 'taxes',
-            render: (text, record) => {
-                return record.taxes_flag ? (record.amount * record.taxes) / 100 : 0
-            }
-        },
-        {
-            title: 'Frequency',
-            dataIndex: 'frequency',
-        },
-        {
-            title: 'Start',
-            dataIndex: 'start_date',
-            render: (text) => {
-                return formattedDateFunc(text);
-            }
-        },
-        {
-            title: 'End',
-            dataIndex: 'end_date',
-            render: (text, record) => {
-
-                return (record.unlimited ? "unlimited" : formattedDateFunc(text));
-            }
-        },
         {
             title: 'Actions',
             dataIndex: 'operation',
@@ -74,17 +57,18 @@ const RecurrentBilling = (props) => {
     const [currentId, setCurrentId] = useState('');
     const [isUpdate, setIsUpdate] = useState(false);
 
-    const editBankModal = () => {
-        setIsBankModal(true);
+    const editModal = () => {
+        setIsModal(true);
         setIsUpdate(false);
         if (RecurrentRef.current) RecurrentRef.current.resetFields();
     }
     const formattedDateFunc = (date) => {
         return new Date(date).toLocaleDateString()
     }
+
     const editItem = (item) => {
         if (item) {
-            setIsBankModal(true);
+            setIsModal(true);
             setIsUpdate(true);
 
             setTaxesStatus(true)
@@ -122,10 +106,10 @@ const RecurrentBilling = (props) => {
         }
 
     }
-    const handleBankModal = () => {
-        setIsBankModal(false)
+    const handleModal = () => {
+        setIsModal(false)
     }
-    const saveBankDetails = (values) => {
+    const saveDetails = (values) => {
         values["unlimited"] = unlimited;
         values["start_date"] = formattedDateFunc(values["start_date"]);
         if (!unlimited) values["end_date"] = formattedDateFunc(values["end_date"]);
@@ -135,8 +119,7 @@ const RecurrentBilling = (props) => {
             const jsonData = { parent_id: parentId }
             values["parent_id"] = parentId;
             dispatch(crud.update({ entity, id, jsonData: values }));
-
-            setIsBankModal(false)
+            setIsModal(false)
             setTimeout(() => {
                 dispatch(crud.listByRecurrent({ entity, jsonData }));
             }, 500)
@@ -144,9 +127,8 @@ const RecurrentBilling = (props) => {
             const jsonData = { parent_id: parentId }
             const id = currentId;
             values["parent_id"] = parentId;
-
-            dispatch(crud.create({ entity, jsonData: values }));
-            setIsBankModal(false)
+            dispatch(crud.create({ entity, id, jsonData: values }));
+            setIsModal(false)
             setTimeout(() => {
                 dispatch(crud.listByRecurrent({ entity, jsonData }));
             }, 500)
@@ -159,7 +141,6 @@ const RecurrentBilling = (props) => {
     const [recurrents, setRecurrents] = useState([]);
     const { result: Stores } = useSelector(selectListsByCustomerStores);
     const { result: Recurrents } = useSelector(selectListsByRecurrent);
-    const { result: currentItem } = useSelector(selectCurrentItem)
     useEffect(() => {
         const storesOptions = Stores.items || [];
 
@@ -178,7 +159,6 @@ const RecurrentBilling = (props) => {
     }, [Stores])
     useEffect(() => {
         const recurrentOptions = Recurrents.items || [];
-
         if (recurrentOptions) {
             setRecurrents(recurrentOptions);
         } else {
@@ -186,6 +166,8 @@ const RecurrentBilling = (props) => {
         }
 
     }, [Recurrents])
+
+
     useEffect(() => {
         const id = currentEmployeeId;
         const jsonData = { parent_id: id }
@@ -203,60 +185,9 @@ const RecurrentBilling = (props) => {
     const isTaxes = (e) => {
         setTaxesStatus(e.target.value)
     }
-    useEffect(() => {
-        console.log(currentItem, 'currentItemcurrentItemcurrentItem')
-        if (currentItem && currentItem.hasOwnProperty("frequency")) {
-            generateInvoices(currentItem);
-        }
-    }, [currentItem])
-    const generateInvoices = (item) => {
-        console.log(item, 'items,,,,');
-        const { start_date, end_date, frequency, amount, taxes, description, _id, parent_id } = item;
-        const invoices = [];
-
-        console.log(frequency, 'items,,,,');
-        if (frequency === 0) {
-            console.log(frequency, 'items,,,,');
-            let currentDate = moment(start_date);
-            invoices.push({
-                start_date: currentDate.format('MM/DD/YYYY'),
-                description: description,
-                amount: amount + (amount * taxes / 100),
-                parent_id: _id,
-                customer_id: parent_id._id
-            })
-        }
-        if (start_date && end_date && frequency > 0) {
-            let currentDate = moment(start_date);
-            const end = moment(end_date);
-
-            while (currentDate.isSameOrBefore(end)) {
-                // invoices.push(currentDate.format('MM/DD/YYYY'));
-
-                invoices.push({
-                    start_date: currentDate.format('MM/DD/YYYY'),
-                    description: description,
-                    amount: amount + (amount * taxes / 100),
-                    parent_id: _id,
-                    customer_id: parent_id._id
-                })
-                currentDate = currentDate.add(frequency, 'months');
-            }
-
-        }
-
-        dispatch(crud.create({ entity: "invoiceHistory", jsonData: invoices }))
-        console.log(invoices); // Replace with your logic to save or process the invoices
-
-
-
-
-
-
-    }
     return (
         <div className="whiteBox shadow">
-            <Modal title="Recurrent invoice" visible={isBankModal} onCancel={handleBankModal} footer={null} width={1000}>
+            <Modal title="Recurrent invoice" visible={isModal} onCancel={handleModal} footer={null} width={1000}>
                 <Form
                     ref={RecurrentRef}
                     name="basic"
@@ -266,7 +197,7 @@ const RecurrentBilling = (props) => {
                     wrapperCol={{
                         span: 16,
                     }}
-                    onFinish={saveBankDetails}
+                    onFinish={saveDetails}
                     onFinishFailed={onFinishFailed}
                     autoComplete="off"
                     initialValues={{
@@ -413,7 +344,7 @@ const RecurrentBilling = (props) => {
 
                         }
 
-                        <Button type="ghost" onClick={handleBankModal}>
+                        <Button type="ghost" onClick={handleModal}>
                             cancel
                         </Button>
                     </Form.Item>
@@ -423,21 +354,21 @@ const RecurrentBilling = (props) => {
             </Modal>
             <Row>
                 <Col span={3}>
-                    <h3 style={{ color: '#22075e', marginBottom: 5 }}>Recurrent Billing</h3>
+                    <h3 style={{ color: '#22075e', marginBottom: 5 }}>Invoice History</h3>
                 </Col>
                 <Col span={12}>
-                    <Button type="primary" onClick={editBankModal}>Add</Button>
+                    <Button type="primary" onClick={editModal}>Export</Button>
                 </Col>
             </Row>
             <Table
                 bordered
                 rowKey={(item) => item._id}
                 key={(item) => item._id}
-                dataSource={recurrents}
-                columns={bankColumns}
+                dataSource={[]}
+                columns={Columns}
                 rowClassName="editable-row"
             />
         </div>
     );
 }
-export default RecurrentBilling;
+export default InvoiceHistory;

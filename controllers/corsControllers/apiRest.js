@@ -45,16 +45,36 @@ exports.read = async (Model, req, res) => {
 exports.create = async (Model, req, res) => {
   try {
     // Creating a new document in the collection
+    if (req.body.length) {
+      const _Model = new Model();
+      console.log(req.body, 'dddd')
+      const filter = { parent_id: req.body[0].parent_id }
+      const result = await Model.deleteMany(filter)
+      Model.insertMany(req.body, (err, result) => {
+        if (err) console.log(err)
+        console.log(result)
+      })
 
-    const result = await new Model(req.body).save();
+      return res.status(200).json({
+        success: true,
+        result,
+        message: 'Successfully Created the document in Model ',
+      });
+    } else {
+
+      const result = await new Model(req.body).save();
+      return res.status(200).json({
+        success: true,
+        result,
+        message: 'Successfully Created the document in Model ',
+      });
+    }
 
     // Returning successfull response
-    return res.status(200).json({
-      success: true,
-      result,
-      message: 'Successfully Created the document in Model ',
-    });
+
   } catch (err) {
+    console.log(err, '33333333')
+
     // If err is thrown by Mongoose due to required validations
     if (err.name == 'ValidationError') {
       return res.status(400).json({
