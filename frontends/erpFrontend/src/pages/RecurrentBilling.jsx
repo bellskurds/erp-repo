@@ -194,24 +194,17 @@ const RecurrentBilling = (props) => {
     }, []);
     const [unlimited, setUnlimited] = useState(false);
     const [taxesStatus, setTaxesStatus] = useState(false);
-    useEffect(() => {
-        console.log(unlimited, 'sdfhsjdflahsldfkjhalsdhfjhalskdhfjkl')
-    }, [unlimited])
+
     const UnlimitedStatus = (e) => {
         setUnlimited(e.target.checked)
     }
     const isTaxes = (e) => {
         setTaxesStatus(e.target.value)
     }
-    useEffect(() => {
-        console.log(currentItem, 'currentItemcurrentItemcurrentItem')
-        if (currentItem && currentItem.hasOwnProperty("frequency")) {
-            generateInvoices(currentItem);
-        }
-    }, [currentItem])
+
     const generateInvoices = (item) => {
-        console.log(item, 'items,,,,');
-        const { start_date, end_date, frequency, amount, taxes, description, _id, parent_id, unlimited } = item;
+
+        const { start_date, end_date, frequency, amount, taxes, description, _id, parent_id, unlimited, taxes_flag } = item;
         const invoices = [];
 
         console.log(frequency, 'items,,,,');
@@ -221,7 +214,7 @@ const RecurrentBilling = (props) => {
             invoices.push({
                 start_date: currentDate.format('MM/DD/YYYY'),
                 description: description,
-                amount: amount + (amount * taxes / 100),
+                amount: amount + (taxes_flag ? (amount * taxes / 100) : 0),
                 parent_id: parent_id._id,
                 recurrent_id: _id
             })
@@ -237,7 +230,7 @@ const RecurrentBilling = (props) => {
                 invoices.push({
                     start_date: currentDate.format('MM/DD/YYYY'),
                     description: description,
-                    amount: amount + (amount * taxes / 100),
+                    amount: amount + (taxes_flag ? (amount * taxes / 100) : 0),
                     parent_id: parent_id._id,
                     recurrent_id: _id
                 })
@@ -255,6 +248,19 @@ const RecurrentBilling = (props) => {
 
 
 
+    }
+    useEffect(() => {
+        console.log(currentItem, 'currentItemcurrentItemcurrentItem')
+        if (currentItem && currentItem.hasOwnProperty("frequency")) {
+            generateInvoices(currentItem);
+        }
+    }, [currentItem])
+
+    const disabledDate = (current) => {
+        return current && (current.year() < new Date().getFullYear() || (current.year() === new Date().getFullYear() && current.month() < new Date().getMonth()))
+    }
+    const disabledDate_ = (current) => {
+        return current && (current.year() < new Date().getFullYear() || (current.year() === new Date().getFullYear() && current.month() < new Date().getMonth() + 1))
     }
     return (
         <div className="whiteBox shadow">
@@ -374,7 +380,7 @@ const RecurrentBilling = (props) => {
                                     },
                                 ]}
                             >
-                                <DatePicker format={"MM/DD/YYYY"} />
+                                <DatePicker disabledDate={disabledDate} format={"MM/DD/YYYY"} />
                             </Form.Item>
 
                             {!unlimited &&
@@ -388,7 +394,7 @@ const RecurrentBilling = (props) => {
                                         },
                                     ]}
                                 >
-                                    <DatePicker format={"MM/DD/YYYY"} />
+                                    <DatePicker disabledDate={disabledDate} format={"MM/DD/YYYY"} />
                                 </Form.Item>}
                             <Form.Item
                                 name="unlimited"
