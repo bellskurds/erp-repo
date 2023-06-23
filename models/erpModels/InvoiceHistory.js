@@ -8,7 +8,7 @@ const InvoiceHistorySchema = new mongoose.Schema({
     { type: mongoose.Schema.ObjectId, ref: 'Client', autopopulate: true },
 
   start_date: {
-    type: String,
+    type: Date,
   },
   amount: {
     type: Number,

@@ -47,13 +47,19 @@ exports.create = async (Model, req, res) => {
     // Creating a new document in the collection
     if (req.body.length) {
       const _Model = new Model();
-      console.log(req.body, 'dddd')
-      const filter = { recurrent_id: req.body[0].recurrent_id }
-      const result = await Model.deleteMany(filter)
-      Model.insertMany(req.body, (err, result) => {
-        if (err) console.log(err)
-        console.log(result)
-      })
+      const date = new Date();
+      date.setMonth(date.getMonth() + 1);
+
+      const filter = { recurrent_id: req.body[0].recurrent_id, start_date: { $gte: date } };
+
+      const collections = await Model.find({ recurrent_id: req.body[0].recurrent_id });
+
+      const results = req.body.filter(item => {
+        const month = parseInt(item.start_date.split("/")[0], 10);
+        return month > date.getMonth();
+      });
+      await Model.deleteMany(filter)
+      const result = await Model.insertMany(collections.length ? results : req.body);
 
       return res.status(200).json({
         success: true,

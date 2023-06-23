@@ -17,6 +17,9 @@ const InvoiceHistory = (props) => {
         {
             title: 'Date',
             dataIndex: 'start_date',
+            render: (text) => {
+                return (formattedDateFunc(text));
+            }
         },
         {
             title: 'Description',
@@ -142,8 +145,11 @@ const InvoiceHistory = (props) => {
     useEffect(() => {
 
         if (Invoices.items) {
-            setInvoices(Invoices.items)
-            console.log(Invoices.items, 'sdfhsjdflahsldfkjhalsdhfjhalskdhfjkl')
+
+            const filterData = Invoices.items.filter(obj => new Date(obj.start_date).getMonth() <= new Date().getMonth());
+            // console.log(filterData, 'ddfilterData')
+            setInvoices(filterData)
+
         }
     }, [Invoices])
     const UnlimitedStatus = (e) => {

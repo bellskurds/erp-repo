@@ -207,7 +207,7 @@ const RecurrentBilling = (props) => {
         const { start_date, end_date, frequency, amount, taxes, description, _id, parent_id, unlimited, taxes_flag } = item;
         const invoices = [];
 
-        console.log(frequency, 'items,,,,');
+        console.log(parent_id._id || parent_id, item, 'items,,,,');
         if (frequency === 0) {
             console.log(frequency, 'items,,,,');
             let currentDate = moment(start_date);
@@ -215,11 +215,11 @@ const RecurrentBilling = (props) => {
                 start_date: currentDate.format('MM/DD/YYYY'),
                 description: description,
                 amount: amount + (taxes_flag ? (amount * taxes / 100) : 0),
-                parent_id: parent_id._id,
+                parent_id: parent_id._id || parent_id,
                 recurrent_id: _id
             })
         }
-        if (start_date && end_date && frequency > 0) {
+        if (start_date && frequency > 0) {
             let currentDate = moment(start_date);
             var date = new Date(start_date);
             date.setMonth(date.getMonth() + 12);
@@ -231,14 +231,13 @@ const RecurrentBilling = (props) => {
                     start_date: currentDate.format('MM/DD/YYYY'),
                     description: description,
                     amount: amount + (taxes_flag ? (amount * taxes / 100) : 0),
-                    parent_id: parent_id._id,
+                    parent_id: parent_id._id || parent_id,
                     recurrent_id: _id
                 })
                 currentDate = currentDate.add(frequency, 'months');
             }
 
         }
-
         dispatch(crud.create({ entity: "invoiceHistory", jsonData: invoices }));
         setTimeout(() => {
             dispatch(crud.listByInvoice({ entity: "invoiceHistory", jsonData: { parent_id: currentEmployeeId } }))
