@@ -1,7 +1,9 @@
+import * as XLSX from 'xlsx';
 import { crud } from "@/redux/crud/actions";
 import { selectListsByCustomerStores, selectListsByInvoice, selectListsByRecurrent, } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Typography } from "antd";
+
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
@@ -158,6 +160,19 @@ const InvoiceHistory = (props) => {
     const isTaxes = (e) => {
         setTaxesStatus(e.target.value)
     }
+
+    const exportToExcel = () => {
+
+        const _invoices = invoices.map(obj => ({
+            date: obj.start_date,
+            amount: obj.amount,
+            details: obj.details
+        }))
+        const worksheet = XLSX.utils.json_to_sheet(_invoices);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+        XLSX.writeFile(workbook, 'table.xlsx');
+    }
     return (
         <div className="whiteBox shadow">
             <Modal title="Recurrent invoice" visible={isModal} onCancel={handleModal} footer={null} width={1000}>
@@ -239,7 +254,9 @@ const InvoiceHistory = (props) => {
                     <h3 style={{ color: '#22075e', marginBottom: 5 }}>Invoice History</h3>
                 </Col>
                 <Col span={12}>
-                    <Button type="primary" onClick={editModal}>Export</Button>
+
+                    <button onClick={exportToExcel}>Export to Excel</button>
+
                 </Col>
             </Row>
             <Table
