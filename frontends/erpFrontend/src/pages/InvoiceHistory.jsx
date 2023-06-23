@@ -2,6 +2,8 @@ import { crud } from "@/redux/crud/actions";
 import { selectListsByCustomerStores, selectListsByInvoice, selectListsByRecurrent, } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Typography } from "antd";
+import { ExportTable } from '@ant-design/pro-table';
+
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
@@ -239,7 +241,13 @@ const InvoiceHistory = (props) => {
                     <h3 style={{ color: '#22075e', marginBottom: 5 }}>Invoice History</h3>
                 </Col>
                 <Col span={12}>
-                    <Button type="primary" onClick={editModal}>Export</Button>
+                    <ExportTable
+                        dataSource={invoices}
+                        columns={Columns}
+                        fileName="table.xlsx"
+                    >
+                        Export to Excel
+                    </ExportTable>
                 </Col>
             </Row>
             <Table
