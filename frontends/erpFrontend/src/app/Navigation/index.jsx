@@ -80,10 +80,10 @@ export default function Navigation() {
             <Link to={'/customer'} />
             Customer
           </Menu.Item>
-          {/* <Menu.Item key={'customer_details'} icon={<ProfileOutlined />}>
-            <Link to={'/customer_details'} />
-            Customer Details
-          </Menu.Item> */}
+          <Menu.Item key={'PayrollManagement'} icon={<ProfileOutlined />}>
+            <Link to={'/payroll_management'} />
+            Payroll Management
+          </Menu.Item>
           {/* <Menu.Item key={'Quote'} icon={<FileSyncOutlined />}>
             <Link to={'/quote'} />
             Quote
