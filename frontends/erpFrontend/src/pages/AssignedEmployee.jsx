@@ -122,15 +122,26 @@ const AssignedEmployee = (props) => {
                 if (item.saturday) setSaturdayValue(true);
                 if (item.sunday) setSundayValue(true);
 
-                item.monday = item.monday ? [moment(item.monday[0]), moment(item.monday[1])] : null;
-                item.tuesday = item.tuesday ? [moment(item.tuesday[0]), moment(item.tuesday[1])] : null;
-                item.wednesday = item.wednesday ? [moment(item.wednesday[0]), moment(item.wednesday[1])] : null;
-                item.thursday = item.thursday ? [moment(item.thursday[0]), moment(item.thursday[1])] : null;
-                item.friday = item.friday ? [moment(item.friday[0]), moment(item.friday[1])] : null;
-                item.saturday = item.saturday ? [moment(item.saturday[0]), moment(item.saturday[1])] : null;
-                item.sunday = item.sunday ? [moment(item.sunday[0]), moment(item.sunday[1])] : null;
+                // item.tuesday = item.tuesday ? [moment(item.tuesday[0]), moment(item.tuesday[1])] : null;
+                // item.wednesday = item.wednesday ? [moment(item.wednesday[0]), moment(item.wednesday[1])] : null;
+                // item.thursday = item.thursday ? [moment(item.thursday[0]), moment(item.thursday[1])] : null;
+                // item.friday = item.friday ? [moment(item.friday[0]), moment(item.friday[1])] : null;
+                // item.saturday = item.saturday ? [moment(item.saturday[0]), moment(item.saturday[1])] : null;
+                // item.sunday = item.sunday ? [moment(item.sunday[0]), moment(item.sunday[1])] : null;
                 console.log(item, 'fffffffffffffffffffsssffffff')
-                if (formRef.current) formRef.current.setFieldsValue(item);
+                if (formRef.current) formRef.current.setFieldsValue({
+                    monday: item.monday ? [moment(item.monday[0]), moment(item.monday[1])] : null,
+                    wednesday: item.wednesday ? [moment(item.wednesday[0]), moment(item.wednesday[1])] : null,
+                    thursday: item.thursday ? [moment(item.thursday[0]), moment(item.thursday[1])] : null,
+                    friday: item.friday ? [moment(item.friday[0]), moment(item.friday[1])] : null,
+                    saturday: item.saturday ? [moment(item.saturday[0]), moment(item.saturday[1])] : null,
+                    sunday: item.sunday ? [moment(item.sunday[0]), moment(item.sunday[1])] : null,
+                    employee: item.employee,
+                    store: item.store._id,
+                    sal_hr: item.sal_hr,
+                    hr_week: item.hr_week,
+                    contract: item.contract._id
+                });
                 setCurrentId(item._id);
             }, 200);
 
