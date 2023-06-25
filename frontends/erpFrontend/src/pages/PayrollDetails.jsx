@@ -216,13 +216,26 @@ const PayrollDetails = () => {
     setCurrentPeriod(getPeriods(currentMonth, currentYear, currentQ))
   }, [currentMonth, currentQ, currentYear])
   useEffect(() => {
-
-
-    console.log(currentYear, currentMonth, currentQ, currentPeriod, 'currentYear,currentMonth,currentQ,currentPeriod');
-    // const filterData = items.filter(obj=>obj.)
     setListItems(items)
   }, [
     items
+  ])
+  const dateValue = (date) => {
+    return new Date(date).valueOf();
+  }
+  useEffect(() => {
+    const startDay = parseInt(currentPeriod.split("-")[0]);
+    const endDay = parseInt(currentPeriod.split("-")[1]);
+    const start_date = new Date(currentYear, startDay === 31 ? (currentMonth - 2) : (currentMonth - 1), startDay);
+    const end_date = new Date(currentYear, currentMonth - 1, endDay);
+
+    const _listItems = items.filter(obj => obj.status === "active" && (dateValue(obj.start_date) >= dateValue(start_date) && dateValue(obj.start_date) < dateValue(end_date)) && (dateValue(obj.end_date) >= dateValue(end_date)))
+
+    setTimeout(() => {
+      setListItems(_listItems);
+    }, 1);
+  }, [
+    currentPeriod
   ])
   return (
 
