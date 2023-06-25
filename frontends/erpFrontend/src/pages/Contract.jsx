@@ -27,10 +27,16 @@ const Contract = (props) => {
         {
             title: 'Start',
             dataIndex: 'start_date',
+            render: (text) => {
+                return (formattedDateFunc(text));
+            }
         },
         {
             title: 'End',
             dataIndex: 'end_date',
+            render: (text) => {
+                return (formattedDateFunc(text));
+            }
         },
         {
             title: 'Sal/HR',
@@ -76,7 +82,9 @@ const Contract = (props) => {
     ];
     const [currentId, setCurrentId] = useState('');
     const [isUpdate, setIsUpdate] = useState(false);
-
+    const formattedDateFunc = (date) => {
+        return new Date(date).toLocaleDateString()
+    }
     const updateStatus = (statusValue, _id) => {
         const id = currentId || _id;
         const parentId = currentEmployeeId;

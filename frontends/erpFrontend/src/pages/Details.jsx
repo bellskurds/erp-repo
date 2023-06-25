@@ -294,7 +294,20 @@ export default function Details() {
     setFileList([]);  // clear uploaded files
   };
 
-  console.log(currentItem, 'currentItemcurrentItem')
+  const props = {
+    name: 'avatar',
+    action: 'http://localhost:8888/employee/details', // replace with your backend API endpoint
+    onChange(info) {
+      if (info.file.status !== 'uploading') {
+        console.log(info.file, info.fileList);
+      }
+      if (info.file.status === 'done') {
+        message.success(`${info.file.name} file uploaded successfully`);
+      } else if (info.file.status === 'error') {
+        message.error(`${info.file.name} file upload failed.`);
+      }
+    },
+  };
   return (
     <DashboardLayout>
       <Tabs defaultActiveKey="1">
@@ -405,10 +418,12 @@ export default function Details() {
               <Col span={6}>
                 <div className="profile-card">
                   <Upload
+                    // {...props}
                     action=""
+                    name='avatar'
                     autoUpload={false}
                     listType="picture-card"
-                    fileList={fileList}
+                    // fileList={fileList}
                     onPreview={handlePreview}
                     onChange={handleChange}
                   >
