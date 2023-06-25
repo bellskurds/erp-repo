@@ -1,5 +1,5 @@
 import { DashboardLayout, DefaultLayout } from '@/layout';
-import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, EyeOutlined, LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Input, InputNumber, Layout, Modal, Popconfirm, Row, Space, Table, Tag, Typography } from 'antd';
 import Search from 'antd/lib/transfer/search';
 import React, { useEffect, useRef, useState } from 'react';
@@ -8,53 +8,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
 import { Link } from 'react-router-dom/cjs/react-router-dom';
-const originData = [];
-for (let i = 0; i < 100; i++) {
-  originData.push({
-    key: i.toString(),
-    name: `Edrward ${i}`,
-    age: 32,
-    address: `London Park no. ${i}`,
-  });
-}
-const EditableCell = ({
-  editing,
-  dataIndex,
-  title,
-  inputType,
-  record,
-  index,
-  children,
-  ...restProps
-}) => {
-  const inputNode = inputType === 'number' ? <InputNumber /> : <Input />;
-  return (
-    <td {...restProps}>
-      {editing ? (
-        <Form.Item
-          name={dataIndex}
-          style={{
-            margin: 0,
-          }}
-          rules={[
-            {
-              required: true,
-              message: `Please Input ${title}!`,
-            },
-          ]}
-        >
-          {inputNode}
-        </Form.Item>
-      ) : (
-        children
-      )}
-    </td>
-  );
-};
 
 
 const PayrollDetails = () => {
-  const entity = "employee"
+  const entity = "workContract"
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const [isUpdate, setIsUpdate] = useState(false);
@@ -75,10 +32,17 @@ const PayrollDetails = () => {
   };
 
   const [form] = Form.useForm();
-  const [data, setData] = useState(originData);
   const [editingKey, setEditingKey] = useState('');
   const [currentId, setCurrentId] = useState('');
   const [currentItem, setCurrentItem] = useState({});
+
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [currentBiWeek, setCurrentBiweek] = useState(new Date())
+  const [currentQ, setCurrentQ] = useState(0);
+  const [currentPeriod, setCurrentPeriod] = useState('1-15')
+
+  const [currentDate, setCurrentDate] = useState(new Date());
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
     if (item) {
@@ -98,69 +62,196 @@ const PayrollDetails = () => {
       dispatch(crud.list({ entity }));
     }, 1000)
   }
+  const contractTypes = [
+    "", "Payroll", "Services"
+  ]
   const columns = [
     {
-      title: 'Period',
+      title: 'Customer',
       dataIndex: 'personal_id',
-      width: '15%',
+      width: '100',
       editable: true,
+      fixed: 'left'
     },
     {
-      title: 'Total Payroll',
-      dataIndex: 'name',
-      width: '15%',
+      title: 'Employee',
+      dataIndex: ['parent_id', 'name'],
+      width: '100',
       editable: true,
+      fixed: 'left'
     },
     {
-      title: 'Total for services',
+      title: 'Hours',
       dataIndex: 'email',
-      width: '15%',
+      width: '100',
       editable: true,
     },
     {
-      title: 'Total',
+      title: 'HR/Week',
+      dataIndex: 'hr_week',
+      width: '100',
+      editable: true,
+    },
+    {
+      title: 'Type',
+      dataIndex: 'type',
+      width: '100',
+      editable: true,
+      render: (text) => {
+        return (
+          contractTypes[text]
+        );
+      },
+    },
+    {
+      title: 'Sal/Hr',
+      dataIndex: 'sal_hr',
+      width: '100',
+      editable: true,
+    },
+    {
+      title: 'Hrs/BiWeekly',
+      width: '100',
+      dataIndex: 'hrs_bi',
+      editable: true,
+      render: (value, record) => {
+        return (
+          record.type === 1 ? record.hr_week * 4.333 / 2 : 0
+        );
+      }
+    },
+    {
+      title: 'Week Pay',
       dataIndex: 'phone',
-      width: '15%',
+      width: '25',
+      editable: true,
+      render: (value, record) => {
+        return (
+          record.type === 1 ? (record.hr_week * 4.333 / 2) * record.sal_hr : 0
+        );
+      }
+    },
+    {
+      title: 'Adjustment',
+      dataIndex: 'phone',
+      width: '100',
+      editable: true,
+    },
+    {
+      title: 'Adjust($$$)',
+      dataIndex: 'phone',
+      width: '100',
+      editable: true,
+    },
+    {
+      title: 'Salary',
+      dataIndex: 'phone',
+      width: '100',
       editable: true,
     },
   ];
+  const navigateBiWeeks = (date, direction) => {
+    const newDate = new Date(date);
+    if (direction === 'previous') {
+      newDate.setDate(newDate.getDate() - 15);
+    } else if (direction === 'next') {
+      newDate.setDate(newDate.getDate() + 15);
+    }
+    setCurrentBiweek(newDate);
+    return newDate;
+  }
+
+  const getPeriods = (month, year, Q = 0) => {
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const prevMonth = new Date(year, month, 0);
+    const daysInPrevMonth = new Date(prevMonth.getFullYear(), prevMonth.getMonth(), 0).getDate();
+
+    if (daysInPrevMonth === 31) {
+      const Qs = ['31-15', `16-${daysInMonth === 31 ? 30 : daysInMonth}`];
+      return Qs[Q];
+    } else if (daysInMonth) {
+      const Qs = ['1-15', `16-${daysInMonth === 31 ? 30 : daysInMonth}`];
+      return Qs[Q];
+
+    }
+  }
+
 
   const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
 
   const { pagination, items } = listResult;
-
+  const [listItems, setListItems] = useState([]);
   const formRef = useRef(null);
-
   useEffect(() => {
     dispatch(crud.resetState())
     dispatch(crud.list({ entity }));
   }, []);
 
 
+  const prevData = () => {
+    if (currentQ) {
+      setCurrentQ(0)
+    } else {
+      if (currentMonth === 1) {
+        setCurrentYear(currentYear - 1);
+        setCurrentMonth(12)
+      }
+      setCurrentMonth(currentMonth - 1);
+      setCurrentQ(1);
+    }
+  }
+  const nextData = () => {
+    if (currentQ) {
+      setCurrentMonth(currentMonth + 1);
+      setCurrentQ(0);
+      if (currentMonth === 12) {
+        setCurrentYear(currentYear + 1);
+        setCurrentMonth(1);
+      }
+    } else {
+      setCurrentQ(1)
+    }
+  }
+  useEffect(() => {
+    setCurrentPeriod(getPeriods(currentMonth, currentYear, currentQ))
+  }, [currentMonth, currentQ, currentYear])
+  useEffect(() => {
+
+
+    console.log(currentYear, currentMonth, currentQ, currentPeriod, 'currentYear,currentMonth,currentQ,currentPeriod');
+    // const filterData = items.filter(obj=>obj.)
+    setListItems(items)
+  }, [
+    items
+  ])
   return (
 
     <DashboardLayout>
       <Layout style={{ minHeight: '100vh' }}>
 
         <Layout>
-          <Form form={form} component={false}>
-            <Table
-              components={{
-                body: {
-                  cell: EditableCell,
-                },
-              }}
-              bordered
-              rowKey={(item) => item._id}
-              key={(item) => item._id}
-              dataSource={[]}
-              columns={columns}
-              rowClassName="editable-row"
+
+          <Row>
+            <Col span={24}>
+              <h3 style={{ textAlign: 'center' }}>
+                <LeftOutlined onClick={prevData} />
+                QUINCENA: {currentPeriod.split("-")[0]} DE {parseInt(currentPeriod.split("-")[0]) !== 31 ? new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' }) : new Date(currentYear, currentMonth - 2).toLocaleString('default', { month: 'long' })} AL {currentPeriod.split("-")[1]} DE {new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' })} {currentYear}
+                <RightOutlined onClick={nextData} />
+
+              </h3>
+            </Col>
+          </Row>
+          <Table
+            scroll={{ x: 1500, y: 1300 }}
+            bordered
+            rowKey={(item) => item._id}
+            key={(item) => item._id}
+            dataSource={listItems || []}
+            columns={columns}
+            rowClassName="editable-row"
 
 
-            />
-          </Form>
-
+          />
 
         </Layout>
       </Layout>

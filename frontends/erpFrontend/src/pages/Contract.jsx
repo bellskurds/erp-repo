@@ -82,6 +82,7 @@ const Contract = (props) => {
     ];
     const [currentId, setCurrentId] = useState('');
     const [isUpdate, setIsUpdate] = useState(false);
+    const [contracts, setContracts] = useState([]);
     const formattedDateFunc = (date) => {
         return new Date(date).toLocaleDateString()
     }
@@ -169,14 +170,27 @@ const Contract = (props) => {
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
     };
-    const { result: Items } = useSelector(selectListsByContract);
+    const { result: Contracts } = useSelector(selectListsByContract);
 
     useEffect(() => {
         const id = currentEmployeeId;
         const jsonData = { parent_id: id }
         dispatch(crud.listByContract({ entity, jsonData }));
     }, []);
-    const items = Items.items ? Items.items.filter(obj => obj.parent_id === currentEmployeeId) : [];
+
+    useEffect(() => {
+        const _contracts = Contracts.items || [];
+
+        if (_contracts) {
+
+            setContracts(_contracts);
+        } else {
+            setContracts([]);
+        }
+
+    }, [Contracts])
+
+
     const [salaryHour, setSalaryHour] = useState(0);
     const [hourWeek, setHourWeek] = useState(0);
     useEffect(() => {
@@ -327,7 +341,7 @@ const Contract = (props) => {
                 bordered
                 rowKey={(item) => item._id}
                 key={(item) => item._id}
-                dataSource={items}
+                dataSource={contracts || []}
                 columns={Columns}
                 rowClassName="editable-row"
 

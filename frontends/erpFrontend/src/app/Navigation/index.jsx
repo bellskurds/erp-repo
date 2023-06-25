@@ -84,6 +84,10 @@ export default function Navigation() {
             <Link to={'/payroll_management'} />
             Payroll Management
           </Menu.Item>
+          <Menu.Item key={'PayrollDetails'} icon={<ProfileOutlined />}>
+            <Link to={'/payroll_details'} />
+            Payroll Details
+          </Menu.Item>
           {/* <Menu.Item key={'Quote'} icon={<FileSyncOutlined />}>
             <Link to={'/quote'} />
             Quote

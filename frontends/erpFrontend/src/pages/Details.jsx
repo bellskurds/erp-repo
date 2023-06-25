@@ -419,7 +419,7 @@ export default function Details() {
                 <div className="profile-card">
                   <Upload
                     // {...props}
-                    action=""
+                    // action=""
                     name='avatar'
                     autoUpload={false}
                     listType="picture-card"

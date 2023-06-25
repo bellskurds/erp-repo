@@ -25,7 +25,7 @@ const WorkContractSchema = new mongoose.Schema({
     type: Number,
   },
   parent_id: {
-    type: String,
+    type: mongoose.Schema.ObjectId, ref: 'Employee', autopopulate: true,
   },
   removed: {
     type: Boolean,
@@ -40,7 +40,7 @@ const WorkContractSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
-// WorkContractSchema.plugin(require('mongoose-autopopulate'));
+WorkContractSchema.plugin(require('mongoose-autopopulate'));
 // WorkContractSchema.index({
 //   name: 'text',
 //   surname: 'text',
