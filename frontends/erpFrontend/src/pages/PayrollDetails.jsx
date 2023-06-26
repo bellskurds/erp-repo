@@ -220,6 +220,13 @@ const PayrollDetails = () => {
   }, [
     items
   ])
+
+  useEffect(() => {
+    setListItems(listItems)
+  }, [
+    listItems
+  ])
+
   const dateValue = (date) => {
     return new Date(date).valueOf();
   }
@@ -229,11 +236,25 @@ const PayrollDetails = () => {
     const start_date = new Date(currentYear, startDay === 31 ? (currentMonth - 2) : (currentMonth - 1), startDay);
     const end_date = new Date(currentYear, currentMonth - 1, endDay);
 
-    const _listItems = items.filter(obj => obj.status === "active" && (dateValue(obj.start_date) >= dateValue(start_date) && dateValue(obj.start_date) < dateValue(end_date)) && (dateValue(obj.end_date) >= dateValue(end_date)))
-
+    const _listItems = items.filter(obj =>
+      obj.status === "active" &&
+      (
+        (
+          dateValue(obj.start_date) <= dateValue(start_date) &&
+          dateValue(obj.end_date) >= dateValue(end_date)
+        )
+        ||
+        (
+          dateValue(obj.start_date) > dateValue(start_date) &&
+          dateValue(obj.start_date) < dateValue(end_date) &&
+          dateValue(obj.end_date) >= dateValue(end_date)
+        )
+      )
+    )
+    console.log(_listItems);
     setTimeout(() => {
       setListItems(_listItems);
-    }, 1);
+    }, 100);
   }, [
     currentPeriod
   ])
