@@ -35,6 +35,7 @@ const assignedEmployeeController = require('@/controllers/erpControllers/assigne
 const assignedCustomerController = require('@/controllers/erpControllers/assignedCustomerController');
 const recurrentInvoiceController = require('@/controllers/erpControllers/recurrentInvoiceController');
 const invoiceHistoryController = require('@/controllers/erpControllers/invoiceHistoryController');
+const documentManageController = require('@/controllers/erpControllers/documentManageController');
 
 // //_______________________________ Admin management_______________________________
 
@@ -46,6 +47,15 @@ var adminPhotoStorage = multer.diskStorage({
     cb(null, Date.now() + path.extname(file.originalname));
   },
 });
+var document = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/uploads/admin');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+const documentUpload = multer({ storage: document });
 const adminPhotoUpload = multer({ storage: adminPhotoStorage });
 const _upload = multer({ dest: 'public/uploads/user/' });
 
@@ -88,6 +98,20 @@ router.route('/employee/search').get(catchErrors(employeeController.search));
 router.route('/employee/list').get(catchErrors(employeeController.list));
 router.route('/employee/filter').get(catchErrors(employeeController.filter));
 router.route('/employee/upload').post(adminPhotoUpload.single('avatar'), catchErrors(employeeController.upload))
+
+
+
+
+// //_________________________________ API for documentManage
+router.route('/documentManage/create').post(catchErrors(documentManageController.create));
+router.route('/documentManage/read/:id').get(catchErrors(documentManageController.read));
+router.route('/documentManage/update/:id').patch(catchErrors(documentManageController.update));
+router.route('/documentManage/delete/:id').delete(catchErrors(documentManageController.delete));
+router.route('/documentManage/search').get(catchErrors(documentManageController.search));
+router.route('/documentManage/list').get(catchErrors(documentManageController.list));
+router.route('/documentManage/filter').get(catchErrors(documentManageController.filter));
+router.route('/documentManage/upload').post(documentUpload.single('file'), catchErrors(documentManageController._upload))
+router.route('/documentManage/byParentId').post(catchErrors(documentManageController.getByParentId));
 
 
 

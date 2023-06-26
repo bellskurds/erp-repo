@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx';
 import { crud } from "@/redux/crud/actions";
-import { selectListsByCustomerStores, selectListsByInvoice, selectListsByRecurrent, } from "@/redux/crud/selectors";
+import { selectListsByCustomerStores, selectListsByDocument, selectListsByInvoice, selectListsByRecurrent, } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Typography, Upload, message } from "antd";
 
@@ -10,31 +10,36 @@ import moment from "moment";
 
 
 const DocumentManage = (props) => {
-    const entity = 'invoiceHistory';
+    const entity = 'documentManage';
     const dispatch = useDispatch();
     const currentEmployeeId = props.parentId
     const [isModal, setIsModal] = useState(false);
     const RecurrentRef = useRef(null);
+
+    const [currentFile, setCurrentFile] = useState()
+
+
     const Columns = [
         {
             title: 'Name',
-            dataIndex: 'start_date',
-            render: (text) => {
-                return (formattedDateFunc(text));
-            }
+            dataIndex: 'filename',
+
         },
         {
             title: 'Date',
-            dataIndex: ['recurrent_id', 'description'],
+            dataIndex: 'created',
+            render: (text) => {
+                return formattedDateFunc(text)
+            }
         },
 
         {
             title: 'Comments',
-            dataIndex: 'amount',
+            dataIndex: 'comments',
         },
         {
             title: 'By',
-            dataIndex: 'details',
+            dataIndex: ['parent_id', 'name'],
         },
 
         {
@@ -46,19 +51,17 @@ const DocumentManage = (props) => {
                 return (
 
                     <>
-                        <Typography.Link onClick={() => editItem(record)}>
-                            <EditOutlined style={{ fontSize: "20px" }} />
-                        </Typography.Link>
 
-                        {/* <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+                        <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
                             <DeleteOutlined style={{ fontSize: "20px" }} />
-                        </Popconfirm> */}
+                        </Popconfirm>
                     </>
                 )
 
             },
         },
     ];
+
     const [currentId, setCurrentId] = useState('');
     const [isUpdate, setIsUpdate] = useState(false);
 
@@ -98,8 +101,8 @@ const DocumentManage = (props) => {
             const jsonData = { parent_id: currentEmployeeId }
             dispatch(crud.delete({ entity, id }))
             setTimeout(() => {
-                const updateData = Invoices.filter(row => row._id !== id);
-                setInvoices(updateData);
+                const updateData = documents.filter(row => row._id !== id);
+                setDocuments(updateData);
                 dispatch(crud.listByRecurrent({ entity, jsonData }));
             }, 500)
         }
@@ -109,51 +112,46 @@ const DocumentManage = (props) => {
         setIsModal(false)
     }
     const saveDetails = (values) => {
+        console.log(values, 'valu45345es', currentFile);
+        const formData = new FormData();
+        formData.append('file', currentFile, `${values.filename}.${currentFile.name.split(".")[1]}`);
+
+        formData.append('parent_id', currentEmployeeId);
+        formData.append('filename', values.filename);
+        formData.append('comments', values.comments);
+        dispatch(crud.upload({ entity, jsonData: formData }));
+
+
         const parentId = currentEmployeeId;
-        if (currentId && parentId && isUpdate) {
-            const id = currentId;
-            const jsonData = { parent_id: parentId }
-            dispatch(crud.update({ entity, id, jsonData: values }));
-            setIsModal(false)
-            setTimeout(() => {
-                dispatch(crud.listByInvoice({ entity, jsonData }));
-            }, 500)
-        } else {
-            const jsonData = { parent_id: parentId }
-            const id = currentId;
-            values["parent_id"] = parentId;
-            dispatch(crud.create({ entity, id, jsonData: values }));
-            setIsModal(false)
-            setTimeout(() => {
-                dispatch(crud.listByInvoice({ entity, jsonData }));
-            }, 500)
-        }
+        const jsonData = { parent_id: parentId }
+        setTimeout(() => {
+            dispatch(crud.listByDocument({ entity, jsonData }));
+        }, 500)
+        setIsModal(false)
     }
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
     };
     const [stores, setStores] = useState([]);
-    const [invoices, setInvoices] = useState([]);
-    const { result: Invoices } = useSelector(selectListsByInvoice);
+    const [documents, setDocuments] = useState([]);
+    const { result: Documents } = useSelector(selectListsByDocument);
 
 
     useEffect(() => {
         const id = currentEmployeeId;
         const jsonData = { parent_id: id }
-        dispatch(crud.listByInvoice({ entity, jsonData }));
+        dispatch(crud.listByDocument({ entity, jsonData }));
     }, []);
     const [unlimited, setUnlimited] = useState(false);
     const [taxesStatus, setTaxesStatus] = useState(false);
     useEffect(() => {
 
-        if (Invoices.items) {
+        if (Documents.items) {
 
-            const filterData = Invoices.items.filter(obj => new Date(obj.start_date).getMonth() <= new Date().getMonth());
-            // console.log(filterData, 'ddfilterData')
-            setInvoices(filterData)
+            setDocuments(Documents.items)
 
         }
-    }, [Invoices])
+    }, [Documents])
     const UnlimitedStatus = (e) => {
         setUnlimited(e.target.checked)
     }
@@ -162,17 +160,22 @@ const DocumentManage = (props) => {
     }
 
 
-    const handleUpload = (file) => {
-        const id = currentEmployeeId;
+    const handleUpload = (e) => {
+        e.preventDefault();
 
-        const formData = new FormData();
-        formData.append('avatar', file);
-        // formData.append('id', parent_id);
-        dispatch(crud.upload({ entity, jsonData: formData }));
-        message.info(`Uploading ${file.name}...`);
-        setTimeout(() => {
-            dispatch(crud.read({ entity, id }));
-        }, 500)
+        const file = e.target.files[0];
+        setCurrentFile(file);
+
+        // const id = currentEmployeeId;
+
+        // const formData = new FormData();
+        // formData.append('avatar', file);
+        // // formData.append('id', parent_id);
+        // dispatch(crud.upload({ entity, jsonData: formData }));
+        // message.info(`Uploading ${file.name}...`);
+        // setTimeout(() => {
+        //     dispatch(crud.read({ entity, id }));
+        // }, 500)
     };
     const uploadButton = (
         <div>
@@ -182,78 +185,84 @@ const DocumentManage = (props) => {
     );
     return (
         <div className="whiteBox shadow">
-            <Modal title="Recurrent invoice" visible={isModal} onCancel={handleModal} footer={null} width={1000}>
-                <Upload
-                    showUploadList={false}
-                    name='avatar'
-                    listType="picture-card"
-                // beforeUpload={handleUpload}
-                >
-                    {uploadButton}
-                </Upload>
-                <Form
-                    ref={RecurrentRef}
-                    name="basic"
-                    labelCol={{
-                        span: 8,
-                    }}
-                    wrapperCol={{
-                        span: 16,
-                    }}
-                    onFinish={saveDetails}
-                    onFinishFailed={onFinishFailed}
-                    autoComplete="off"
-                    initialValues={{
-                        gender: 1,
-                        civil_status: 3,
-                        birthplace: "AU",
+            <Modal title="File" visible={isModal} onCancel={handleModal} footer={null} width={800}>
+                <Row gutter={24}>
+                    <Col span={8}>
 
-                    }}
-                >
-                    <Form.Item
-                        name="amount"
-                        label="Amount"
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
-                    >
-                        <InputNumber width={1000} />
-                    </Form.Item>
-                    <Form.Item
-                        name="details"
-                        label="Details"
-                        rules={[
-                            {
-                                required: true,
-                            },
-                        ]}
-                    >
-                        <Input.TextArea />
-                    </Form.Item>
-                    <Form.Item
-                        wrapperCol={{
-                            offset: 8,
-                            span: 16,
-                        }}
-                    >
-                        {
-                            isUpdate ?
-                                <Button type="primary" htmlType="submit">
-                                    Update
+                        <Input
+                            type='file'
+                            name='file'
+                            onChange={handleUpload}
+                        />
+                    </Col>
+                    <Col>
+
+                        <Form
+                            ref={RecurrentRef}
+                            name="basic"
+                            labelCol={{
+                                span: 8,
+                            }}
+                            wrapperCol={{
+                                span: 16,
+                            }}
+                            onFinish={saveDetails}
+                            onFinishFailed={onFinishFailed}
+                            autoComplete="off"
+                            initialValues={{
+                                gender: 1,
+                                civil_status: 3,
+                                birthplace: "AU",
+
+                            }}
+                        >
+                            <Form.Item
+                                name="filename"
+                                label="File Name"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <Input width={1000} />
+                            </Form.Item>
+                            <Form.Item
+                                name="comments"
+                                label="Comments"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <Input.TextArea />
+                            </Form.Item>
+                            <Form.Item
+                                wrapperCol={{
+                                    offset: 8,
+                                    span: 16,
+                                }}
+                            >
+                                {
+                                    isUpdate ?
+                                        <Button type="primary" htmlType="submit">
+                                            Update
+                                        </Button>
+                                        : <Button type="primary" htmlType="submit">
+                                            Save
+                                        </Button>
+
+                                }
+
+                                <Button type="ghost" onClick={handleModal}>
+                                    cancel
                                 </Button>
-                                : <Button type="primary" htmlType="submit">
-                                    Save
-                                </Button>
+                            </Form.Item>
+                        </Form>
 
-                        }
-
-                        <Button type="ghost" onClick={handleModal}>
-                            cancel
-                        </Button>
-                    </Form.Item>
-                </Form>
+                    </Col>
+                </Row>
                 <>
                 </>
             </Modal>
@@ -266,7 +275,7 @@ const DocumentManage = (props) => {
                 bordered
                 rowKey={(item) => item._id}
                 key={(item) => item._id}
-                dataSource={invoices || []}
+                dataSource={documents || []}
                 columns={Columns}
                 rowClassName="editable-row"
             />
