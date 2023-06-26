@@ -30,6 +30,7 @@ import RecurrentBilling from './RecurrentBilling';
 import InvoiceHistory from './InvoiceHistory';
 import BillingEsmitaion from './BillingEstimation';
 import { Avatar_url } from '@/config/serverApiConfig';
+import DocumentManage from './DocumentManage';
 
 
 export default function Details() {
@@ -469,7 +470,7 @@ export default function Details() {
           {/* <Contract parentId={currentCustomerId} /> */}
         </Tabs.TabPane>
         <Tabs.TabPane tab="Documents" key="2">
-          Content of Tab Pane 3
+          <DocumentManage parentId={currentCustomerId} />
         </Tabs.TabPane>
         <Tabs.TabPane tab="Billing" key="3">
           <RecurrentBilling parentId={currentCustomerId} />
