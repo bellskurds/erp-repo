@@ -1,8 +1,8 @@
 import * as XLSX from 'xlsx';
 import { crud } from "@/redux/crud/actions";
 import { selectListsByCustomerStores, selectListsByInvoice, selectListsByRecurrent, } from "@/redux/crud/selectors";
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Typography } from "antd";
+import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Typography, Upload, message } from "antd";
 
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -161,21 +161,36 @@ const DocumentManage = (props) => {
         setTaxesStatus(e.target.value)
     }
 
-    const exportToExcel = () => {
 
-        const _invoices = invoices.map(obj => ({
-            date: obj.start_date,
-            amount: obj.amount,
-            details: obj.details
-        }))
-        const worksheet = XLSX.utils.json_to_sheet(_invoices);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-        XLSX.writeFile(workbook, 'table.xlsx');
-    }
+    const handleUpload = (file) => {
+        const id = currentEmployeeId;
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+        // formData.append('id', parent_id);
+        dispatch(crud.upload({ entity, jsonData: formData }));
+        message.info(`Uploading ${file.name}...`);
+        setTimeout(() => {
+            dispatch(crud.read({ entity, id }));
+        }, 500)
+    };
+    const uploadButton = (
+        <div>
+            <PlusOutlined />
+            <div style={{ marginTop: 8 }}>Upload</div>
+        </div>
+    );
     return (
         <div className="whiteBox shadow">
             <Modal title="Recurrent invoice" visible={isModal} onCancel={handleModal} footer={null} width={1000}>
+                <Upload
+                    showUploadList={false}
+                    name='avatar'
+                    listType="picture-card"
+                // beforeUpload={handleUpload}
+                >
+                    {uploadButton}
+                </Upload>
                 <Form
                     ref={RecurrentRef}
                     name="basic"
@@ -217,13 +232,6 @@ const DocumentManage = (props) => {
                     >
                         <Input.TextArea />
                     </Form.Item>
-                    {/* <Row gutter={24}>
-                        <Col span={24}>
-
-
-                        </Col>
-
-                    </Row> */}
                     <Form.Item
                         wrapperCol={{
                             offset: 8,
@@ -250,13 +258,8 @@ const DocumentManage = (props) => {
                 </>
             </Modal>
             <Row>
-                <Col span={3}>
-                    <h3 style={{ color: '#22075e', marginBottom: 5 }}>Invoice History</h3>
-                </Col>
                 <Col span={12}>
-
-                    <button onClick={exportToExcel}>Export to Excel</button>
-
+                    <button onClick={editModal}>Add File</button>
                 </Col>
             </Row>
             <Table
