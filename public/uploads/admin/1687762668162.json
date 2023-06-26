@@ -1,0 +1,32 @@
+{
+   "author": "Unstoppable Domains \u003Csupport@unstoppabledomains.com>, JohnnyJumper \u003Chttp://github.com/JohnnyJumper/>",
+   "background": {
+      "persistent": true,
+      "scripts": [ "scripts/background.js" ]
+   },
+   "browser_action": {
+      "default_icon": "icon/48.png",
+      "default_popup": "index.html"
+   },
+   "content_security_policy": "script-src 'self' 'sha256-nHKLQ2A1kK023iXgW+lF4Ly2gHbE2mhlqnDhZBLshPg='; object-src 'self'",
+   "description": "The Unstoppable Extension is used to access decentralized blockchain domains.",
+   "homepage_url": "http://unstoppabledomains.com",
+   "icons": {
+      "128": "icon/128.png",
+      "16": "icon/16.png",
+      "48": "icon/48.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAi9UZMF8PMIHOBcB+NQYglWwUFEYDCEM4OFz/wjW6cpG6/Qu2WXCuFb9fEc2A+D8mSSk7/uf0cVy7aZTmHgzGJrQebluF2l3ZfDprGU+cM0V6LfokkGSiJ5yCRKZll4Rjw5Cx4PZlf4PIvhRnrFCJyPf6vrtdhb7BNEgxcv3xpO+FpCgTgibhW3MTYVg2fyyaGrexpRAyxKkp7YlnAbQo9wgNFKeN2Rg7484BxLF8G+uxXwz/wfuKOyH1EmHbKFrYgMlT0wyEIk+wNZM/n2r57JcMv8X4BzJYFDZIoTjWEUIxOQ8vRPie59LSPAyoY1QE9v9Ym8yTcaM6d3zeuc9XwwIDAQAB",
+   "manifest_version": 2,
+   "minimum_chrome_version": "79.0",
+   "name": "Unstoppable Extension",
+   "offline_enabled": false,
+   "options_ui": {
+      "open_in_tab": false,
+      "page": "index.html#/options"
+   },
+   "permissions": [ "*://*.crypto/*", "*://*.zil/*", "*://*.wallet/*", "*://*.nft/*", "*://*.888/*", "*://*.blockchain/*", "*://*.bitcoin/*", "*://*.dao/*", "*://*.x/*", "*://*.hi/*", "*://*.klever/*", "*://*.kresus/*", "*://*.polygon/*", "*://*.anime/*", "*://*.manga/*", "*://*.google.com/*", "*://*.duckduckgo.com/*", "*://*.yahoo.com/*", "*://*.yandex.ru/*", "*://*.qwant.com/*", "*://*.mojeek.com/*", "*://*.aol.co.uk/*", "*://*.baidu.com/*", "*://*.bing.com/*", "*://*.wiki.com/*", "*://*.unstoppabledomains.com/*", "storage", "webRequest", "webRequestBlocking" ],
+   "short_name": "Unstoppable Extension",
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "2.3.4"
+}

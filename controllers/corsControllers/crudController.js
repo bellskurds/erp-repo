@@ -55,5 +55,10 @@ exports.createCRUDController = (modelName, filter = []) => {
       apiRest.getByParentId(Model, req, res);
     };
   }
+  if (!filter.includes('upload')) {
+    crudMethods.upload = async (req, res) => {
+      apiRest.upload(Model, req, res);
+    };
+  }
   return crudMethods;
 };

@@ -67,6 +67,10 @@ const clientSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  avatar: {
+    type: String,
+    trim: true,
+  },
   country: {
     type: String,
     trim: true,

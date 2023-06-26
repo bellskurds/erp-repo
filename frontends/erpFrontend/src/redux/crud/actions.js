@@ -544,16 +544,18 @@ export const crud = {
           });
         }
       },
-  avatarUpload:
-    (avatar) =>
+  upload:
+    ({ entity, jsonData }) =>
+
       async (dispatch) => {
         dispatch({
           type: actionTypes.REQUEST_LOADING,
           keyState: 'avatarUpload',
           payload: null
         });
+
         try {
-          let res = await axios.post('/employee/details', avatar);
+          let res = await request.upload({ entity, jsonData });
           dispatch({
             type: 'UPLOAD_AVATAR_SUCCESS',
             payload: res.data,

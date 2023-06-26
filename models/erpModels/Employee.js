@@ -80,6 +80,11 @@ const employeeSchema = new mongoose.Schema({
     default: '',
   },
 
+  avatar: {
+    type: String,
+    default: '',
+  },
+
   address: {
     type: String,
     default: '',

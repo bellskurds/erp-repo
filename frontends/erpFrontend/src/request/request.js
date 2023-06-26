@@ -49,6 +49,22 @@ const request = {
       return errorHandler(error);
     }
   },
+  upload: async ({ entity, jsonData }) => {
+    try {
+      const response = await axios.post(entity + '/upload', jsonData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      });
+      successHandler(response, {
+        notifyOnSuccess: true,
+        notifyOnFailed: true,
+      });
+      return response.data;
+    } catch (error) {
+      return errorHandler(error);
+    }
+  },
 
   delete: async ({ entity, id, options = {} }) => {
     try {

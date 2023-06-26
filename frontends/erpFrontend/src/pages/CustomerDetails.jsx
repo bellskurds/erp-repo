@@ -29,6 +29,7 @@ import AssignedEmployee from './AssignedEmployee';
 import RecurrentBilling from './RecurrentBilling';
 import InvoiceHistory from './InvoiceHistory';
 import BillingEsmitaion from './BillingEstimation';
+import { Avatar_url } from '@/config/serverApiConfig';
 
 
 export default function Details() {
@@ -290,15 +291,16 @@ export default function Details() {
   const handlePreviewImageCancel = () => {
     setPreviewVisible(false);
   }
-  const handleUpload = () => {
-    const formData = new FormData();
-    fileList.forEach(file => {
-      formData.append('avatar', file);
-    });
+  const handleUpload = (file) => {
 
-    console.log(formData, 'formDataformDataformDataformData')
-    dispatch(crud.avatarUpload(formData));  // dispatch the action to upload the avatar
-    setFileList([]);  // clear uploaded files
+    const formData = new FormData();
+    formData.append('avatar', file);
+    formData.append('id', id);
+    dispatch(crud.upload({ entity, jsonData: formData }));
+    message.info(`Uploading ${file.name}...`);
+    setTimeout(() => {
+      dispatch(crud.read({ entity, id }));
+    }, 500)
   };
   console.log(currentItem, 'currentItemcurrentItemcurrentItemcurrentItemcurrentItemcurrentItem')
 
@@ -410,24 +412,28 @@ export default function Details() {
           <Content style={{ padding: '0 0px' }}>
             <Row gutter={[16, 16]}>
               <Col span={6}>
-                <div className="profile-card">
-                  <Upload
-                    action=""
-                    autoUpload={false}
-                    listType="picture-card"
-                    fileList={fileList}
-                    onPreview={handlePreview}
-                    onChange={handleChange}
-                  >
-                    {fileList.length >= 1 ? null : uploadButton}
-                  </Upload>
-                  <Modal visible={previewVisible} footer={null} onCancel={handlePreviewImageCancel}>
-                    <img alt="Preview" style={{ width: '100%' }} src={previewImage} />
-                  </Modal>
-                  {fileList.length > 0 && (
-                    <button onClick={handleUpload}>Upload</button>  // add a button to handle upload
-                  )}
-                </div>
+                {
+                  (currentItem && currentItem.avatar) ?
+                    <>
+
+                      <Avatar
+                        size={128}
+                        src={`${Avatar_url}${currentItem ? currentItem.avatar : ""}`}
+                      />
+                    </>
+
+                    :
+                    <div className="profile-card">
+                      <Upload
+                        showUploadList={false}
+                        name='avatar'
+                        listType="picture-card"
+                        beforeUpload={handleUpload}
+                      >
+                        {fileList.length >= 1 ? null : uploadButton}
+                      </Upload>
+                    </div>
+                }
               </Col>
               <Col span={12}>
                 <p>Name : {currentItem ? currentItem.name : ""}</p>

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Form, Input, Row, Col, Tabs, Upload, Button, message, Select, Modal, Radio } from 'antd';
+import { Form, Input, Row, Col, Tabs, Upload, Button, message, Select, Modal, Radio, Avatar, Image } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import countryList from 'country-list'
 import { DashboardLayout } from '@/layout';
@@ -17,6 +17,7 @@ import EmergencyContact from './EmergencyContact';
 import MedicalDetail from './MedicalDetail';
 import Contract from './Contract';
 import AssignedCustomer from './AssignedCustomer';
+import { Avatar_url } from '@/config/serverApiConfig';
 
 
 export default function Details() {
@@ -254,18 +255,9 @@ export default function Details() {
 
 
   const [previewVisible, setPreviewVisible] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
   const [fileList, setFileList] = useState([]);
 
-  const handlePreview = async file => {
-    if (!file.url && !file.preview) {
-      file.preview = await getBase64(file.originFileObj);
-    }
 
-    setPreviewImage(file.url || file.preview);
-    setPreviewVisible(true);
-  };
-  const handleChange = ({ fileList }) => setFileList(fileList);
   const uploadButton = (
     <div>
       <PlusOutlined />
@@ -283,17 +275,17 @@ export default function Details() {
   const handlePreviewImageCancel = () => {
     setPreviewVisible(false);
   }
-  const handleUpload = () => {
+  const handleUpload = (file) => {
+
     const formData = new FormData();
-    fileList.forEach(file => {
-      formData.append('avatar', file);
-    });
-
-    console.log(formData, 'formDataformDataformDataformData')
-    dispatch(crud.avatarUpload(formData));  // dispatch the action to upload the avatar
-    setFileList([]);  // clear uploaded files
+    formData.append('avatar', file);
+    formData.append('id', id);
+    dispatch(crud.upload({ entity, jsonData: formData }));
+    message.info(`Uploading ${file.name}...`);
+    setTimeout(() => {
+      dispatch(crud.read({ entity, id }));
+    }, 500)
   };
-
   const props = {
     name: 'avatar',
     action: 'http://localhost:8888/employee/details', // replace with your backend API endpoint
@@ -313,6 +305,16 @@ export default function Details() {
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="Details" key="1">
           <Modal title="Create Form" visible={isModalVisible} onCancel={handleCancel} footer={null}>
+            <div className="profile-card">
+              <Upload
+                showUploadList={false}
+                name='avatar'
+                listType="picture-card"
+                beforeUpload={handleUpload}
+              >
+                {fileList.length >= 1 ? null : uploadButton}
+              </Upload>
+            </div>
             <Form
               ref={formRef}
               name="basic"
@@ -332,6 +334,7 @@ export default function Details() {
 
               }}
             >
+
               <Form.Item
                 name="gender"
                 label="Gender"
@@ -416,26 +419,28 @@ export default function Details() {
           <Content style={{ padding: '0 0px' }}>
             <Row gutter={[16, 16]}>
               <Col span={6}>
-                <div className="profile-card">
-                  <Upload
-                    // {...props}
-                    // action=""
-                    name='avatar'
-                    autoUpload={false}
-                    listType="picture-card"
-                    // fileList={fileList}
-                    onPreview={handlePreview}
-                    onChange={handleChange}
-                  >
-                    {fileList.length >= 1 ? null : uploadButton}
-                  </Upload>
-                  <Modal visible={previewVisible} footer={null} onCancel={handlePreviewImageCancel}>
-                    <img alt="Preview" style={{ width: '100%' }} src={previewImage} />
-                  </Modal>
-                  {fileList.length > 0 && (
-                    <button onClick={handleUpload}>Upload</button>  // add a button to handle upload
-                  )}
-                </div>
+                {
+                  (currentItem && currentItem.avatar) ?
+                    <>
+
+                      <Avatar
+                        size={128}
+                        src={`${Avatar_url}${currentItem ? currentItem.avatar : ""}`}
+                      />
+                    </>
+
+                    :
+                    <div className="profile-card">
+                      <Upload
+                        showUploadList={false}
+                        name='avatar'
+                        listType="picture-card"
+                        beforeUpload={handleUpload}
+                      >
+                        {fileList.length >= 1 ? null : uploadButton}
+                      </Upload>
+                    </div>
+                }
               </Col>
               <Col span={12}>
                 <p>Name : {currentItem ? currentItem.name : ""}</p>

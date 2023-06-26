@@ -7,3 +7,4 @@ export const DOWNLOAD_BASE_URL =
     ? 'https://idurar-crm-erp.herokuapp.com/download/'
     : 'http://localhost:8888/download/';
 export const ACCESS_TOKEN_NAME = 'x-auth-token';
+export const Avatar_url = 'http://localhost:8888/uploads/admin/'

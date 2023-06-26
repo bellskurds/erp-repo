@@ -47,7 +47,7 @@ var adminPhotoStorage = multer.diskStorage({
   },
 });
 const adminPhotoUpload = multer({ storage: adminPhotoStorage });
-const _upload = multer({ dest: 'uploads/' });
+const _upload = multer({ dest: 'public/uploads/user/' });
 
 router
   .route('/admin/create')
@@ -87,9 +87,7 @@ router.route('/employee/delete/:id').delete(catchErrors(employeeController.delet
 router.route('/employee/search').get(catchErrors(employeeController.search));
 router.route('/employee/list').get(catchErrors(employeeController.list));
 router.route('/employee/filter').get(catchErrors(employeeController.filter));
-router.route('/employee/details').post([adminPhotoUpload.single("avatar"), setFilePathToBody], (req, res) => {
-  console.log(req.files);
-});
+router.route('/employee/upload').post(adminPhotoUpload.single('avatar'), catchErrors(employeeController.upload))
 
 
 
@@ -112,6 +110,7 @@ router.route('/client/search').get(catchErrors(clientController.search));
 router.route('/client/list').get(catchErrors(clientController.list));
 router.route('/client/filter').get(catchErrors(clientController.filter));
 router.route('/client/byParentId').post(catchErrors(clientController.getByParentId));
+router.route('/client/upload').post(adminPhotoUpload.single('avatar'), catchErrors(clientController.upload))
 
 
 
