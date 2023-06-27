@@ -1,5 +1,7 @@
 const express = require('express');
 const multer = require('multer');
+const fs = require('fs');
+
 const path = require('path');
 const setFilePathToBody = require('@/middlewares/setFilePathToBody');
 const { catchErrors } = require('@/handlers/errorHandlers');
@@ -36,7 +38,9 @@ const assignedCustomerController = require('@/controllers/erpControllers/assigne
 const recurrentInvoiceController = require('@/controllers/erpControllers/recurrentInvoiceController');
 const invoiceHistoryController = require('@/controllers/erpControllers/invoiceHistoryController');
 const documentManageController = require('@/controllers/erpControllers/documentManageController');
+const employeeDocumentController = require('@/controllers/erpControllers/employeeDocumentController');
 
+const baseFilePath = 'public/uploads/admin/'
 // //_______________________________ Admin management_______________________________
 
 var adminPhotoStorage = multer.diskStorage({
@@ -112,6 +116,35 @@ router.route('/documentManage/list').get(catchErrors(documentManageController.li
 router.route('/documentManage/filter').get(catchErrors(documentManageController.filter));
 router.route('/documentManage/upload').post(documentUpload.single('file'), catchErrors(documentManageController._upload))
 router.route('/documentManage/byParentId').post(catchErrors(documentManageController.getByParentId));
+
+
+
+
+// //_________________________________ API for documentManage of Employeee
+router.route('/employeeDocument/create').post(catchErrors(employeeDocumentController.create));
+router.route('/employeeDocument/read/:id').get(catchErrors(employeeDocumentController.read));
+router.route('/employeeDocument/update/:id').patch((req, res, next) => {
+
+  try {
+
+    const oldPath = baseFilePath + req.body.origin;
+    const newPath = baseFilePath + req.body.filename;
+    console.log(oldPath, newPath);
+    fs.rename(oldPath, newPath, function (err) {
+      if (err) throw err;
+      console.log('File renamed successfully');
+    });
+  } catch (error) {
+    console.log(error);
+  }
+  next();
+}, catchErrors(employeeDocumentController.update));
+router.route('/employeeDocument/delete/:id').delete(catchErrors(employeeDocumentController.delete));
+router.route('/employeeDocument/search').get(catchErrors(employeeDocumentController.search));
+router.route('/employeeDocument/list').get(catchErrors(employeeDocumentController.list));
+router.route('/employeeDocument/filter').get(catchErrors(employeeDocumentController.filter));
+router.route('/employeeDocument/upload').post(documentUpload.single('file'), catchErrors(employeeDocumentController._upload))
+router.route('/employeeDocument/byParentId').post(catchErrors(employeeDocumentController.getByParentId));
 
 
 

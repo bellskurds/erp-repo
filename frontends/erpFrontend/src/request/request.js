@@ -161,9 +161,18 @@ const request = {
       return errorHandler(error);
     }
   },
+
   get: async ({ entity }) => {
     try {
       const response = await axios.get(entity);
+      return response.data;
+    } catch (error) {
+      return errorHandler(error);
+    }
+  },
+  fetch: async (url) => {
+    try {
+      const response = await axios.get(url);
       return response.data;
     } catch (error) {
       return errorHandler(error);

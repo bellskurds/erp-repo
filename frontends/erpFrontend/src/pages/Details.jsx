@@ -18,6 +18,7 @@ import MedicalDetail from './MedicalDetail';
 import Contract from './Contract';
 import AssignedCustomer from './AssignedCustomer';
 import { Avatar_url } from '@/config/serverApiConfig';
+import EmployeeDocumentManage from './EmployeeDocumentManage';
 
 
 export default function Details() {
@@ -544,7 +545,7 @@ export default function Details() {
           </div>
         </Tabs.TabPane>
         <Tabs.TabPane tab="Documents" key="3">
-          Content of Tab Pane 3
+          <EmployeeDocumentManage parentId={currentEmployeeId} />
         </Tabs.TabPane>
       </Tabs>
 
