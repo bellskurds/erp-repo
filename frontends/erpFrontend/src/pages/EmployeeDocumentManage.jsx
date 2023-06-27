@@ -4,7 +4,6 @@ import { selectListsByCustomerStores, selectListsByDocument, selectListsByEDocum
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { Avatar, Button, Checkbox, Col, DatePicker, Form, Image, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Typography, Upload, message } from "antd";
 
-import { PDFReader } from 'react-read-pdf';
 
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
