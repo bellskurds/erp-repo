@@ -39,6 +39,7 @@ const recurrentInvoiceController = require('@/controllers/erpControllers/recurre
 const invoiceHistoryController = require('@/controllers/erpControllers/invoiceHistoryController');
 const documentManageController = require('@/controllers/erpControllers/documentManageController');
 const employeeDocumentController = require('@/controllers/erpControllers/employeeDocumentController');
+const ProjectController = require('@/controllers/erpControllers/ProjectController');
 
 const baseFilePath = 'public/uploads/admin/'
 // //_______________________________ Admin management_______________________________
@@ -102,6 +103,17 @@ router.route('/employee/search').get(catchErrors(employeeController.search));
 router.route('/employee/list').get(catchErrors(employeeController.list));
 router.route('/employee/filter').get(catchErrors(employeeController.filter));
 router.route('/employee/upload').post(adminPhotoUpload.single('avatar'), catchErrors(employeeController.upload))
+
+
+// //_________________________________ API for employees_____________________
+router.route('/project/create').post(catchErrors(ProjectController.create));
+router.route('/project/read/:id').get(catchErrors(ProjectController.read));
+router.route('/project/update/:id').patch(catchErrors(ProjectController.update));
+router.route('/project/delete/:id').delete(catchErrors(ProjectController.delete));
+router.route('/project/search').get(catchErrors(ProjectController.search));
+router.route('/project/list').get(catchErrors(ProjectController.list));
+router.route('/project/filter').get(catchErrors(ProjectController.filter));
+router.route('/project/upload').post(adminPhotoUpload.single('avatar'), catchErrors(ProjectController.upload))
 
 
 

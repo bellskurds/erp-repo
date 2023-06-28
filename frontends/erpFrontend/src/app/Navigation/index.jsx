@@ -88,6 +88,10 @@ export default function Navigation() {
             <Link to={'/payroll_details'} />
             Payroll Details
           </Menu.Item>
+          <Menu.Item key={'Projects'} icon={<ProfileOutlined />}>
+            <Link to={'/projects'} />
+            Projects
+          </Menu.Item>
           {/* <Menu.Item key={'Quote'} icon={<FileSyncOutlined />}>
             <Link to={'/quote'} />
             Quote

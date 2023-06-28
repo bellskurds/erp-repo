@@ -65,6 +65,10 @@ export const routesConfig = [
     component: 'PayrollDetails',
   },
   {
+    path: '/Projects',
+    component: 'Projects',
+  },
+  {
     path: '/quote',
     component: 'Quote',
   },
