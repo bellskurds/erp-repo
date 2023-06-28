@@ -401,6 +401,11 @@ exports.getByParentId = async (Model, req, res) => {
 
 exports.search = async (Model, req, res) => {
   // console.log(req.query.fields)
+  // const limit = parseInt(req.query.items) || 10;
+
+  const page = req.query.page || 1;
+  const limit = parseInt(req.query.items) || 10;
+  const skip = page * limit - limit;
   if (req.query.q === undefined || req.query.q.trim() === '') {
     return res
       .status(202)
@@ -422,12 +427,26 @@ exports.search = async (Model, req, res) => {
   }
   // console.log(fields)
   try {
-    let results = await Model.find(fields).where('removed', false).limit(10);
+    let results = await Model.find(fields).where('removed', false)
+      // .skip(skip)
+      // .limit(limit)
+      .sort({ created: 'desc' })
+      .populate();
+    // Resolving both promises
 
+    const page = req.query.page || 1;
+    const count = results.length;
+
+    // Calculating total pages
+    const pages = Math.ceil(count / limit);
+
+    // Getting Pagination Object
+    const paginations = { page, pages, count };
     if (results.length >= 1) {
       return res.status(200).json({
         success: true,
         result: results,
+        paginations,
         message: 'Successfully found all documents',
       });
     } else {
@@ -436,6 +455,7 @@ exports.search = async (Model, req, res) => {
         .json({
           success: false,
           result: [],
+          paginations,
           message: 'No document found by this request',
         })
         .end();

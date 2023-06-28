@@ -1,62 +1,22 @@
 import { DashboardLayout, DefaultLayout } from '@/layout';
-import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Input, InputNumber, Layout, Modal, Popconfirm, Row, Space, Table, Tag, Typography } from 'antd';
 import Search from 'antd/lib/transfer/search';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import CustomModal from 'modules/CustomModal'
 import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
 import { Link } from 'react-router-dom/cjs/react-router-dom';
-const originData = [];
-for (let i = 0; i < 100; i++) {
-  originData.push({
-    key: i.toString(),
-    name: `Edrward ${i}`,
-    age: 32,
-    address: `London Park no. ${i}`,
-  });
-}
-const EditableCell = ({
-  editing,
-  dataIndex,
-  title,
-  inputType,
-  record,
-  index,
-  children,
-  ...restProps
-}) => {
-  const inputNode = inputType === 'number' ? <InputNumber /> : <Input />;
-  return (
-    <td {...restProps}>
-      {editing ? (
-        <Form.Item
-          name={dataIndex}
-          style={{
-            margin: 0,
-          }}
-          rules={[
-            {
-              required: true,
-              message: `Please Input ${title}!`,
-            },
-          ]}
-        >
-          {inputNode}
-        </Form.Item>
-      ) : (
-        children
-      )}
-    </td>
-  );
-};
+import { request } from '@/request';
 
 
 const Employees = () => {
   const entity = "employee"
+  const searchFields = 'name,email';
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  const [searchText, setSearchText] = useState('');
   const [isUpdate, setIsUpdate] = useState(false);
   const showModal = () => {
     setIsModalVisible(true);
@@ -75,10 +35,10 @@ const Employees = () => {
   };
 
   const [form] = Form.useForm();
-  const [data, setData] = useState(originData);
   const [editingKey, setEditingKey] = useState('');
   const [currentId, setCurrentId] = useState('');
   const [currentItem, setCurrentItem] = useState({});
+  const [filterData, setFilterData] = useState([]);
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
     if (item) {
@@ -170,7 +130,8 @@ const Employees = () => {
   const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
 
   const { pagination, items } = listResult;
-  const onSearch = (value) => console.log(value);
+  const [paginations, setPaginations] = useState(pagination)
+
   const onFinish = (values) => {
     if (isUpdate && currentId) {
       const id = currentId;
@@ -191,7 +152,63 @@ const Employees = () => {
     dispatch(crud.list({ entity }));
   }, []);
 
+  const handelDataTableLoad = useCallback((pagination) => {
 
+    if (!searchText) {
+      const options = { page: pagination.current || 1 };
+      dispatch(crud.list({ entity, options }));
+    } else {
+
+      async function fetchData() {
+        const options = {
+          q: searchText,
+          fields: searchFields,
+          page: pagination.current || 1
+        };
+        const { result, paginations } = await request.search({ entity, options })
+        console.log(result, paginations, 'result, paginations');
+        setFilterData(result)
+        setPaginations(paginations)
+      }
+      fetchData();
+    }
+
+  }, [searchText]);
+
+  useEffect(() => {
+    async function fetchData() {
+
+      if (!searchText) {
+        // setFilterData(pagination)
+        setFilterData(items)
+      } else {
+        const options = {
+          q: searchText,
+          fields: searchFields,
+        };
+        const { result, paginations } = await request.search({ entity, options })
+        setFilterData(result)
+        setPaginations(paginations)
+      }
+
+    }
+    fetchData();
+
+
+
+  }, [searchText])
+  const Footer = () => {
+    const pages = searchText ? paginations : pagination
+    const { current, count, total, page } = pages
+    const currentPage = current || page;
+    const totalSize = total || count;
+
+    return (
+      <>
+        Mostrando registros del {filterData.length ? ((currentPage - 1) * 10 + 1) : 0} al {currentPage * 10 > (totalSize) ? (totalSize) : currentPage * 10} de un total de {totalSize} registros
+      </>
+    );
+  }
   return (
 
     <DashboardLayout>
@@ -289,11 +306,16 @@ const Employees = () => {
           </>
         </Modal>
         <Layout>
-          <Row>
-            {/* <Col span={10}>
-              <Search placeholder="input search text" onSearch={onSearch} enterButton />
-            </Col> */}
-            <Col>
+          <Row gutter={24} style={{ textAlign: 'right' }}>
+            <Col span={6}>
+              <Input
+                placeholder="Search"
+                prefix={<SearchOutlined />}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+            </Col>
+            <Col span={18}>
               <Button onClick={showModal} type="primary">Create Employee</Button>
             </Col>
 
@@ -301,18 +323,16 @@ const Employees = () => {
 
           <Form form={form} component={false}>
             <Table
-              components={{
-                body: {
-                  cell: EditableCell,
-                },
-              }}
               bordered
               rowKey={(item) => item._id}
               key={(item) => item._id}
-              dataSource={items}
+              dataSource={filterData}
               columns={mergedColumns}
               rowClassName="editable-row"
+              pagination={searchText ? paginations : pagination}
 
+              onChange={handelDataTableLoad}
+              footer={Footer}
 
             />
           </Form>
