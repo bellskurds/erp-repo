@@ -148,7 +148,7 @@ const InvoiceHistory = (props) => {
 
         if (Invoices.items) {
 
-            const filterData = Invoices.items.filter(obj => new Date(obj.start_date).getMonth() <= new Date().getMonth());
+            const filterData = Invoices.items.filter(obj => new Date(obj.start_date).getMonth() <= new Date().getMonth() && new Date(obj.start_date).getFullYear() <= new Date().getFullYear());
             // console.log(filterData, 'ddfilterData')
             setInvoices(filterData)
 
