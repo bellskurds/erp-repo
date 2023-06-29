@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
 import moment from 'moment';
+import { request } from '@/request';
 const columns = [
   {
     title: 'Period',
@@ -55,6 +56,7 @@ const PayrollManagement = () => {
   const [form] = Form.useForm();
   const [listItems, setListItems] = useState([]);
   const [payrollDetails, setPayrollDetails] = useState([])
+  const [periodsValue, setPeriodsValue] = useState()
   const getPeriods = (month, year, Q = 0) => {
     const daysInMonth = new Date(year, month, 0).getDate();
     const prevMonth = new Date(year, month, 0);
@@ -69,8 +71,12 @@ const PayrollManagement = () => {
 
   }
 
-
+  useEffect(() => {
+    getData();
+  }, [payrollDetails])
   const getData = () => {
+
+    console.log(payrollDetails, 'payrollDetails');
     const start_date = '2023/6/1';
     const end_date = new Date();
     let currentDate = moment(start_date);
@@ -83,6 +89,7 @@ const PayrollManagement = () => {
 
       if (currentDate.month() === end.month() && end.date() < 15) {
         periods.push({
+          id: new Date().valueOf(),
           month: currentDate.month(),
           q: 0,
           period_label: `${currentDate.format('MMMM')}-1(${currentDate.year()})`,
@@ -93,6 +100,7 @@ const PayrollManagement = () => {
       }
       else {
         periods.push({
+          id: new Date().valueOf(),
           month: currentDate.month(),
           q: 0,
           period_label: `${currentDate.format('MMMM')}-1(${currentDate.year()})`,
@@ -101,6 +109,7 @@ const PayrollManagement = () => {
           payroll_amount: getPaymentData(currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0))
         },
           {
+            id: new Date().valueOf() + 1,
             month: currentDate.month(),
             q: 1,
             period_label: `${currentDate.format('MMMM')}-2(${currentDate.year()})`,
@@ -129,7 +138,7 @@ const PayrollManagement = () => {
     const start_date = new Date(year, startDay === 31 ? (month - 2) : (month - 1), startDay);
     const end_date = new Date(year, month - 1, endDay);
 
-
+    console.log(payrollDetails, 'payrollDetails');
     const _listItems = payrollDetails.filter(obj =>
       obj.status === "active" &&
       (
@@ -155,42 +164,35 @@ const PayrollManagement = () => {
 
   }
 
-  const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
-
-  const { pagination, items } = listResult;
-  useEffect(() => {
-
-    items.map(obj => {
-      obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-      obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-    })
-    setPayrollDetails(items)
-  }, [
-    items
-  ])
   const mathCeil = (value) => {
     return value.toFixed(2)
   }
 
   useEffect(() => {
-
-    getData()
-    dispatch(crud.resetState())
-    dispatch(crud.list({ entity }));
+    async function init() {
+      const res = await request.list({ entity })
+      const result = res.result;
+      result.map(obj => {
+        obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+        obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+      })
+      setPayrollDetails(result)
+    }
+    init();
   }, []);
 
 
   return (
 
     <DashboardLayout>
-      <Layout style={{ minHeight: '100vh' }}>
+      <Layout style={{ minHeight: ' 100vh' }}>
 
         <Layout>
           <Form form={form} component={false}>
             <Table
               bordered
               rowKey={(item) => item.id}
-              key={(item) => item._id}
+              key={(item) => item.id}
               dataSource={listItems || []}
               columns={columns}
               rowClassName="editable-row"
