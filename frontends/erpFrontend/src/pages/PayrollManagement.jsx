@@ -10,27 +10,38 @@ import moment from 'moment';
 const columns = [
   {
     title: 'Period',
-    dataIndex: 'personal_id',
+    dataIndex: 'period_label',
     width: '15%',
     editable: true,
   },
   {
     title: 'Total Payroll',
-    dataIndex: 'name',
+    dataIndex: 'payroll_amount',
     width: '15%',
     editable: true,
+    render: (text) => {
+      return (text || 0
+      )
+    }
   },
   {
     title: 'Total for services',
-    dataIndex: 'email',
+    dataIndex: 'services_amount',
     width: '15%',
     editable: true,
+    render: (text) => {
+      return (text || 0
+      )
+    }
   },
   {
     title: 'Total',
-    dataIndex: 'phone',
+    dataIndex: 'total',
     width: '15%',
     editable: true,
+    render: (text, record) => {
+      return (record.payroll_amount || 0 + record.services_amount || 0)
+    }
   },
 ];
 
@@ -43,37 +54,21 @@ const PayrollManagement = () => {
 
   const [form] = Form.useForm();
   const [listItems, setListItems] = useState([]);
-  const [initMonth, setInitMonth] = useState(6);
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [initQ, initCurrentQ] = useState(0);
-  const [currentQ, setCurrentQ] = useState(0);
-
+  const [payrollDetails, setPayrollDetails] = useState([])
   const getPeriods = (month, year, Q = 0) => {
     const daysInMonth = new Date(year, month, 0).getDate();
     const prevMonth = new Date(year, month, 0);
     const daysInPrevMonth = new Date(prevMonth.getFullYear(), prevMonth.getMonth(), 0).getDate();
     if (daysInPrevMonth === 31) {
       const Qs = ['31-15', `16-${daysInMonth === 31 ? 30 : daysInMonth}`];
-      console.log(Qs, 'daysInPrevMonth, daysInMonth');
       return Qs[Q];
     } else if (daysInMonth) {
       const Qs = ['1-15', `16-${daysInMonth === 31 ? 30 : daysInMonth}`];
-      console.log(Qs, 'd22aysInPrevMonth, daysInMonth');
-
       return Qs[Q];
     }
 
   }
-  const getQ = () => {
-    const currentDate = new Date();
-    const currentDay = currentDate.getDate();
-    if (currentDay > 15) {
-      return 1
-    } else {
-      return 0
-    }
-  }
+
 
   const getData = () => {
     const start_date = '2023/6/1';
@@ -81,33 +76,95 @@ const PayrollManagement = () => {
     let currentDate = moment(start_date);
 
     const end = moment(end_date)
-    const invoices = []
+    const periods = []
+
+
     while (currentDate.isSameOrBefore(end)) {
-      // invoices.push(currentDate.format('MM/DD/YYYY'));
 
-      invoices.push({
-        start_date: currentDate.format('MM/DD/YYYY'),
-      })
-      currentDate = currentDate.add(2, 'weeks');
+      if (currentDate.month() === end.month() && end.date() < 15) {
+        periods.push({
+          month: currentDate.month(),
+          q: 0,
+          period_label: `${currentDate.format('MMMM')}-1(${currentDate.year()})`,
+          year: currentDate.year(),
+          periods: getPeriods(currentDate.month(), currentDate.year(), 0),
+          payroll_amount: getPaymentData(currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0))
+        })
+      }
+      else {
+        periods.push({
+          month: currentDate.month(),
+          q: 0,
+          period_label: `${currentDate.format('MMMM')}-1(${currentDate.year()})`,
+          year: currentDate.year(),
+          periods: getPeriods(currentDate.month(), currentDate.year(), 0),
+          payroll_amount: getPaymentData(currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0))
+        },
+          {
+            month: currentDate.month(),
+            q: 1,
+            period_label: `${currentDate.format('MMMM')}-2(${currentDate.year()})`,
+            year: currentDate.year(),
+            periods: getPeriods(currentDate.month(), currentDate.year(), 1),
+            payroll_amount: getPaymentData(currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 1))
+          })
+      }
+      currentDate = currentDate.add(1, 'months');
     }
-    console.log(invoices);
-  }
-  getData()
+    periods.sort((a, b) => {
+      return b.year - a.year || b.month - a.month || b.q - a.q
+    })
+    setListItems(periods)
+    console.log(periods, 'periods');
 
+  }
+  const dateValue = (date) => {
+    return new Date(date).valueOf();
+  }
+  const getPaymentData = (year, month, periods) => {
+    month++;
+    console.log(year, month, periods, 'year, month, periods');
+    const startDay = parseInt(periods.split("-")[0]);
+    const endDay = parseInt(periods.split("-")[1]);
+    const start_date = new Date(year, startDay === 31 ? (month - 2) : (month - 1), startDay);
+    const end_date = new Date(year, month - 1, endDay);
+
+
+    const _listItems = payrollDetails.filter(obj =>
+      obj.status === "active" &&
+      (
+        (
+          dateValue(obj.start_date) <= dateValue(start_date) &&
+          dateValue(obj.end_date) >= dateValue(end_date)
+        )
+        ||
+        (
+          dateValue(obj.start_date) > dateValue(start_date) &&
+          dateValue(obj.start_date) < dateValue(end_date) &&
+          dateValue(obj.end_date) >= dateValue(end_date)
+        )
+      )
+    )
+    let calValue = 0;
+    _listItems.map(obj => {
+      if (obj.type === 1) {
+        calValue += parseFloat(obj.week_pay)
+      }
+    })
+    return calValue
+
+  }
 
   const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
 
   const { pagination, items } = listResult;
   useEffect(() => {
 
-    console.log(items, 'itemsitemsitemsitemsitemsitemsitems');
     items.map(obj => {
       obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
       obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
     })
-
-
-    setListItems(items)
+    setPayrollDetails(items)
   }, [
     items
   ])
@@ -116,6 +173,8 @@ const PayrollManagement = () => {
   }
 
   useEffect(() => {
+
+    getData()
     dispatch(crud.resetState())
     dispatch(crud.list({ entity }));
   }, []);
@@ -130,13 +189,11 @@ const PayrollManagement = () => {
           <Form form={form} component={false}>
             <Table
               bordered
-              rowKey={(item) => item._id}
+              rowKey={(item) => item.id}
               key={(item) => item._id}
-              dataSource={[]}
+              dataSource={listItems || []}
               columns={columns}
               rowClassName="editable-row"
-
-
             />
           </Form>
 
