@@ -8,6 +8,9 @@ import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
 import moment from 'moment';
 import { request } from '@/request';
+const mathCeil = (value) => {
+  return value.toFixed(2)
+}
 const columns = [
   {
     title: 'Period',
@@ -21,7 +24,7 @@ const columns = [
     width: '15%',
     editable: true,
     render: (text) => {
-      return (text || 0
+      return (mathCeil(text) || 0
       )
     }
   },
@@ -164,9 +167,7 @@ const PayrollManagement = () => {
 
   }
 
-  const mathCeil = (value) => {
-    return value.toFixed(2)
-  }
+
 
   useEffect(() => {
     async function init() {
