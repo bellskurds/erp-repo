@@ -8,6 +8,7 @@ import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
 import moment from 'moment';
 import { request } from '@/request';
+import { Link } from 'react-router-dom/cjs/react-router-dom';
 const mathCeil = (value) => {
   return value.toFixed(2)
 }
@@ -17,6 +18,14 @@ const columns = [
     dataIndex: 'period_label',
     width: '15%',
     editable: true,
+    render: (text, row) => {
+      return (
+
+        <Typography.Text>
+          <Link to={`/payroll_details/${row.year}-${row.month + 1}-${row.q}`}>{text}</Link>
+        </Typography.Text>
+      )
+    }
   },
   {
     title: 'Total Payroll',

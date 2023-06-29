@@ -61,7 +61,7 @@ export const routesConfig = [
     component: 'PayrollManagement',
   },
   {
-    path: '/payroll_details',
+    path: '/payroll_details/:id',
     component: 'PayrollDetails',
   },
   {

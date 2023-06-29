@@ -8,6 +8,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
 import moment from 'moment';
+import { useParams } from 'react-router-dom/cjs/react-router-dom.min';
+import { request } from '@/request';
 const contractTypes = [
   "", "Payroll", "Services"
 ]
@@ -97,6 +99,7 @@ const mathCeil = (value) => {
 }
 const PayrollDetails = () => {
   const entity = "workContract"
+  const url = useParams().id;
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const [isUpdate, setIsUpdate] = useState(false);
@@ -121,10 +124,10 @@ const PayrollDetails = () => {
   const [currentId, setCurrentId] = useState('');
   const [currentItem, setCurrentItem] = useState({});
 
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(parseInt(url.split("-")[1]));
+  const [currentYear, setCurrentYear] = useState(parseInt(url.split("-")[0]));
+  const [currentQ, setCurrentQ] = useState(parseInt(url.split("-")[2]));
   const [currentBiWeek, setCurrentBiweek] = useState(new Date())
-  const [currentQ, setCurrentQ] = useState(0);
   const [currentPeriod, setCurrentPeriod] = useState('1-15')
   const [changedDays, setChangedDays] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -182,10 +185,22 @@ const PayrollDetails = () => {
   const { pagination, items } = listResult;
   const [listItems, setListItems] = useState([]);
   const formRef = useRef(null);
-  useEffect(() => {
-    dispatch(crud.resetState())
-    dispatch(crud.list({ entity }));
-  }, []);
+  // useEffect(() => {
+
+
+  //   console.log(1);
+  //   async function init() {
+  //     const res = await request.list({ entity })
+  //     const result = res.result;
+  //     result.map(obj => {
+  //       obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+  //       obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+  //     })
+  //     setListItems(result)
+  //   }
+  //   init();
+
+  // }, []);
 
 
   const prevData = () => {
@@ -213,81 +228,77 @@ const PayrollDetails = () => {
     }
   }
   useEffect(() => {
+    console.log(11);
     setCurrentPeriod(getPeriods(currentMonth, currentYear, currentQ))
+
+
   }, [currentMonth, currentQ, currentYear])
-  useEffect(() => {
-    items.map(obj => {
-      obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-      obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-    })
 
 
-    setListItems(items)
-  }, [
-    items
-  ])
+  // useEffect(() => {
 
-  useEffect(() => {
-
-    console.log(listItems, '3333')
-    setListItems(listItems)
-  }, [
-    listItems
-  ])
+  //   console.log(listItems, '3333')
+  //   setListItems(listItems)
+  // }, [
+  //   listItems
+  // ])
 
   const dateValue = (date) => {
     return new Date(date).valueOf();
   }
   useEffect(() => {
+    async function init() {
 
-    const startDay = parseInt(currentPeriod.split("-")[0]);
-    const endDay = parseInt(currentPeriod.split("-")[1]);
-    const start_date = new Date(currentYear, startDay === 31 ? (currentMonth - 2) : (currentMonth - 1), startDay);
-    const end_date = new Date(currentYear, currentMonth - 1, endDay);
+      const startDay = parseInt(currentPeriod.split("-")[0]);
+      const endDay = parseInt(currentPeriod.split("-")[1]);
+      const start_date = new Date(currentYear, startDay === 31 ? (currentMonth - 2) : (currentMonth - 1), startDay);
+      const end_date = new Date(currentYear, currentMonth - 1, endDay);
 
-    let currentDate = moment(start_date);
-    var date = new Date(start_date);
-    date.setMonth(date.getMonth() + 12);
-    const end = moment(end_date);
+      let currentDate = moment(start_date);
+      var date = new Date(start_date);
+      date.setMonth(date.getMonth() + 12);
+      const end = moment(end_date);
 
-    const daysColumns = [];
-    while (currentDate.isSameOrBefore(end)) {
-      const monthLable = currentDate.format("MMMM");
-      const day = currentDate.date();
-      daysColumns.push({
-        title: `${day}-${monthLable}`
+      const daysColumns = [];
+      while (currentDate.isSameOrBefore(end)) {
+        const monthLable = currentDate.format("MMMM");
+        const day = currentDate.date();
+        daysColumns.push({
+          title: `${day}-${monthLable}`
+        })
+
+        currentDate = currentDate.add(1, 'days');
+      };
+      setChangedDays(daysColumns);
+
+      const res = await request.list({ entity })
+      const result = res.result;
+      result.map(obj => {
+        obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+        obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
       })
-
-      currentDate = currentDate.add(1, 'days');
-    }
-    console.log(daysColumns, 'daysColumns');
-    setChangedDays(daysColumns);
-
-
-    const _listItems = items.filter(obj =>
-      obj.status === "active" &&
-      (
+      const _listItems = result.filter(obj =>
+        obj.status === "active" &&
         (
-          dateValue(obj.start_date) <= dateValue(start_date) &&
-          dateValue(obj.end_date) >= dateValue(end_date)
-        )
-        ||
-        (
-          dateValue(obj.start_date) > dateValue(start_date) &&
-          dateValue(obj.start_date) < dateValue(end_date) &&
-          dateValue(obj.end_date) >= dateValue(end_date)
+          (
+            dateValue(obj.start_date) <= dateValue(start_date) &&
+            dateValue(obj.end_date) >= dateValue(end_date)
+          )
+          ||
+          (
+            dateValue(obj.start_date) > dateValue(start_date) &&
+            dateValue(obj.start_date) < dateValue(end_date) &&
+            dateValue(obj.end_date) >= dateValue(end_date)
+          )
         )
       )
-    )
-    console.log(_listItems);
-    setTimeout(() => {
-      setListItems(_listItems);
-    }, 100);
+      setListItems(_listItems)
+    }
+    init()
   }, [
     currentPeriod
   ])
 
-  console.log(changedDays, 'changedDays');
   return (
 
     <Layout style={{ padding: '100px', overflow: 'auto' }}>
