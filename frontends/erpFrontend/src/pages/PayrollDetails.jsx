@@ -7,9 +7,98 @@ import CustomModal from 'modules/CustomModal'
 import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
-import { Link } from 'react-router-dom/cjs/react-router-dom';
+import moment from 'moment';
+const contractTypes = [
+  "", "Payroll", "Services"
+]
 
+const columns = [
+  {
+    title: 'Customer',
+    dataIndex: 'personal_id',
+    width: '100',
+    editable: true,
+    fixed: 'left'
+  },
+  {
+    title: 'Employee',
+    dataIndex: ['parent_id', 'name'],
+    width: '100',
+    editable: true,
+    fixed: 'left'
+  },
+  {
+    title: 'Hours',
+    dataIndex: 'email',
+    width: '100',
+    editable: true,
+  },
+  {
+    title: 'HR/Week',
+    dataIndex: 'hr_week',
+    width: '100',
+    editable: true,
+  },
+  {
+    title: 'Type',
+    dataIndex: 'type',
+    width: '100',
+    editable: true,
+    render: (text) => {
+      return (
+        contractTypes[text]
+      );
+    },
+  },
+  {
+    title: 'Sal/Hr',
+    dataIndex: 'sal_hr',
+    width: '100',
+    editable: true,
+  },
+  {
+    title: 'Hrs/BiWeekly',
+    width: '100',
+    dataIndex: 'hrs_bi',
+    editable: true,
+    render: (value, record) => {
+      return (
+        record.type === 1 ? record.hr_week * 4.333 / 2 : 0
+      );
+    }
+  },
+  {
+    title: 'Week Pay',
+    dataIndex: 'phone',
+    width: '25',
+    editable: true,
+    render: (value, record) => {
+      return (
+        record.type === 1 ? (record.hr_week * 4.333 / 2) * record.sal_hr : 0
+      );
+    }
+  },
+  {
+    title: 'Adjustment',
+    dataIndex: 'phone',
+    width: '100',
+    editable: true,
+  },
+  {
+    title: 'Adjust($$$)',
+    dataIndex: 'phone',
+    width: '100',
+    editable: true,
+  },
+  {
+    title: 'Salary',
+    dataIndex: 'phone',
+    width: '100',
+    editable: true,
+    fixed: 'left'
 
+  },
+];
 const PayrollDetails = () => {
   const entity = "workContract"
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -41,8 +130,10 @@ const PayrollDetails = () => {
   const [currentBiWeek, setCurrentBiweek] = useState(new Date())
   const [currentQ, setCurrentQ] = useState(0);
   const [currentPeriod, setCurrentPeriod] = useState('1-15')
-
+  const [changedDays, setChangedDays] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  const [currentColumns, setCurrentColumns] = useState(columns)
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
     if (item) {
@@ -62,94 +153,7 @@ const PayrollDetails = () => {
       dispatch(crud.list({ entity }));
     }, 1000)
   }
-  const contractTypes = [
-    "", "Payroll", "Services"
-  ]
-  const columns = [
-    {
-      title: 'Customer',
-      dataIndex: 'personal_id',
-      width: '100',
-      editable: true,
-      fixed: 'left'
-    },
-    {
-      title: 'Employee',
-      dataIndex: ['parent_id', 'name'],
-      width: '100',
-      editable: true,
-      fixed: 'left'
-    },
-    {
-      title: 'Hours',
-      dataIndex: 'email',
-      width: '100',
-      editable: true,
-    },
-    {
-      title: 'HR/Week',
-      dataIndex: 'hr_week',
-      width: '100',
-      editable: true,
-    },
-    {
-      title: 'Type',
-      dataIndex: 'type',
-      width: '100',
-      editable: true,
-      render: (text) => {
-        return (
-          contractTypes[text]
-        );
-      },
-    },
-    {
-      title: 'Sal/Hr',
-      dataIndex: 'sal_hr',
-      width: '100',
-      editable: true,
-    },
-    {
-      title: 'Hrs/BiWeekly',
-      width: '100',
-      dataIndex: 'hrs_bi',
-      editable: true,
-      render: (value, record) => {
-        return (
-          record.type === 1 ? record.hr_week * 4.333 / 2 : 0
-        );
-      }
-    },
-    {
-      title: 'Week Pay',
-      dataIndex: 'phone',
-      width: '25',
-      editable: true,
-      render: (value, record) => {
-        return (
-          record.type === 1 ? (record.hr_week * 4.333 / 2) * record.sal_hr : 0
-        );
-      }
-    },
-    {
-      title: 'Adjustment',
-      dataIndex: 'phone',
-      width: '100',
-      editable: true,
-    },
-    {
-      title: 'Adjust($$$)',
-      dataIndex: 'phone',
-      width: '100',
-      editable: true,
-    },
-    {
-      title: 'Salary',
-      dataIndex: 'phone',
-      width: '100',
-      editable: true,
-    },
-  ];
+
   const navigateBiWeeks = (date, direction) => {
     const newDate = new Date(date);
     if (direction === 'previous') {
@@ -231,10 +235,31 @@ const PayrollDetails = () => {
     return new Date(date).valueOf();
   }
   useEffect(() => {
+
+    console.log(currentPeriod, 'currentPeriodcurrentPeriod', currentMonth)
     const startDay = parseInt(currentPeriod.split("-")[0]);
     const endDay = parseInt(currentPeriod.split("-")[1]);
     const start_date = new Date(currentYear, startDay === 31 ? (currentMonth - 2) : (currentMonth - 1), startDay);
     const end_date = new Date(currentYear, currentMonth - 1, endDay);
+
+    let currentDate = moment(start_date);
+    var date = new Date(start_date);
+    date.setMonth(date.getMonth() + 12);
+    const end = moment(end_date);
+
+    const daysColumns = [];
+    while (currentDate.isSameOrBefore(end)) {
+      const monthLable = currentDate.format("MMMM");
+      const day = currentDate.date();
+      daysColumns.push({
+        title: `${day}-${monthLable}`
+      })
+
+      currentDate = currentDate.add(1, 'days');
+    }
+    console.log(daysColumns, 'daysColumns');
+    setChangedDays(daysColumns);
+
 
     const _listItems = items.filter(obj =>
       obj.status === "active" &&
@@ -258,38 +283,41 @@ const PayrollDetails = () => {
   }, [
     currentPeriod
   ])
+
+  console.log(changedDays, 'changedDays');
   return (
 
-    <DashboardLayout>
-      <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ padding: '100px', overflow: 'auto' }}>
 
-        <Layout>
+      <Row>
+        <Col span={24}>
+          <h3 style={{ textAlign: 'center' }}>
+            <LeftOutlined onClick={prevData} />
+            QUINCENA: {currentPeriod.split("-")[0]} DE {parseInt(currentPeriod.split("-")[0]) !== 31 ? new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' }) : new Date(currentYear, currentMonth - 2).toLocaleString('default', { month: 'long' })} AL {currentPeriod.split("-")[1]} DE {new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' })} {currentYear}
+            <RightOutlined onClick={nextData} />
 
-          <Row>
-            <Col span={24}>
-              <h3 style={{ textAlign: 'center' }}>
-                <LeftOutlined onClick={prevData} />
-                QUINCENA: {currentPeriod.split("-")[0]} DE {parseInt(currentPeriod.split("-")[0]) !== 31 ? new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' }) : new Date(currentYear, currentMonth - 2).toLocaleString('default', { month: 'long' })} AL {currentPeriod.split("-")[1]} DE {new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' })} {currentYear}
-                <RightOutlined onClick={nextData} />
-
-              </h3>
-            </Col>
-          </Row>
-          <Table
-            scroll={{ x: 1500, y: 1300 }}
-            bordered
-            rowKey={(item) => item._id}
-            key={(item) => item._id}
-            dataSource={listItems || []}
-            columns={columns}
-            rowClassName="editable-row"
+          </h3>
+        </Col>
+      </Row>
+      <Table
+        // scroll={{ x: (changedDays.length + columns.length) * 100, y: 1300 }}
+        bordered
+        rowKey={(item) => item._id}
+        key={(item) => item._id}
+        dataSource={listItems || []}
+        columns={[...columns, ...changedDays]}
+        rowClassName="editable-row"
 
 
-          />
+      />
 
-        </Layout>
-      </Layout>
-    </DashboardLayout>
+
+    </Layout>
+    // <DashboardLayout>
+    //   <Layout style={{ minHeight: '100vh' }}>
+
+    //   </Layout>
+    // </DashboardLayout>
   );
 };
 export default PayrollDetails;
