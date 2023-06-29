@@ -44,6 +44,7 @@ const columns = [
     width: '15%',
     editable: true,
     render: (text, record) => {
+      record.payroll_amount = mathCeil(record.payroll_amount)
       return (record.payroll_amount || 0 + record.services_amount || 0)
     }
   },
