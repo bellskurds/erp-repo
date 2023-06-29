@@ -131,7 +131,9 @@ const Employees = () => {
 
   const { pagination, items } = listResult;
   const [paginations, setPaginations] = useState(pagination)
-
+  useEffect(() => {
+    setFilterData(items)
+  }, [items])
   const onFinish = (values) => {
     if (isUpdate && currentId) {
       const id = currentId;
