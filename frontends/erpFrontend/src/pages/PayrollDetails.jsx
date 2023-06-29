@@ -18,14 +18,12 @@ const columns = [
     dataIndex: 'personal_id',
     width: '100',
     editable: true,
-    fixed: 'left'
   },
   {
     title: 'Employee',
     dataIndex: ['parent_id', 'name'],
     width: '100',
     editable: true,
-    fixed: 'left'
   },
   {
     title: 'Hours',
@@ -61,22 +59,12 @@ const columns = [
     width: '100',
     dataIndex: 'hrs_bi',
     editable: true,
-    render: (value, record) => {
-      return (
-        record.type === 1 ? record.hr_week * 4.333 / 2 : 0
-      );
-    }
   },
   {
     title: 'Week Pay',
-    dataIndex: 'phone',
+    dataIndex: 'week_pay',
     width: '25',
     editable: true,
-    render: (value, record) => {
-      return (
-        record.type === 1 ? (record.hr_week * 4.333 / 2) * record.sal_hr : 0
-      );
-    }
   },
   {
     title: 'Adjustment',
@@ -95,10 +83,18 @@ const columns = [
     dataIndex: 'phone',
     width: '100',
     editable: true,
-    fixed: 'left'
+    render: (text, record) => {
+      return (
+        record.type === 1 ? mathCeil((record.hr_week * 4.333 / 2) * record.sal_hr) : 0
+      );
+    }
 
   },
 ];
+
+const mathCeil = (value) => {
+  return value.toFixed(2)
+}
 const PayrollDetails = () => {
   const entity = "workContract"
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -220,12 +216,20 @@ const PayrollDetails = () => {
     setCurrentPeriod(getPeriods(currentMonth, currentYear, currentQ))
   }, [currentMonth, currentQ, currentYear])
   useEffect(() => {
+    items.map(obj => {
+      obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+      obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+    })
+
+
     setListItems(items)
   }, [
     items
   ])
 
   useEffect(() => {
+
+    console.log(listItems, '3333')
     setListItems(listItems)
   }, [
     listItems
@@ -236,7 +240,6 @@ const PayrollDetails = () => {
   }
   useEffect(() => {
 
-    console.log(currentPeriod, 'currentPeriodcurrentPeriod', currentMonth)
     const startDay = parseInt(currentPeriod.split("-")[0]);
     const endDay = parseInt(currentPeriod.split("-")[1]);
     const start_date = new Date(currentYear, startDay === 31 ? (currentMonth - 2) : (currentMonth - 1), startDay);
