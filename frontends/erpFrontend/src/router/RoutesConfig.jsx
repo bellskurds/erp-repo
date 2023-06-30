@@ -92,4 +92,8 @@ export const routesConfig = [
     path: '/role',
     component: 'Role',
   },
+  {
+    path: '/ref',
+    component: 'Reference',
+  },
 ];

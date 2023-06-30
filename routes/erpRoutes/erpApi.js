@@ -40,6 +40,7 @@ const invoiceHistoryController = require('@/controllers/erpControllers/invoiceHi
 const documentManageController = require('@/controllers/erpControllers/documentManageController');
 const employeeDocumentController = require('@/controllers/erpControllers/employeeDocumentController');
 const ProjectController = require('@/controllers/erpControllers/ProjectController');
+const referenceController = require('@/controllers/erpControllers/referenceController');
 
 const baseFilePath = 'public/uploads/admin/'
 // //_______________________________ Admin management_______________________________
@@ -217,6 +218,18 @@ router.route('/customerContacts/search').get(catchErrors(customerContactsControl
 router.route('/customerContacts/list').get(catchErrors(customerContactsController.list));
 router.route('/customerContacts/filter').get(catchErrors(customerContactsController.filter));
 router.route('/customerContacts/byParentId').post(catchErrors(customerContactsController.getByParentId));
+
+
+
+// //_____________________________________ API for Project of Reference contacts __________________________________________________
+router.route('/reference/create').post(catchErrors(referenceController.create));
+router.route('/reference/read/:id').get(catchErrors(referenceController.read));
+router.route('/reference/update/:id').patch(catchErrors(referenceController.update));
+router.route('/reference/delete/:id').delete(catchErrors(referenceController.delete));
+router.route('/reference/search').get(catchErrors(referenceController.search));
+router.route('/reference/list').get(catchErrors(referenceController.list));
+router.route('/reference/filter').get(catchErrors(referenceController.filter));
+router.route('/reference/byParentId').post(catchErrors(referenceController.getByParentId));
 
 
 // //_____________________________________ API for Recurrent Invoice __________________________________________________

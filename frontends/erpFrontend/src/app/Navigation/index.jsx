@@ -111,6 +111,10 @@ export default function Navigation() {
               <Link to={'/role'} />
               Role
             </Menu.Item>
+            <Menu.Item key={'Ref'}>
+              <Link to={'/ref'} />
+              Reference
+            </Menu.Item>
           </SubMenu>
         </Menu>
       </Sider>
