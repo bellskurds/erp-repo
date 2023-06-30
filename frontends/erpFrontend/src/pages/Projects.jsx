@@ -9,49 +9,8 @@ import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
 import { Link } from 'react-router-dom/cjs/react-router-dom';
 import SelectAsync from '@/components/SelectAsync';
-const originData = [];
-for (let i = 0; i < 100; i++) {
-  originData.push({
-    key: i.toString(),
-    name: `Edrward ${i}`,
-    age: 32,
-    address: `London Park no. ${i}`,
-  });
-}
-const EditableCell = ({
-  editing,
-  dataIndex,
-  title,
-  inputType,
-  record,
-  index,
-  children,
-  ...restProps
-}) => {
-  const inputNode = inputType === 'number' ? <InputNumber /> : <Input />;
-  return (
-    <td {...restProps}>
-      {editing ? (
-        <Form.Item
-          name={dataIndex}
-          style={{
-            margin: 0,
-          }}
-          rules={[
-            {
-              required: true,
-              message: `Please Input ${title}!`,
-            },
-          ]}
-        >
-          {inputNode}
-        </Form.Item>
-      ) : (
-        children
-      )}
-    </td>
-  );
-};
+import { request } from '@/request';
+
 
 
 const Projects = () => {
@@ -83,10 +42,10 @@ const Projects = () => {
   const [customerId, setCustomerId] = useState(generateCustomerId());
 
   const [form] = Form.useForm();
-  const [data, setData] = useState(originData);
   const [editingKey, setEditingKey] = useState('');
   const [currentId, setCurrentId] = useState('');
   const [currentItem, setCurrentItem] = useState({});
+  const [references, setReferences] = useState([]);
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
     if (item) {
@@ -134,7 +93,7 @@ const Projects = () => {
     },
     {
       title: 'Reference',
-      dataIndex: 'ref',
+      dataIndex: ['ref', 'ref'],
       width: '15%',
       editable: true,
     },
@@ -231,6 +190,17 @@ const Projects = () => {
   useEffect(() => {
     dispatch(crud.resetState());
     dispatch(crud.list({ entity }));
+
+    async function init() {
+      const { result } = await request.list({ entity: 'reference' });
+      console.log(result, '555555');
+      result.map(obj => {
+        obj.value = obj._id;
+        obj.label = obj.ref
+      })
+      setReferences(result);
+    }
+    init();
   }, []);
 
   console.log(items, '33333434343')
@@ -295,18 +265,10 @@ const Projects = () => {
                 ]}
               >
                 <Select
-                  placeholder="Select a person"
+
+                  placeholder="Select Reference"
                   optionFilterProp="children"
-                  options={[{
-                    label: 'Kitchen cheaning',
-                    value: 1
-                  }, {
-                    label: 'Dinner...',
-                    value: 2
-                  }, {
-                    label: 'Morning...',
-                    value: 3
-                  }]} />
+                  options={references} />
               </Form.Item>
               <Form.Item
                 name="billing"
@@ -421,11 +383,7 @@ const Projects = () => {
 
           <Form form={form} component={false}>
             <Table
-              components={{
-                body: {
-                  cell: EditableCell,
-                },
-              }}
+
               bordered
               rowKey={(item) => item._id}
               key={(item) => item._id}

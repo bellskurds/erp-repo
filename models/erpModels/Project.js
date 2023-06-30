@@ -28,7 +28,7 @@ const projectSchema = new mongoose.Schema({
     type: Number,
   },
   ref: {
-    type: Number,
+    type: mongoose.Schema.ObjectId, ref: 'Reference', autopopulate: true
   },
   type: {
     type: Number,

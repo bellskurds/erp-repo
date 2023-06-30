@@ -209,7 +209,7 @@ const Projects = () => {
           <Row gutter={24} style={{ textAlign: 'right' }}>
             <Col span={24}>
 
-              <Button onClick={showModal} type="primary">Create Project</Button>
+              <Button onClick={showModal} type="primary">Create Ref</Button>
             </Col>
           </Row>
 
