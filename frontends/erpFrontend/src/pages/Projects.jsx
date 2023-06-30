@@ -16,6 +16,7 @@ import { request } from '@/request';
 const Projects = () => {
   const entity = "project"
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [components, setComponents] = useState([]);
 
   const [isUpdate, setIsUpdate] = useState(false);
   const showModal = () => {
@@ -150,6 +151,11 @@ const Projects = () => {
     },
 
   ];
+  const addEmployee = (e) => {
+    const newComponent = <SelectAsync entity={'employee'} displayLabels={['name']} />;
+    setComponents([...components, newComponent]);
+
+  }
   const mergedColumns = columns.map((col) => {
     if (!col.editable) {
       return col;
@@ -208,7 +214,7 @@ const Projects = () => {
 
     <DashboardLayout>
       <Layout style={{ minHeight: '100vh' }}>
-        <Modal title="Create Form" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null}>
+        <Modal title="Create Form" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null} width={1000}>
           <>
             <Form
               ref={formRef}
@@ -226,117 +232,112 @@ const Projects = () => {
               onFinishFailed={onFinishFailed}
               autoComplete="off"
             >
-              <Form.Item
-                name="customer"
-                label="Customer"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <SelectAsync entity={'client'} displayLabels={['name']} />
-              </Form.Item>
-              <Form.Item
-                name="type"
-                label="Type"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Radio.Group options={[{
-                  label: "Residential",
-                  value: 1
-                }, {
-                  label: "Commercial",
-                  value: 2
-                }]} />
-              </Form.Item>
-              <Form.Item
-                name="ref"
-                label="Reference"
-                rules={[
 
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Select
+              <Row gutter={24}>
 
-                  placeholder="Select Reference"
-                  optionFilterProp="children"
-                  options={references} />
-              </Form.Item>
-              <Form.Item
-                name="billing"
-                label="Billing"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Input type='number' />
-              </Form.Item>
-              <Form.Item
-                name="employees"
-                label="Employees"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Input type='number' />
-              </Form.Item>
-              <Form.Item
-                name="cost"
-                label="Cost"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Input type='number' />
-              </Form.Item>
-
-              <Form.Item
-                name="status"
-                label="Status"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-
-                <Select
-                  placeholder="Select a person"
-                  optionFilterProp="children"
-                  options={[{
-                    label: 'Active',
-                    value: 1
-                  }, {
-                    label: 'Cancelled',
-                    value: 2
-                  }, {
-                    label: 'Finished',
-                    value: 3
-                  }]} />
+                <Col span={12}>
+                  <Form.Item
+                    name="customer"
+                    label="Customer"
+                    rules={[
+                      {
+                        required: true,
+                      },
+                    ]}
+                  >
+                    <SelectAsync entity={'client'} displayLabels={['name']} />
+                  </Form.Item>
+                  <Form.Item name="periods" label="From ~ To">
+                    <DatePicker.RangePicker />
+                  </Form.Item>
+                  <Form.Item
+                    name="billing"
+                    label="Billing"
+                    rules={[
+                      {
+                        required: true,
+                      },
+                    ]}
+                  >
+                    <Input type='number' />
+                  </Form.Item>
 
 
-              </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="type"
+                    label="Type"
+                    rules={[
+                      {
+                        required: true,
+                      },
+                    ]}
+                  >
+                    <Radio.Group options={[{
+                      label: "Residential",
+                      value: 1
+                    }, {
+                      label: "Commercial",
+                      value: 2
+                    }]} />
+                  </Form.Item>
+                  <Form.Item
+                    name="ref"
+                    label="Reference"
+                    rules={[
 
+                      {
+                        required: true,
+                      },
+                    ]}
+                  >
+                    <Select
+
+                      placeholder="Select Reference"
+                      optionFilterProp="children"
+                      options={references} />
+                  </Form.Item>
+                  <Form.Item
+                    name="cost"
+                    label="Cost"
+                    rules={[
+                      {
+                        required: true,
+                      },
+                    ]}
+                  >
+                    <Input type='number' />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <hr />
+              <Row gutter={24}>
+
+                <Col span={12} wrapperCol={{
+                  offset: 8,
+                  span: 16,
+                }}>
+                  <Form.Item>
+                    <Button onClick={addEmployee}>Add Employee</Button>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item>
+                    <Button>Extra Week</Button>
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              {components}
               <Form.Item
                 wrapperCol={{
                   offset: 8,
                   span: 16,
                 }}
               >
+
+
                 {
                   isUpdate ? <Button type="primary" htmlType="submit">
                     Update
