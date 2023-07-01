@@ -46,7 +46,7 @@ const columns = [
   {
     title: 'Hours',
     dataIndex: 'email',
-    width: '100',
+    width: '200',
     editable: true,
     render: (text, record) => (
       <>
@@ -216,23 +216,13 @@ const PayrollDetails = () => {
   const { pagination, items } = listResult;
   const [listItems, setListItems] = useState([]);
   const formRef = useRef(null);
-  // useEffect(() => {
-
-
-  //   console.log(1);
-  //   async function init() {
-  //     const res = await request.list({ entity })
-  //     const result = res.result;
-  //     result.map(obj => {
-  //       obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-  //       obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-  //     })
-  //     setListItems(result)
-  //   }
-  //   init();
-
-  // }, []);
-
+  const getHours = (dates) => {
+    const hours = dates.map(date => moment(date).hour());
+    const maxHour = Math.max(...hours);
+    const minHour = Math.min(...hours);
+    const difference = maxHour - minHour;
+    return (difference)
+  }
 
   const prevData = () => {
     if (currentQ) {
@@ -266,13 +256,6 @@ const PayrollDetails = () => {
   }, [currentMonth, currentQ, currentYear])
 
 
-  // useEffect(() => {
-
-  //   console.log(listItems, '3333')
-  //   setListItems(listItems)
-  // }, [
-  //   listItems
-  // ])
 
   const dateValue = (date) => {
     return new Date(date).valueOf();
@@ -294,8 +277,39 @@ const PayrollDetails = () => {
       while (currentDate.isSameOrBefore(end)) {
         const monthLable = currentDate.format("MMMM");
         const day = currentDate.date();
+        const _day = currentDate.day();
+        console.log(currentDate.day(), 'currentDate.day()');
         daysColumns.push({
-          title: `${day}-${monthLable}`
+          title: `${day}-${monthLable}`,
+          dataIndex: `${currentDate.year()}-${currentDate.month()}-${currentDate.date()}`,
+          render: (text, record) => {
+            switch (_day) {
+              case 0:
+                return record.sunday
+                break;
+              case 1:
+                return record.monday
+                break;
+              case 2:
+                return record.tuesday
+                break;
+              case 3:
+                return record.wednesday
+                break;
+              case 4:
+                return record.thursday
+                break;
+              case 5:
+                return record.friday
+                break;
+              case 6:
+                return record.saturday
+                break;
+
+              default:
+                break;
+            }
+          }
         })
 
         currentDate = currentDate.add(1, 'days');
@@ -333,6 +347,13 @@ const PayrollDetails = () => {
         const { contract: assignedContract } = obj;
         assignedContract.hrs_bi = assignedContract.type === 1 ? mathCeil(assignedContract.hr_week * 4.333 / 2) : 0;
         assignedContract.week_pay = assignedContract.type === 1 ? mathCeil(assignedContract.hr_week * 4.333 / 2) : 0;
+        obj.sunday = obj.sunday ? getHours(obj.sunday) : 0;
+        obj.monday = obj.monday ? getHours(obj.monday) : 0;
+        obj.tuesday = obj.tuesday ? getHours(obj.tuesday) : 0;
+        obj.wednesday = obj.wednesday ? getHours(obj.wednesday) : 0;
+        obj.thursday = obj.thursday ? getHours(obj.thursday) : 0;
+        obj.friday = obj.friday ? getHours(obj.friday) : 0;
+        obj.saturday = obj.saturday ? getHours(obj.saturday) : 0;
 
 
         assignedContracts.push(assignedContract);
@@ -375,7 +396,7 @@ const PayrollDetails = () => {
         dataSource={listItems || []}
         columns={[...columns, ...changedDays]}
         rowClassName="editable-row"
-
+        style={{ width: '1000px' }}
 
       />
 
