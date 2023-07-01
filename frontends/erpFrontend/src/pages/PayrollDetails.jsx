@@ -367,6 +367,7 @@ const PayrollDetails = () => {
         </Col>
       </Row>
       <Table
+
         // scroll={{ x: (changedDays.length + columns.length) * 100, y: 1300 }}
         bordered
         rowKey={(item) => item._id}
