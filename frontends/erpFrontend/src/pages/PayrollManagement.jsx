@@ -181,8 +181,10 @@ const PayrollManagement = () => {
 
   useEffect(() => {
     async function init() {
-      const res = await request.list({ entity })
-      const result = res.result;
+      const { result } = await request.list({ entity });
+      const { result: assignedEmployee } = await request.list({ entity: "assignedEmployee" });
+      console.log(result, 'assignedEmployeesassignedEmployees');
+      // const result = res.result;
       result.map(obj => {
         obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
         obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
@@ -202,8 +204,8 @@ const PayrollManagement = () => {
           <Form form={form} component={false}>
             <Table
               bordered
-              rowKey={(item) => item.id}
-              key={(item) => item.id}
+              rowKey={new Date().valueOf()}
+              key={new Date().valueOf()}
               dataSource={listItems || []}
               columns={columns}
               rowClassName="editable-row"

@@ -152,7 +152,9 @@ const Projects = () => {
 
   ];
   const addEmployee = (e) => {
-    const newComponent = <SelectAsync entity={'employee'} displayLabels={['name']} />;
+    const newComponent = <Col>
+      <SelectAsync entity={'employee'} displayLabels={['name']} />;
+    </Col>
     setComponents([...components, newComponent]);
 
   }

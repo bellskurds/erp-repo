@@ -13,17 +13,33 @@ import { request } from '@/request';
 const contractTypes = [
   "", "Payroll", "Services"
 ]
+const getFormattedHours = (days) => {
+  const dayLabels = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
+  const hours = [];
+
+  for (let i = 0; i < days.length; i++) {
+    if (!days[i]) continue
+    const [start, end] = days[i];
+
+    if (start === end) {
+      hours.push(dayLabels[i] + ' ' + new Date(start).getHours());
+    } else if (i === 0 || start !== days[i - 1][0] || end !== days[i - 1][1]) {
+      hours.push(dayLabels[i] + '( ' + new Date(start).getHours() + '-' + new Date(end).getHours() + ')');
+    }
+  }
+  return hours.join(', ');
+}
 
 const columns = [
   {
     title: 'Customer',
-    dataIndex: 'personal_id',
+    dataIndex: ['parent_id', 'name'],
     width: '100',
     editable: true,
   },
   {
     title: 'Employee',
-    dataIndex: ['parent_id', 'name'],
+    dataIndex: ['employee', 'name'],
     width: '100',
     editable: true,
   },
@@ -32,6 +48,21 @@ const columns = [
     dataIndex: 'email',
     width: '100',
     editable: true,
+    render: (text, record) => (
+      <>
+        {getFormattedHours(
+          [
+            record.monday ? [record.monday[0], record.monday[1]] : "",
+            record.tuesday ? [record.tuesday[0], record.tuesday[1]] : "",
+            record.wednesday ? [record.wednesday[0], record.wednesday[1]] : "",
+            record.thursday ? [record.thursday[0], record.thursday[1]] : "",
+            record.friday ? [record.friday[0], record.friday[1]] : "",
+            record.saturday ? [record.saturday[0], record.saturday[1]] : "",
+            record.sunday ? [record.sunday[0], record.sunday[1]] : "",
+          ]
+        )}
+      </>
+    ),
   },
   {
     title: 'HR/Week',
@@ -41,7 +72,7 @@ const columns = [
   },
   {
     title: 'Type',
-    dataIndex: 'type',
+    dataIndex: ['contract', 'type'],
     width: '100',
     editable: true,
     render: (text) => {
@@ -59,12 +90,12 @@ const columns = [
   {
     title: 'Hrs/BiWeekly',
     width: '100',
-    dataIndex: 'hrs_bi',
+    dataIndex: ['contract', 'hrs_bi'],
     editable: true,
   },
   {
     title: 'Week Pay',
-    dataIndex: 'week_pay',
+    dataIndex: ['contract', 'week_pay'],
     width: '25',
     editable: true,
   },
@@ -271,27 +302,49 @@ const PayrollDetails = () => {
       };
       setChangedDays(daysColumns);
 
-      const res = await request.list({ entity })
-      const result = res.result;
-      result.map(obj => {
+      const { result: workContracts } = await request.list({ entity })
+      const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" })
+      console.log(assignedEmployees, workContracts, 'assignedEmployee');
+
+      const unassignedContracts = [];
+      const assignedContracts = [];
+
+      workContracts.map(obj => {
         obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
         obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
       })
-      const _listItems = result.filter(obj =>
-        obj.status === "active" &&
+
+      const _listItems = assignedEmployees.filter(({ contract }) =>
+        contract.status === "active" &&
         (
           (
-            dateValue(obj.start_date) <= dateValue(start_date) &&
-            dateValue(obj.end_date) >= dateValue(end_date)
+            dateValue(contract.start_date) <= dateValue(start_date) &&
+            dateValue(contract.end_date) >= dateValue(end_date)
           )
           ||
           (
-            dateValue(obj.start_date) > dateValue(start_date) &&
-            dateValue(obj.start_date) < dateValue(end_date) &&
-            dateValue(obj.end_date) >= dateValue(end_date)
+            dateValue(contract.start_date) > dateValue(start_date) &&
+            dateValue(contract.start_date) < dateValue(end_date) &&
+            dateValue(contract.end_date) >= dateValue(end_date)
           )
         )
       )
+      assignedEmployees.map(obj => {
+        const { contract: assignedContract } = obj;
+        assignedContract.hrs_bi = assignedContract.type === 1 ? mathCeil(assignedContract.hr_week * 4.333 / 2) : 0;
+        assignedContract.week_pay = assignedContract.type === 1 ? mathCeil(assignedContract.hr_week * 4.333 / 2) : 0;
+
+
+        assignedContracts.push(assignedContract);
+      });
+      workContracts.map(contract => {
+        const item = assignedContracts.filter(obj => obj._id === contract._id);
+        if (!item.length) {
+          unassignedContracts.push(contract)
+        }
+      })
+      console.log(_listItems, '_listItems_listItems');
+
       setListItems(_listItems)
     }
     init()
