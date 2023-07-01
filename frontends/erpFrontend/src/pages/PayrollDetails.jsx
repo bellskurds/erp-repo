@@ -90,12 +90,12 @@ const columns = [
   {
     title: 'Hrs/BiWeekly',
     width: '100',
-    dataIndex: ['contract', 'hrs_bi'],
+    dataIndex: 'hrs_bi',
     editable: true,
   },
   {
     title: 'Week Pay',
-    dataIndex: ['contract', 'week_pay'],
+    dataIndex: 'week_pay',
     width: '25',
     editable: true,
   },
@@ -285,25 +285,25 @@ const PayrollDetails = () => {
           render: (text, record) => {
             switch (_day) {
               case 0:
-                return record.sunday
+                return record.sunday_hr
                 break;
               case 1:
-                return record.monday
+                return record.monday_hr
                 break;
               case 2:
-                return record.tuesday
+                return record.tuesday_hr
                 break;
               case 3:
-                return record.wednesday
+                return record.wednesday_hr
                 break;
               case 4:
-                return record.thursday
+                return record.thursday_hr
                 break;
               case 5:
-                return record.friday
+                return record.friday_hr
                 break;
               case 6:
-                return record.saturday
+                return record.saturday_hr
                 break;
 
               default:
@@ -345,15 +345,15 @@ const PayrollDetails = () => {
       )
       assignedEmployees.map(obj => {
         const { contract: assignedContract } = obj;
-        assignedContract.hrs_bi = assignedContract.type === 1 ? mathCeil(assignedContract.hr_week * 4.333 / 2) : 0;
-        assignedContract.week_pay = assignedContract.type === 1 ? mathCeil(assignedContract.hr_week * 4.333 / 2) : 0;
-        obj.sunday = obj.sunday ? getHours(obj.sunday) : 0;
-        obj.monday = obj.monday ? getHours(obj.monday) : 0;
-        obj.tuesday = obj.tuesday ? getHours(obj.tuesday) : 0;
-        obj.wednesday = obj.wednesday ? getHours(obj.wednesday) : 0;
-        obj.thursday = obj.thursday ? getHours(obj.thursday) : 0;
-        obj.friday = obj.friday ? getHours(obj.friday) : 0;
-        obj.saturday = obj.saturday ? getHours(obj.saturday) : 0;
+        obj.hrs_bi = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+        obj.week_pay = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+        obj.sunday_hr = obj.sunday ? getHours(obj.sunday) : 0;
+        obj.monday_hr = obj.monday ? getHours(obj.monday) : 0;
+        obj.tuesday_hr = obj.tuesday ? getHours(obj.tuesday) : 0;
+        obj.wednesday_hr = obj.wednesday ? getHours(obj.wednesday) : 0;
+        obj.thursday_hr = obj.thursday ? getHours(obj.thursday) : 0;
+        obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
+        obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
 
 
         assignedContracts.push(assignedContract);
