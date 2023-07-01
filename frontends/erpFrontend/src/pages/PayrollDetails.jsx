@@ -125,7 +125,7 @@ const mathCeil = (value) => {
   return value.toFixed(2)
 }
 const PayrollDetails = () => {
-  const entity = "workContract"
+  const entity = "payroll"
   const url = useParams().id;
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -161,16 +161,20 @@ const PayrollDetails = () => {
   const [biWeek, setBiWeek] = useState(0);
   const [currentColumns, setCurrentColumns] = useState(columns);
   const [selectedCellValue, setSelectedCellValue] = useState(0);
+  const [selectedDate, setSelectedDate] = useState();
   const isEditing = (record) => record._id === editingKey;
-  const editItem = (item, value) => {
-    setSelectedCellValue(value)
-    console.log(item, 'itemitem');
+  const editItem = (item, value, current) => {
+
+    console.log(current, 'itemitem');
     if (item) {
       setTimeout(() => {
         if (formRef.current) formRef.current.setFieldsValue({
           hours: value
         });
       }, 400);
+      setSelectedCellValue(value)
+      setSelectedDate(current);
+
       setCurrentId(item._id);
       setCurrentItem(item);
       setIsModalVisible(true);
@@ -256,7 +260,13 @@ const PayrollDetails = () => {
 
   }, [currentMonth, currentQ, currentYear])
 
+  const onFinish = (values) => {
+    const { comment } = values;
+    const { contract, employee, parent_id } = currentItem
 
+    const jsonData = { date: selectedDate, comment: comment, contract: contract._id, employee: employee._id, customer: parent_id._id }
+    console.log(jsonData, 'currentItemcurrentItem');
+  }
 
   const dateValue = (date) => {
     return new Date(date).valueOf();
@@ -279,6 +289,8 @@ const PayrollDetails = () => {
         const monthLable = currentDate.format("MMMM");
         const day = currentDate.date();
         const _day = currentDate.day();
+        const year = currentDate.year();
+        const month = currentDate.month();
         daysColumns.push({
           title: `${day}-${monthLable}`,
           dataIndex: `day-${currentDate.date()}`,
@@ -286,49 +298,49 @@ const PayrollDetails = () => {
             switch (_day) {
               case 0:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, record.sunday_hr)}>
+                  <Typography.Text onDoubleClick={() => editItem(record, record.sunday_hr, `${year}/${month + 1}/${day}`)}>
                     {record.sunday_hr}
                   </Typography.Text>
                 );
                 break;
               case 1:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, record.monday_hr)}>
+                  <Typography.Text onDoubleClick={() => editItem(record, record.monday_hr, `${year}/${month + 1}/${day}`)}>
                     {record.monday_hr}
                   </Typography.Text>
                 );
                 break;
               case 2:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, record.tuesday_hr)}>
+                  <Typography.Text onDoubleClick={() => editItem(record, record.tuesday_hr, `${year}/${month + 1}/${day}`)}>
                     {record.tuesday_hr}
                   </Typography.Text>
                 );
                 break;
               case 3:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, record.wednesday_hr)}>
+                  <Typography.Text onDoubleClick={() => editItem(record, record.wednesday_hr, `${year}/${month + 1}/${day}`)}>
                     {record.wednesday_hr}
                   </Typography.Text>
                 );
                 break;
               case 4:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, record.thursday_hr)}>
+                  <Typography.Text onDoubleClick={() => editItem(record, record.thursday_hr, `${year}/${month + 1}/${day}`)}>
                     {record.thursday_hr}
                   </Typography.Text>
                 );
                 break;
               case 5:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, record.friday_hr)}>
+                  <Typography.Text onDoubleClick={() => editItem(record, record.friday_hr, `${year}/${month + 1}/${day}`)}>
                     {record.friday_hr}
                   </Typography.Text>
                 );
                 break;
               case 6:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, record.saturday_hr)}>
+                  <Typography.Text onDoubleClick={() => editItem(record, record.saturday_hr, `${year}/${month + 1}/${day}`)}>
                     {record.saturday_hr}
                   </Typography.Text>
                 );
@@ -344,7 +356,7 @@ const PayrollDetails = () => {
       };
       setChangedDays(daysColumns);
 
-      const { result: workContracts } = await request.list({ entity })
+      const { result: workContracts } = await request.list({ entity: "workContract" })
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" })
       console.log(assignedEmployees, workContracts, 'assignedEmployee');
 
@@ -422,7 +434,7 @@ const PayrollDetails = () => {
             initialValues={{
               remember: true,
             }}
-            // onFinish={onFinish}
+            onFinish={onFinish}
             // onFinishFailed={onFinishFailed}
             autoComplete="off"
           >
