@@ -105,25 +105,21 @@ const Customers = () => {
       title: 'Customer Id',
       dataIndex: 'customer_id',
       width: '15%',
-      editable: true,
     },
     {
       title: 'Name',
       dataIndex: 'name',
       width: '15%',
-      editable: true,
     },
     {
       title: 'Email',
       dataIndex: 'email',
       width: '15%',
-      editable: true,
     },
     {
       title: 'Phone',
       dataIndex: 'phone',
       width: '15%',
-      editable: true,
     },
     {
       title: 'Actions',
