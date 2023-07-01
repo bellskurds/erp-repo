@@ -35,19 +35,16 @@ const columns = [
     title: 'Customer',
     dataIndex: ['parent_id', 'name'],
     width: '100',
-    editable: true,
   },
   {
     title: 'Employee',
     dataIndex: ['employee', 'name'],
     width: '100',
-    editable: true,
   },
   {
     title: 'Hours',
     dataIndex: 'email',
     width: '200',
-    editable: true,
     render: (text, record) => (
       <>
         {getFormattedHours(
@@ -68,13 +65,11 @@ const columns = [
     title: 'HR/Week',
     dataIndex: 'hr_week',
     width: '100',
-    editable: true,
   },
   {
     title: 'Type',
     dataIndex: ['contract', 'type'],
     width: '100',
-    editable: true,
     render: (text) => {
       return (
         contractTypes[text]
@@ -85,37 +80,38 @@ const columns = [
     title: 'Sal/Hr',
     dataIndex: 'sal_hr',
     width: '100',
-    editable: true,
   },
   {
     title: 'Hrs/BiWeekly',
     width: '100',
     dataIndex: 'hrs_bi',
-    editable: true,
+    render: (text, record) => {
+      const { contract } = record;
+      const { type } = contract
+      return (
+        type === 2 ? record[4] : text
+      );
+    }
   },
   {
     title: 'Week Pay',
     dataIndex: 'week_pay',
     width: '25',
-    editable: true,
   },
   {
     title: 'Adjustment',
     dataIndex: 'phone',
     width: '100',
-    editable: true,
   },
   {
     title: 'Adjust($$$)',
     dataIndex: 'phone',
     width: '100',
-    editable: true,
   },
   {
     title: 'Salary',
     dataIndex: 'phone',
     width: '100',
-    editable: true,
     render: (text, record) => {
       return (
         record.type === 1 ? mathCeil((record.hr_week * 4.333 / 2) * record.sal_hr) : 0
@@ -162,14 +158,17 @@ const PayrollDetails = () => {
   const [currentPeriod, setCurrentPeriod] = useState('1-15')
   const [changedDays, setChangedDays] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
-
-  const [currentColumns, setCurrentColumns] = useState(columns)
+  const [biWeek, setBiWeek] = useState(0);
+  const [currentColumns, setCurrentColumns] = useState(columns);
+  const [selectedCellValue, setSelectedCellValue] = useState(0);
   const isEditing = (record) => record._id === editingKey;
-  const editItem = (item) => {
+  const editItem = (item, value) => {
+    setSelectedCellValue(value)
+    console.log(item, 'itemitem');
     if (item) {
-      setTimeout(() => {
-        if (formRef.current) formRef.current.setFieldsValue(item);
-      }, 400);
+      // setTimeout(() => {
+      //   if (formRef.current) formRef.current.setFieldsValue(item);
+      // }, 400);
       setCurrentId(item._id);
       setCurrentItem(item);
       setIsModalVisible(true);
@@ -278,17 +277,24 @@ const PayrollDetails = () => {
         const monthLable = currentDate.format("MMMM");
         const day = currentDate.date();
         const _day = currentDate.day();
-        console.log(currentDate.day(), 'currentDate.day()');
         daysColumns.push({
           title: `${day}-${monthLable}`,
-          dataIndex: `${currentDate.year()}-${currentDate.month()}-${currentDate.date()}`,
+          dataIndex: `day-${currentDate.date()}`,
           render: (text, record) => {
             switch (_day) {
               case 0:
-                return record.sunday_hr
+                return (
+                  <Typography.Text onDoubleClick={() => editItem(record, record.sunday_hr)}>
+                    {record.sunday_hr}
+                  </Typography.Text>
+                );
                 break;
               case 1:
-                return record.monday_hr
+                return (
+                  <Typography.Text onDoubleClick={() => editItem(record, record.monday_hr)}>
+                    {record.monday_hr}
+                  </Typography.Text>
+                );
                 break;
               case 2:
                 return record.tuesday_hr
@@ -345,8 +351,7 @@ const PayrollDetails = () => {
       )
       assignedEmployees.map(obj => {
         const { contract: assignedContract } = obj;
-        obj.hrs_bi = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-        obj.week_pay = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+
         obj.sunday_hr = obj.sunday ? getHours(obj.sunday) : 0;
         obj.monday_hr = obj.monday ? getHours(obj.monday) : 0;
         obj.tuesday_hr = obj.tuesday ? getHours(obj.tuesday) : 0;
@@ -355,7 +360,8 @@ const PayrollDetails = () => {
         obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
         obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
 
-
+        obj.hrs_bi = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+        obj.week_pay = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
         assignedContracts.push(assignedContract);
       });
       workContracts.map(contract => {
@@ -364,7 +370,9 @@ const PayrollDetails = () => {
           unassignedContracts.push(contract)
         }
       })
-      console.log(_listItems, '_listItems_listItems');
+
+
+      console.log(daysColumns, biWeek, '_listItems_listItems');
 
       setListItems(_listItems)
     }
@@ -372,11 +380,90 @@ const PayrollDetails = () => {
   }, [
     currentPeriod
   ])
-
+  useEffect(() => {
+    console.log(biWeek, 'biWeek');
+  }, [biWeek])
   return (
 
     <Layout style={{ padding: '100px', overflow: 'auto' }}>
+      <Modal title="Create Form" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null}>
+        <>
+          <Form
+            ref={formRef}
+            name="basic"
+            labelCol={{
+              span: 8,
+            }}
+            wrapperCol={{
+              span: 16,
+            }}
+            initialValues={{
+              remember: true,
+            }}
+            // onFinish={onFinish}
+            // onFinishFailed={onFinishFailed}
+            autoComplete="off"
+          >
+            <Form.Item
+              name="hours"
+              label="Hours"
+              rules={[
+                {
+                  required: true,
+                  validator: (_, value) => {
+                    console.log(selectedCellValue, 'selectedCellValue');
+                    if (selectedCellValue === 0) {
+                      if (value && value > 10) {
+                        return Promise.reject(`Value must be less than or equal to 10`);
+                      }
+                    } else {
+                      if (value && value > Math.abs(selectedCellValue)) {
+                        return Promise.reject(`Value must be less than or equal to ${Math.abs(selectedCellValue)}`);
+                      }
+                    }
+                    return Promise.resolve();
+                  }
 
+                },
+              ]}
+            >
+              <Input type='number' />
+            </Form.Item>
+            <Form.Item
+              name="comment"
+              label="Comment"
+              rules={[
+                {
+                  required: true,
+                },
+              ]}
+            >
+              <Input.TextArea />
+            </Form.Item>
+
+            <Form.Item
+              wrapperCol={{
+                offset: 8,
+                span: 16,
+              }}
+            >
+              {
+                isUpdate ? <Button type="primary" htmlType="submit">
+                  Update
+                </Button> :
+                  <Button type="primary" htmlType="submit">
+                    Save
+                  </Button>
+
+              }
+
+              <Button type="ghost" onClick={handleCancel}>
+                cancel
+              </Button>
+            </Form.Item>
+          </Form>
+        </>
+      </Modal>
       <Row>
         <Col span={24}>
           <h3 style={{ textAlign: 'center' }}>
