@@ -166,9 +166,11 @@ const PayrollDetails = () => {
     setSelectedCellValue(value)
     console.log(item, 'itemitem');
     if (item) {
-      // setTimeout(() => {
-      //   if (formRef.current) formRef.current.setFieldsValue(item);
-      // }, 400);
+      setTimeout(() => {
+        if (formRef.current) formRef.current.setFieldsValue({
+          hours: value
+        });
+      }, 400);
       setCurrentId(item._id);
       setCurrentItem(item);
       setIsModalVisible(true);
@@ -297,19 +299,39 @@ const PayrollDetails = () => {
                 );
                 break;
               case 2:
-                return record.tuesday_hr
+                return (
+                  <Typography.Text onDoubleClick={() => editItem(record, record.tuesday_hr)}>
+                    {record.tuesday_hr}
+                  </Typography.Text>
+                );
                 break;
               case 3:
-                return record.wednesday_hr
+                return (
+                  <Typography.Text onDoubleClick={() => editItem(record, record.wednesday_hr)}>
+                    {record.wednesday_hr}
+                  </Typography.Text>
+                );
                 break;
               case 4:
-                return record.thursday_hr
+                return (
+                  <Typography.Text onDoubleClick={() => editItem(record, record.thursday_hr)}>
+                    {record.thursday_hr}
+                  </Typography.Text>
+                );
                 break;
               case 5:
-                return record.friday_hr
+                return (
+                  <Typography.Text onDoubleClick={() => editItem(record, record.friday_hr)}>
+                    {record.friday_hr}
+                  </Typography.Text>
+                );
                 break;
               case 6:
-                return record.saturday_hr
+                return (
+                  <Typography.Text onDoubleClick={() => editItem(record, record.saturday_hr)}>
+                    {record.saturday_hr}
+                  </Typography.Text>
+                );
                 break;
 
               default:
