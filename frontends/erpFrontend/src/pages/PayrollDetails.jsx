@@ -149,7 +149,6 @@ const PayrollDetails = () => {
   };
 
   const [form] = Form.useForm();
-  const [editingKey, setEditingKey] = useState('');
   const [currentId, setCurrentId] = useState('');
   const [currentItem, setCurrentItem] = useState({});
   const [allHours, setAllHours] = useState([]);
@@ -160,16 +159,12 @@ const PayrollDetails = () => {
   const [currentBiWeek, setCurrentBiweek] = useState(new Date())
   const [currentPeriod, setCurrentPeriod] = useState('1-15')
   const [changedDays, setChangedDays] = useState([]);
-  const [currentDate, setCurrentDate] = useState(new Date());
   const [biWeek, setBiWeek] = useState(0);
-  const [currentColumns, setCurrentColumns] = useState(columns);
   const [selectedCellValue, setSelectedCellValue] = useState(0);
   const [selectedDate, setSelectedDate] = useState();
   const [byEmail, setByEmail] = useState();
-  const isEditing = (record) => record._id === editingKey;
   const editItem = (item, cellItem, current) => {
     const { hour, comment, by: { email: byEmail = '' } = {} } = cellItem
-    console.log(item, 'itemitem');
     if (item) {
       setTimeout(() => {
         if (formRef.current) formRef.current.setFieldsValue({
@@ -265,18 +260,14 @@ const PayrollDetails = () => {
   }, [currentMonth, currentQ, currentYear])
   const AdminId = useSelector(selectCurrentAdmin);
   const Auth = JSON.parse(localStorage.getItem('auth'));
-
-  console.log(AdminId, 'AdminIdAdminId');
   const onFinish = (values) => {
     const { comment, hours } = values;
     const { contract, employee, parent_id } = currentItem
-    console.log(AdminId, Auth, 'Auth');
     const jsonData = { by: Auth.id, hour: hours, date: selectedDate, comment: comment, contract: contract._id, employee: employee._id, customer: parent_id._id }
 
 
     const item = allHours.filter(obj => obj.contract === contract._id && obj.employee === employee._id && obj.customer === parent_id._id && obj.date === selectedDate)
     if (item.length) {
-      console.log(item[0], item);
       dispatch(crud.update({ entity, id: item[0]._id, jsonData }))
     } else {
       dispatch(crud.create({ entity, jsonData }))
@@ -312,8 +303,6 @@ const PayrollDetails = () => {
   useEffect(() => {
     async function init() {
       const { result: allHours } = await request.list({ entity });
-
-      console.log(allHours, 'allHoursallHours');
       const startDay = parseInt(currentPeriod.split("-")[0]);
       const endDay = parseInt(currentPeriod.split("-")[1]);
       const start_date = new Date(currentYear, startDay === 31 ? (currentMonth - 2) : (currentMonth - 1), startDay);
@@ -398,8 +387,6 @@ const PayrollDetails = () => {
 
       const { result: workContracts } = await request.list({ entity: "workContract" })
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" })
-      console.log(assignedEmployees, workContracts, 'assign2222edEmployee');
-
       const unassignedContracts = [];
       const assignedContracts = [];
 
@@ -435,7 +422,7 @@ const PayrollDetails = () => {
         obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
 
         obj.hrs_bi = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-        obj.week_pay = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+        obj.week_pay = assignedContract.type === 1 ? mathCeil(obj.hrs_bi * obj.sal_hr) : 0;
         assignedContracts.push(assignedContract);
       });
       workContracts.map(contract => {
@@ -444,10 +431,6 @@ const PayrollDetails = () => {
           unassignedContracts.push(contract)
         }
       })
-
-
-      console.log(daysColumns, biWeek, '_listItems_listItems');
-
       setListItems(_listItems)
     }
     init()
@@ -484,7 +467,6 @@ const PayrollDetails = () => {
                 {
                   required: true,
                   validator: (_, value) => {
-                    console.log(selectedCellValue, 'selectedCellValue');
                     if (selectedCellValue === 0) {
                       if (value && value > 10) {
                         return Promise.reject(`Value must be less than or equal to 10`);
