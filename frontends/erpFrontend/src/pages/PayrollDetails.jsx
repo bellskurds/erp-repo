@@ -11,6 +11,7 @@ import moment from 'moment';
 import { useParams } from 'react-router-dom/cjs/react-router-dom.min';
 import { request } from '@/request';
 import { selectCurrentAdmin } from '@/redux/auth/selectors';
+import { useEffectOnce } from 'react-use';
 const contractTypes = [
   "", "Payroll", "Services"
 ]
@@ -151,6 +152,7 @@ const PayrollDetails = () => {
   const [editingKey, setEditingKey] = useState('');
   const [currentId, setCurrentId] = useState('');
   const [currentItem, setCurrentItem] = useState({});
+  const [allHours, setAllHours] = useState([]);
 
   const [currentMonth, setCurrentMonth] = useState(parseInt(url.split("-")[1]));
   const [currentYear, setCurrentYear] = useState(parseInt(url.split("-")[0]));
@@ -255,41 +257,58 @@ const PayrollDetails = () => {
     }
   }
   useEffect(() => {
-    console.log(11);
+    getAllHours();
     setCurrentPeriod(getPeriods(currentMonth, currentYear, currentQ))
 
 
   }, [currentMonth, currentQ, currentYear])
-  const { id: AdminId } = useSelector(selectCurrentAdmin);
+  const AdminId = useSelector(selectCurrentAdmin);
+  const Auth = JSON.parse(localStorage.getItem('auth'));
 
+  console.log(AdminId, 'AdminIdAdminId');
   const onFinish = (values) => {
     const { comment, hours } = values;
     const { contract, employee, parent_id } = currentItem
+    console.log(AdminId, Auth, 'Auth');
+    const jsonData = { by: Auth.id, hour: hours, date: selectedDate, comment: comment, contract: contract._id, employee: employee._id, customer: parent_id._id }
 
-    const jsonData = { by: AdminId, hour: hours, date: selectedDate, comment: comment, contract: contract._id, employee: employee._id, customer: parent_id._id }
 
-    async function async() {
-      const { result } = await request.list({ entity })
-
-      const item = result.filter(obj => obj.contract === contract._id && obj.employee === employee._id && obj.customer === parent_id._id && obj.date === selectedDate)
-      console.log(item, 'contract, employee, parent_id');
-      if (item.length) {
-        console.log(item[0], item);
-        dispatch(crud.update({ entity, id: item[0]._id, jsonData }))
-      } else {
-        dispatch(crud.create({ entity, jsonData }))
-      }
+    const item = allHours.filter(obj => obj.contract === contract._id && obj.employee === employee._id && obj.customer === parent_id._id && obj.date === selectedDate)
+    if (item.length) {
+      console.log(item[0], item);
+      dispatch(crud.update({ entity, id: item[0]._id, jsonData }))
+    } else {
+      dispatch(crud.create({ entity, jsonData }))
     }
-    async();
+    setIsModalVisible(false);
+    setCurrentPeriod(currentPeriod)
 
   }
 
   const dateValue = (date) => {
     return new Date(date).valueOf();
   }
+  const changedCellValue = (hours, date, record) => {
+    const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id } } = record;
+    const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
+    if (item) {
+      return item.hour
+    } else {
+      return false;
+    }
+  }
+  const getAllHours = async () => {
+    const { result } = await request.list({ entity });
+    setAllHours(result);
+  }
+  useEffect(() => {
+    getAllHours();
+  }, []);
+
+
   useEffect(() => {
     async function init() {
-
+      const { result: allHours } = await request.list({ entity });
       const startDay = parseInt(currentPeriod.split("-")[0]);
       const endDay = parseInt(currentPeriod.split("-")[1]);
       const start_date = new Date(currentYear, startDay === 31 ? (currentMonth - 2) : (currentMonth - 1), startDay);
@@ -309,55 +328,55 @@ const PayrollDetails = () => {
         const month = currentDate.month();
         daysColumns.push({
           title: `${day}-${monthLable}`,
-          dataIndex: `day-${currentDate.date()}`,
+          dataIndex: `day-${year}_${month + 1}_${day}`,
           render: (text, record) => {
             switch (_day) {
               case 0:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, record.sunday_hr, `${year}/${month + 1}/${day}`)}>
-                    {record.sunday_hr}
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellValue(allHours, `${year}/${month + 1}/${day}`, record), `${year}/${month + 1}/${day}`)}>
+                    {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.sunday_hr}
                   </Typography.Text>
                 );
                 break;
               case 1:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, record.monday_hr, `${year}/${month + 1}/${day}`)}>
-                    {record.monday_hr}
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.monday_hr, `${year}/${month + 1}/${day}`)}>
+                    {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.monday_hr}
                   </Typography.Text>
                 );
                 break;
               case 2:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, record.tuesday_hr, `${year}/${month + 1}/${day}`)}>
-                    {record.tuesday_hr}
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.tuesday_hr, `${year}/${month + 1}/${day}`)}>
+                    {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.tuesday_hr}
                   </Typography.Text>
                 );
                 break;
               case 3:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, record.wednesday_hr, `${year}/${month + 1}/${day}`)}>
-                    {record.wednesday_hr}
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.wednesday_hr, `${year}/${month + 1}/${day}`)}>
+                    {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.wednesday_hr}
                   </Typography.Text>
                 );
                 break;
               case 4:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, record.thursday_hr, `${year}/${month + 1}/${day}`)}>
-                    {record.thursday_hr}
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.thursday_hr, `${year}/${month + 1}/${day}`)}>
+                    {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.thursday_hr}
                   </Typography.Text>
                 );
                 break;
               case 5:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, record.friday_hr, `${year}/${month + 1}/${day}`)}>
-                    {record.friday_hr}
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.friday_hr, `${year}/${month + 1}/${day}`)}>
+                    {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.friday_hr}
                   </Typography.Text>
                 );
                 break;
               case 6:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, record.saturday_hr, `${year}/${month + 1}/${day}`)}>
-                    {record.saturday_hr}
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.saturday_hr, `${year}/${month + 1}/${day}`)}>
+                    {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.saturday_hr}
                   </Typography.Text>
                 );
                 break;
@@ -374,7 +393,7 @@ const PayrollDetails = () => {
 
       const { result: workContracts } = await request.list({ entity: "workContract" })
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" })
-      console.log(assignedEmployees, workContracts, 'assignedEmployee');
+      console.log(assignedEmployees, workContracts, 'assign2222edEmployee');
 
       const unassignedContracts = [];
       const assignedContracts = [];
@@ -431,6 +450,8 @@ const PayrollDetails = () => {
     currentPeriod
   ])
   useEffect(() => {
+    getAllHours();
+
     console.log(biWeek, 'biWeek');
   }, [biWeek])
   return (
