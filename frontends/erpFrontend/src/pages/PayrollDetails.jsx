@@ -10,6 +10,7 @@ import { selectListItems } from '@/redux/crud/selectors';
 import moment from 'moment';
 import { useParams } from 'react-router-dom/cjs/react-router-dom.min';
 import { request } from '@/request';
+import { selectCurrentAdmin } from '@/redux/auth/selectors';
 const contractTypes = [
   "", "Payroll", "Services"
 ]
@@ -259,12 +260,13 @@ const PayrollDetails = () => {
 
 
   }, [currentMonth, currentQ, currentYear])
+  const { id: AdminId } = useSelector(selectCurrentAdmin);
 
   const onFinish = (values) => {
     const { comment, hours } = values;
     const { contract, employee, parent_id } = currentItem
 
-    const jsonData = { hour: hours, date: selectedDate, comment: comment, contract: contract._id, employee: employee._id, customer: parent_id._id }
+    const jsonData = { by: AdminId, hour: hours, date: selectedDate, comment: comment, contract: contract._id, employee: employee._id, customer: parent_id._id }
 
     async function async() {
       const { result } = await request.list({ entity })
