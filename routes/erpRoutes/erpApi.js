@@ -41,6 +41,7 @@ const documentManageController = require('@/controllers/erpControllers/documentM
 const employeeDocumentController = require('@/controllers/erpControllers/employeeDocumentController');
 const ProjectController = require('@/controllers/erpControllers/ProjectController');
 const referenceController = require('@/controllers/erpControllers/referenceController');
+const payrollController = require('@/controllers/erpControllers/payrollController');
 
 const baseFilePath = 'public/uploads/admin/'
 // //_______________________________ Admin management_______________________________
@@ -230,6 +231,17 @@ router.route('/reference/search').get(catchErrors(referenceController.search));
 router.route('/reference/list').get(catchErrors(referenceController.list));
 router.route('/reference/filter').get(catchErrors(referenceController.filter));
 router.route('/reference/byParentId').post(catchErrors(referenceController.getByParentId));
+
+
+// //_____________________________________ API for Project of Payroll __________________________________________________
+router.route('/payroll/create').post(catchErrors(payrollController.create));
+router.route('/payroll/read/:id').get(catchErrors(payrollController.read));
+router.route('/payroll/update/:id').patch(catchErrors(payrollController.update));
+router.route('/payroll/delete/:id').delete(catchErrors(payrollController.delete));
+router.route('/payroll/search').get(catchErrors(payrollController.search));
+router.route('/payroll/list').get(catchErrors(payrollController.list));
+router.route('/payroll/filter').get(catchErrors(payrollController.filter));
+router.route('/payroll/byParentId').post(catchErrors(payrollController.getByParentId));
 
 
 // //_____________________________________ API for Recurrent Invoice __________________________________________________

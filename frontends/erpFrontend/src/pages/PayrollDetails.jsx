@@ -261,11 +261,25 @@ const PayrollDetails = () => {
   }, [currentMonth, currentQ, currentYear])
 
   const onFinish = (values) => {
-    const { comment } = values;
+    const { comment, hours } = values;
     const { contract, employee, parent_id } = currentItem
 
-    const jsonData = { date: selectedDate, comment: comment, contract: contract._id, employee: employee._id, customer: parent_id._id }
-    console.log(jsonData, 'currentItemcurrentItem');
+    const jsonData = { hour: hours, date: selectedDate, comment: comment, contract: contract._id, employee: employee._id, customer: parent_id._id }
+
+    async function async() {
+      const { result } = await request.list({ entity })
+
+      const item = result.filter(obj => obj.contract === contract._id && obj.employee === employee._id && obj.customer === parent_id._id && obj.date === selectedDate)
+      console.log(item, 'contract, employee, parent_id');
+      if (item.length) {
+        console.log(item[0], item);
+        dispatch(crud.update({ entity, id: item[0]._id, jsonData }))
+      } else {
+        dispatch(crud.create({ entity, jsonData }))
+      }
+    }
+    async();
+
   }
 
   const dateValue = (date) => {
@@ -420,7 +434,7 @@ const PayrollDetails = () => {
   return (
 
     <Layout style={{ padding: '100px', overflow: 'auto' }}>
-      <Modal title="Create Form" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null}>
+      <Modal title={selectedDate} visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null}>
         <>
           <Form
             ref={formRef}
