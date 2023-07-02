@@ -15,7 +15,7 @@ const PayrollSchema = new mongoose.Schema({
     type: String,
   },
   by: {
-    type: String,
+    type: mongoose.Schema.ObjectId, ref: 'Admin', autopopulate: true
   },
   customer: {
     type: String,

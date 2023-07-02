@@ -153,7 +153,7 @@ const PayrollDetails = () => {
   const [currentId, setCurrentId] = useState('');
   const [currentItem, setCurrentItem] = useState({});
   const [allHours, setAllHours] = useState([]);
-
+  const [saveStatus, setSaveStatus] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(parseInt(url.split("-")[1]));
   const [currentYear, setCurrentYear] = useState(parseInt(url.split("-")[0]));
   const [currentQ, setCurrentQ] = useState(parseInt(url.split("-")[2]));
@@ -165,19 +165,21 @@ const PayrollDetails = () => {
   const [currentColumns, setCurrentColumns] = useState(columns);
   const [selectedCellValue, setSelectedCellValue] = useState(0);
   const [selectedDate, setSelectedDate] = useState();
+  const [byEmail, setByEmail] = useState();
   const isEditing = (record) => record._id === editingKey;
-  const editItem = (item, value, current) => {
-
-    console.log(current, 'itemitem');
+  const editItem = (item, cellItem, current) => {
+    const { hour, comment, by: { email: byEmail = '' } = {} } = cellItem
+    console.log(item, 'itemitem');
     if (item) {
       setTimeout(() => {
         if (formRef.current) formRef.current.setFieldsValue({
-          hours: value
+          hours: hour,
+          comment: comment,
         });
       }, 400);
-      setSelectedCellValue(value)
+      setSelectedCellValue(hour)
       setSelectedDate(current);
-
+      setByEmail(byEmail)
       setCurrentId(item._id);
       setCurrentItem(item);
       setIsModalVisible(true);
@@ -257,7 +259,6 @@ const PayrollDetails = () => {
     }
   }
   useEffect(() => {
-    getAllHours();
     setCurrentPeriod(getPeriods(currentMonth, currentYear, currentQ))
 
 
@@ -281,7 +282,7 @@ const PayrollDetails = () => {
       dispatch(crud.create({ entity, jsonData }))
     }
     setIsModalVisible(false);
-    setCurrentPeriod(currentPeriod)
+    setSaveStatus(!saveStatus)
 
   }
 
@@ -297,18 +298,22 @@ const PayrollDetails = () => {
       return false;
     }
   }
-  const getAllHours = async () => {
-    const { result } = await request.list({ entity });
-    setAllHours(result);
+  const changedCellItem = (hours, date, record) => {
+    const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id } } = record;
+    const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
+    if (item) {
+      return item
+    } else {
+      return false;
+    }
   }
-  useEffect(() => {
-    getAllHours();
-  }, []);
 
 
   useEffect(() => {
     async function init() {
       const { result: allHours } = await request.list({ entity });
+
+      console.log(allHours, 'allHoursallHours');
       const startDay = parseInt(currentPeriod.split("-")[0]);
       const endDay = parseInt(currentPeriod.split("-")[1]);
       const start_date = new Date(currentYear, startDay === 31 ? (currentMonth - 2) : (currentMonth - 1), startDay);
@@ -333,49 +338,49 @@ const PayrollDetails = () => {
             switch (_day) {
               case 0:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, changedCellValue(allHours, `${year}/${month + 1}/${day}`, record), `${year}/${month + 1}/${day}`)}>
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.sunday_hr }, `${year}/${month + 1}/${day}`)}>
                     {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.sunday_hr}
                   </Typography.Text>
                 );
                 break;
               case 1:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.monday_hr, `${year}/${month + 1}/${day}`)}>
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.monday_hr }, `${year}/${month + 1}/${day}`)}>
                     {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.monday_hr}
                   </Typography.Text>
                 );
                 break;
               case 2:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.tuesday_hr, `${year}/${month + 1}/${day}`)}>
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.tuesday_hr }, `${year}/${month + 1}/${day}`)}>
                     {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.tuesday_hr}
                   </Typography.Text>
                 );
                 break;
               case 3:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.wednesday_hr, `${year}/${month + 1}/${day}`)}>
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.wednesday_hr }, `${year}/${month + 1}/${day}`)}>
                     {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.wednesday_hr}
                   </Typography.Text>
                 );
                 break;
               case 4:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.thursday_hr, `${year}/${month + 1}/${day}`)}>
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.thursday_hr }, `${year}/${month + 1}/${day}`)}>
                     {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.thursday_hr}
                   </Typography.Text>
                 );
                 break;
               case 5:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.friday_hr, `${year}/${month + 1}/${day}`)}>
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.friday_hr }, `${year}/${month + 1}/${day}`)}>
                     {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.friday_hr}
                   </Typography.Text>
                 );
                 break;
               case 6:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.saturday_hr, `${year}/${month + 1}/${day}`)}>
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.saturday_hr }, `${year}/${month + 1}/${day}`)}>
                     {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.saturday_hr}
                   </Typography.Text>
                 );
@@ -447,12 +452,9 @@ const PayrollDetails = () => {
     }
     init()
   }, [
-    currentPeriod
+    currentPeriod, saveStatus
   ])
   useEffect(() => {
-    getAllHours();
-
-    console.log(biWeek, 'biWeek');
   }, [biWeek])
   return (
 
@@ -511,7 +513,6 @@ const PayrollDetails = () => {
             >
               <Input.TextArea />
             </Form.Item>
-
             <Form.Item
               wrapperCol={{
                 offset: 8,
@@ -533,6 +534,7 @@ const PayrollDetails = () => {
               </Button>
             </Form.Item>
           </Form>
+          {byEmail && `Changed by ${byEmail}`}
         </>
       </Modal>
       <Row>
