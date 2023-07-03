@@ -32,20 +32,20 @@ const columns = [
     dataIndex: 'payroll_amount',
     width: '15%',
     editable: true,
-    render: (text) => {
-      return (mathCeil(text) || 0
-      )
-    }
+    // render: (text) => {
+    //   return (mathCeil(text) || 0
+    //   )
+    // }
   },
   {
     title: 'Total for services',
     dataIndex: 'services_amount',
     width: '15%',
     editable: true,
-    render: (text) => {
-      return (text || 0
-      )
-    }
+    // render: (text) => {
+    //   return (text || 0
+    //   )
+    // }
   },
   {
     title: 'Total',
@@ -54,7 +54,7 @@ const columns = [
     editable: true,
     render: (text, record) => {
 
-      return (mathCeil(record.payroll_amount) || 0 + mathCeil(record.services_amount) || 0)
+      return (mathCeil(record.payroll_amount + record.services_amount))
     }
   },
 ];
@@ -69,7 +69,7 @@ const PayrollManagement = () => {
   const [form] = Form.useForm();
   const [listItems, setListItems] = useState([]);
   const [payrollDetails, setPayrollDetails] = useState([])
-  const [periodsValue, setPeriodsValue] = useState()
+  const [allHours, setAllHours] = useState([]);
   const getPeriods = (month, year, Q = 0) => {
     const daysInMonth = new Date(year, month, 0).getDate();
     const prevMonth = new Date(year, month, 0);
@@ -85,11 +85,9 @@ const PayrollManagement = () => {
   }
 
   useEffect(() => {
-    getData();
-  }, [payrollDetails])
-  const getData = () => {
 
-    console.log(payrollDetails, 'payrollDetails');
+  }, [payrollDetails])
+  const getData = async () => {
     const start_date = '2023/6/1';
     const end_date = new Date();
     let currentDate = moment(start_date);
@@ -97,7 +95,9 @@ const PayrollManagement = () => {
     const end = moment(end_date)
     const periods = []
 
-
+    const { result: assignedEmployee } = await request.list({ entity: "assignedEmployee" });
+    const { result: allHours } = await request.list({ entity: 'payroll' });
+    console.log(allHours, 'allHoursallHours');
     while (currentDate.isSameOrBefore(end)) {
 
       if (currentDate.month() === end.month() && end.date() < 15) {
@@ -108,7 +108,8 @@ const PayrollManagement = () => {
           period_label: `${currentDate.format('MMMM')}-1(${currentDate.year()})`,
           year: currentDate.year(),
           periods: getPeriods(currentDate.month(), currentDate.year(), 0),
-          payroll_amount: getPaymentData(currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0))
+          payroll_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), allHours, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0), 1),
+          services_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), allHours, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0), 2)
         })
       }
       else {
@@ -119,7 +120,10 @@ const PayrollManagement = () => {
           period_label: `${currentDate.format('MMMM')}-1(${currentDate.year()})`,
           year: currentDate.year(),
           periods: getPeriods(currentDate.month(), currentDate.year(), 0),
-          payroll_amount: getPaymentData(currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0))
+          payroll_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), allHours, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0))
+          ,
+          services_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), allHours, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0), 2)
+
         },
           {
             id: new Date().valueOf() + 1,
@@ -128,7 +132,10 @@ const PayrollManagement = () => {
             period_label: `${currentDate.format('MMMM')}-2(${currentDate.year()})`,
             year: currentDate.year(),
             periods: getPeriods(currentDate.month(), currentDate.year(), 1),
-            payroll_amount: getPaymentData(currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 1))
+            payroll_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), allHours, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 1))
+            ,
+            services_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), allHours, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0), 2)
+
           })
       }
       currentDate = currentDate.add(1, 'months');
@@ -136,61 +143,171 @@ const PayrollManagement = () => {
     periods.sort((a, b) => {
       return b.year - a.year || b.month - a.month || b.q - a.q
     })
+    periods.map((obj, index) => {
+      obj.key = index
+    })
     setListItems(periods)
-    console.log(periods, 'periods');
-
   }
   const dateValue = (date) => {
     return new Date(date).valueOf();
   }
-  const getPaymentData = (year, month, periods) => {
+  const changedCellValue = (hours, date, record) => {
+    const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id } } = record;
+    const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
+    if (item) {
+      return item.hour
+    } else {
+      return false;
+    }
+  }
+  const getHours = (dates) => {
+    const hours = dates.map(date => moment(date).hour());
+    const maxHour = Math.max(...hours);
+    const minHour = Math.min(...hours);
+    const difference = maxHour - minHour;
+    return (difference)
+  }
+  const getPaymentData = (_assignedEmployees, Hours, year, month, periods, payType = 1) => {
+
     month++;
-    console.log(year, month, periods, 'year, month, periods');
     const startDay = parseInt(periods.split("-")[0]);
     const endDay = parseInt(periods.split("-")[1]);
     const start_date = new Date(year, startDay === 31 ? (month - 2) : (month - 1), startDay);
     const end_date = new Date(year, month - 1, endDay);
 
-    console.log(payrollDetails, 'payrollDetails');
-    const _listItems = payrollDetails.filter(obj =>
-      obj.status === "active" &&
+    const _listItems = _assignedEmployees.filter(({ contract }) =>
+      contract.status === "active" &&
       (
         (
-          dateValue(obj.start_date) <= dateValue(start_date) &&
-          dateValue(obj.end_date) >= dateValue(end_date)
+          dateValue(contract.start_date) <= dateValue(start_date) &&
+          dateValue(contract.end_date) >= dateValue(end_date)
         )
         ||
         (
-          dateValue(obj.start_date) > dateValue(start_date) &&
-          dateValue(obj.start_date) < dateValue(end_date) &&
-          dateValue(obj.end_date) >= dateValue(end_date)
+          dateValue(contract.start_date) > dateValue(start_date) &&
+          dateValue(contract.start_date) < dateValue(end_date) &&
+          dateValue(contract.end_date) >= dateValue(end_date)
         )
       )
     )
+    _listItems.map((obj, index) => {
+
+      const { contract: assignedContract } = obj;
+
+      obj.sunday_hr = obj.sunday ? getHours(obj.sunday) : 0;
+      obj.monday_hr = obj.monday ? getHours(obj.monday) : 0;
+      obj.tuesday_hr = obj.tuesday ? getHours(obj.tuesday) : 0;
+      obj.wednesday_hr = obj.wednesday ? getHours(obj.wednesday) : 0;
+      obj.thursday_hr = obj.thursday ? getHours(obj.thursday) : 0;
+      obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
+      obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
+
+
+      let currentDate = moment(start_date);
+
+      const end = moment(end_date);
+
+      while (currentDate.isSameOrBefore(end)) {
+        const day = currentDate.date();
+        const _day = currentDate.day();
+        const year = currentDate.year();
+        const month = currentDate.month();
+        const dataIndex = `-day-${year}_${month + 1}_${day}`;
+        const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
+        console.log(dataIndex, index);
+        switch (_day) {
+          case 0:
+            obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr;
+            obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr) - obj.sunday_hr
+            break;
+
+          case 1:
+            obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr;
+            obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr) - obj.monday_hr
+
+            break;
+
+          case 2:
+            obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr;
+
+            obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr) - obj.tuesday_hr
+
+            break;
+
+          case 3:
+            obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr;
+            obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr) - obj.wednesday_hr
+
+            break;
+
+          case 4:
+            obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr;
+            obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr) - obj.thursday_hr
+
+            break;
+          case 5:
+            obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr;
+            obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr) - obj.friday_hr
+
+
+            break;
+          case 6:
+            obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr;
+            obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr) - obj.saturday_hr
+
+            break;
+
+          default:
+            break;
+        }
+        currentDate = currentDate.add(1, 'days');
+      };
+      obj.hrs_bi = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : getServiceHours(obj);
+      obj.week_pay = mathCeil(obj.hrs_bi * obj.sal_hr)
+      obj.adjustment = calcAdjustment(obj);
+      obj.adjust = calcAdjustment(obj) * obj.sal_hr;
+      obj.salary = parseFloat(obj.adjust) + parseFloat(obj.week_pay);
+      obj.transferencia = assignedContract.type === 1 ? obj.salary : obj.salary * 0.89;
+    });
     let calValue = 0;
+
     _listItems.map(obj => {
-      if (obj.type === 1) {
-        calValue += parseFloat(obj.week_pay)
+      const { contract } = obj;
+      if (contract.type === payType) {
+        console.log(obj.transferencia, 'obj.transferencia');
+        calValue += parseFloat(obj.transferencia)
       }
     })
-    return calValue
-
+    return calValue;
   }
-
+  const calcAdjustment = (record) => {
+    var adjust = 0;
+    for (var key in record) {
+      if (key.includes('_day-')) {
+        adjust += record[key];
+      }
+    }
+    return adjust;
+  }
+  const getServiceHours = (record) => {
+    var hours = 0;
+    for (var key in record) {
+      if (key.includes('-day-')) {
+        hours += record[key];
+      }
+    }
+    return hours;
+  }
 
 
   useEffect(() => {
     async function init() {
       const { result } = await request.list({ entity });
-      const { result: assignedEmployee } = await request.list({ entity: "assignedEmployee" });
-      console.log(result, 'assignedEmployeesassignedEmployees');
-      // const result = res.result;
-      result.map(obj => {
-        obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-        obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-      })
-      setPayrollDetails(result)
+      const { result: allHours } = await request.list({ entity });
+      setPayrollDetails(result);
+      setAllHours(allHours)
     }
+    getData();
     init();
   }, []);
 
@@ -204,8 +321,7 @@ const PayrollManagement = () => {
           <Form form={form} component={false}>
             <Table
               bordered
-              rowKey={new Date().valueOf()}
-              key={new Date().valueOf()}
+              // rowKey={new Date().valueOf()}
               dataSource={listItems || []}
               columns={columns}
               rowClassName="editable-row"

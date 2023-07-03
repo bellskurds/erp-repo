@@ -274,7 +274,7 @@ const PayrollDetails = () => {
     const { comment, hours } = values;
     const { contract, employee, parent_id } = currentItem
     const jsonData = { by: Auth.id, hour: hours, date: selectedDate, comment: comment, contract: contract._id, employee: employee._id, customer: parent_id._id }
-
+    console.log(allHours, 'allHoursallHours');
 
     const item = allHours.filter(obj => obj.contract === contract._id && obj.employee === employee._id && obj.customer === parent_id._id && obj.date === selectedDate)
     if (item.length) {
@@ -313,6 +313,8 @@ const PayrollDetails = () => {
   useEffect(() => {
     async function init() {
       const { result: allHours } = await request.list({ entity });
+      setAllHours(allHours)
+      console.log(allHours, '1qwqwq');
       const startDay = parseInt(currentPeriod.split("-")[0]);
       const endDay = parseInt(currentPeriod.split("-")[1]);
       const start_date = new Date(currentYear, startDay === 31 ? (currentMonth - 2) : (currentMonth - 1), startDay);

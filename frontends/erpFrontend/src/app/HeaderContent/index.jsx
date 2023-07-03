@@ -1,5 +1,4 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
 
 import { Avatar, Menu, Dropdown } from 'antd';
 
@@ -12,12 +11,10 @@ import {
 } from '@ant-design/icons';
 import photo from '@/style/images/photo.png';
 
-import { logout } from '@/redux/auth/actions';
 import history from '@/utils/history';
 import uniqueId from '@/utils/uinqueId';
 
 export default function HeaderContent() {
-  const dispatch = useDispatch();
   const { SubMenu } = Menu;
 
   const profileDropdown = (

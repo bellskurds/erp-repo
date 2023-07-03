@@ -7,16 +7,10 @@ import logoIcon from '@/style/images/logo-icon.png';
 import logoText from '@/style/images/logo-text.png';
 
 import {
-  DesktopOutlined,
   SettingOutlined,
   CustomerServiceOutlined,
-  FileTextOutlined,
-  FileSyncOutlined,
   DashboardOutlined,
-  TeamOutlined,
   UserOutlined,
-  CreditCardOutlined,
-  BankOutlined,
   ProfileOutlined,
 } from '@ant-design/icons';
 
