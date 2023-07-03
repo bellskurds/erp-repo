@@ -442,6 +442,7 @@ const PayrollDetails = () => {
         obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
       })
 
+
       const _listItems = assignedEmployees.filter(({ contract }) =>
         contract.status === "active" &&
         (
@@ -457,7 +458,7 @@ const PayrollDetails = () => {
           )
         )
       )
-      assignedEmployees.map(obj => {
+      _listItems.map(obj => {
         const { contract: assignedContract } = obj;
 
         obj.sunday_hr = obj.sunday ? getHours(obj.sunday) : 0;
@@ -536,9 +537,27 @@ const PayrollDetails = () => {
         obj.transferencia = assignedContract.type === 1 ? obj.salary : obj.salary * 0.89;
 
 
-        assignedContracts.push(assignedContract);
       });
-      workContracts.map(contract => {
+      assignedEmployees.map(obj => {
+        const { contract: assignedContract } = obj;
+        assignedContracts.push(assignedContract);
+      })
+      const filteredWorkContracts = workContracts.filter(obj =>
+        obj.status === "active" &&
+        (
+          (
+            dateValue(obj.start_date) <= dateValue(start_date) &&
+            dateValue(obj.end_date) >= dateValue(end_date)
+          )
+          ||
+          (
+            dateValue(obj.start_date) > dateValue(start_date) &&
+            dateValue(obj.start_date) < dateValue(end_date) &&
+            dateValue(obj.end_date) >= dateValue(end_date)
+          )
+        )
+      )
+      filteredWorkContracts.map(contract => {
         const item = assignedContracts.filter(obj => obj._id === contract._id);
         if (!item.length) {
           contract.employee = contract.parent_id
@@ -551,7 +570,7 @@ const PayrollDetails = () => {
           unassignedContracts.push(contract)
         }
       })
-      setListItems([...assignedEmployees, ...unassignedContracts])
+      setListItems([..._listItems, ...unassignedContracts])
       console.log([...assignedEmployees, ...unassignedContracts], 'currentPeriod');
     }
     init()
