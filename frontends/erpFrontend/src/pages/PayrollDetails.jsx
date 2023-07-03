@@ -338,49 +338,49 @@ const PayrollDetails = () => {
               case 0:
                 return (
                   <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.sunday_hr }, `${year}/${month + 1}/${day}`, record.sunday_hr)}>
-                    {parseFloat(text)}
+                    {parseFloat(text) || 0}
                   </Typography.Text>
                 );
                 break;
               case 1:
                 return (
                   <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.monday_hr }, `${year}/${month + 1}/${day}`, record.monday_hr)}>
-                    {parseFloat(text)}
+                    {parseFloat(text) || 0}
                   </Typography.Text>
                 );
                 break;
               case 2:
                 return (
                   <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.tuesday_hr }, `${year}/${month + 1}/${day}`, record.tuesday_hr)}>
-                    {parseFloat(text)}
+                    {parseFloat(text) || 0}
                   </Typography.Text>
                 );
                 break;
               case 3:
                 return (
                   <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.wednesday_hr }, `${year}/${month + 1}/${day}`, record.wednesday_hr)}>
-                    {parseFloat(text)}
+                    {parseFloat(text) || 0}
                   </Typography.Text>
                 );
                 break;
               case 4:
                 return (
                   <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.thursday_hr }, `${year}/${month + 1}/${day}`, record.thursday_hr)}>
-                    {parseFloat(text)}
+                    {parseFloat(text) || 0}
                   </Typography.Text>
                 );
                 break;
               case 5:
                 return (
                   <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.friday_hr }, `${year}/${month + 1}/${day}`, record.friday_hr)}>
-                    {parseFloat(text)}
+                    {parseFloat(text) || 0}
                   </Typography.Text>
                 );
                 break;
               case 6:
                 return (
                   <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.saturday_hr }, `${year}/${month + 1}/${day}`, record.saturday_hr)}>
-                    {parseFloat(text)}
+                    {parseFloat(text) || 0}
                   </Typography.Text>
                 );
                 break;
