@@ -340,7 +340,7 @@ const PayrollDetails = () => {
         const month = currentDate.month();
         daysColumns.push({
           title: `${day}-${monthLable}`,
-          dataIndex: `day-${year}_${month + 1}_${day}`,
+          dataIndex: `-day-${year}_${month + 1}_${day}`,
           render: (text, record) => {
             switch (_day) {
               case 0:
@@ -440,8 +440,7 @@ const PayrollDetails = () => {
         obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
         obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
 
-        obj.hrs_bi = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-        obj.week_pay = assignedContract.type === 1 ? mathCeil(obj.hrs_bi * obj.sal_hr) : 0;
+
         let currentDate = moment(start_date);
 
         const end = moment(end_date);
@@ -452,7 +451,7 @@ const PayrollDetails = () => {
           const _day = currentDate.day();
           const year = currentDate.year();
           const month = currentDate.month();
-          const dataIndex = `day-${year}_${month + 1}_${day}`;
+          const dataIndex = `-day-${year}_${month + 1}_${day}`;
           switch (_day) {
             case 0:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr;
@@ -500,7 +499,8 @@ const PayrollDetails = () => {
           }
           currentDate = currentDate.add(1, 'days');
         };
-
+        obj.hrs_bi = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : getServiceHours(obj);
+        obj.week_pay = assignedContract.type === 1 ? mathCeil(obj.hrs_bi * obj.sal_hr) : 0;
 
 
 
@@ -519,7 +519,16 @@ const PayrollDetails = () => {
     init()
   }, [
     currentPeriod, saveStatus
-  ])
+  ]);
+  const getServiceHours = (record) => {
+    var hours = 0;
+    for (var key in record) {
+      if (key.includes('-day-')) {
+        hours += record[key];
+      }
+    }
+    return hours;
+  }
   useEffect(() => {
   }, [biWeek])
   return (
