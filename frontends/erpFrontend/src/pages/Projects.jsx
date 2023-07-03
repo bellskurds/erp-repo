@@ -10,6 +10,7 @@ import { selectListItems } from '@/redux/crud/selectors';
 import { Link } from 'react-router-dom/cjs/react-router-dom';
 import SelectAsync from '@/components/SelectAsync';
 import { request } from '@/request';
+import moment from 'moment';
 
 
 
@@ -151,10 +152,33 @@ const Projects = () => {
     },
 
   ];
+
   const addEmployee = (e) => {
-    const newComponent = <Col>
-      <SelectAsync entity={'employee'} displayLabels={['name']} />;
-    </Col>
+
+    const addColumns = [
+      {
+        title: "Total",
+        dataIndex: "total"
+      },
+    ]
+    let currentDate = moment(new Date());
+    let dates = []; // Array to store the next 7 days
+
+    for (let i = 0; i < 7; i++) {
+      dates.push({ title: currentDate.format('YYYY-MM-DD') }); // Add the formatted date to the array
+      currentDate = currentDate.add(1, 'day'); // Increment the current date by 1 day
+    }
+
+    console.log(dates, 'dates');
+
+    const newComponent = <Row gutter={24}>
+      <Col span={8}>
+        <SelectAsync entity={'employee'} displayLabels={['name']} />;
+      </Col>
+      <Col span={12}>
+        <Table columns={[...addColumns, ...dates]} style={{ width: '50%' }} />;
+      </Col>
+    </Row>
     setComponents([...components, newComponent]);
 
   }
@@ -180,16 +204,16 @@ const Projects = () => {
   const onFinish = (values) => {
 
     console.log(values, '-----------')
-    if (isUpdate && currentId) {
-      const id = currentId;
-      dispatch(crud.update({ entity, id, jsonData: values }));
-    } else {
-      dispatch(crud.create({ entity, jsonData: values }));
-    }
-    formRef.current.resetFields();
-    dispatch(crud.resetState());
-    dispatch(crud.list({ entity }));
-    handleCancel()
+    // if (isUpdate && currentId) {
+    //   const id = currentId;
+    //   dispatch(crud.update({ entity, id, jsonData: values }));
+    // } else {
+    //   dispatch(crud.create({ entity, jsonData: values }));
+    // }
+    // formRef.current.resetFields();
+    // dispatch(crud.resetState());
+    // dispatch(crud.list({ entity }));
+    // handleCancel()
   };
   const formRef = useRef(null);
   const onFinishFailed = (errorInfo) => {
