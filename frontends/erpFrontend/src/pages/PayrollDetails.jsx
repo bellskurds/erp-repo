@@ -204,6 +204,11 @@ const PayrollDetails = () => {
       dataIndex: 'salary',
       width: '100',
     },
+    {
+      title: 'Transferencia',
+      dataIndex: 'transferencia',
+      width: '100',
+    },
   ];
   const getPeriods = (month, year, Q = 0) => {
     const daysInMonth = new Date(year, month, 0).getDate();
@@ -492,6 +497,7 @@ const PayrollDetails = () => {
         obj.adjustment = calcAdjustment(obj);
         obj.adjust = calcAdjustment(obj) * obj.sal_hr;
         obj.salary = parseFloat(obj.adjust) + parseFloat(obj.week_pay);
+        obj.transferencia = assignedContract.type === 1 ? obj.salary : obj.salary * 0.89;
 
 
         assignedContracts.push(assignedContract);
