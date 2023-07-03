@@ -505,12 +505,18 @@ const PayrollDetails = () => {
       workContracts.map(contract => {
         const item = assignedContracts.filter(obj => obj._id === contract._id);
         if (!item.length) {
+          contract.employee = contract.parent_id
+          delete contract.parent_id
+          contract.contract = { type: contract.type };
+          contract.adjustment = 0;
+          contract.adjust = 0;
+          contract.salary = contract.week_pay;
+          contract.transferencia = contract.type === 1 ? contract.salary : contract.salary * 0.89
           unassignedContracts.push(contract)
         }
       })
-      console.log(_listItems, 'currentPeriod');
-
-      setListItems(assignedEmployees)
+      setListItems([...assignedEmployees, ...unassignedContracts])
+      console.log([...assignedEmployees, ...unassignedContracts], 'currentPeriod');
     }
     init()
   }, [
