@@ -175,13 +175,13 @@ const PayrollDetails = () => {
       title: 'Hrs/BiWeekly',
       width: '100',
       dataIndex: 'hrs_bi',
-      render: (text, record) => {
-        const { contract } = record;
-        const { type } = contract
-        return (
-          type === 2 ? record[4] : text
-        );
-      }
+      // render: (text, record) => {
+      //   const { contract } = record;
+      //   const { type } = contract
+      //   return (
+      //     type === 2 ? record[4] : text
+      //   );
+      // }
     },
     {
       title: 'Week Pay',
@@ -190,32 +190,19 @@ const PayrollDetails = () => {
     },
     {
       title: 'Adjustment',
-      dataIndex: 'phone',
+      dataIndex: 'adjustment',
       width: '100',
-      render: (text, record) => {
-        return (
-          calcAdjustment(record)
-        );
-      }
+
     },
     {
       title: 'Adjust($$$)',
-      dataIndex: 'phone',
+      dataIndex: 'adjust',
       width: '100',
-      render: (text, record) => {
-        return (calcAdjustment(record) * record.sal_hr)
-      }
     },
     {
       title: 'Salary',
-      dataIndex: 'phone',
+      dataIndex: 'salary',
       width: '100',
-      render: (text, record) => {
-        return (
-          record.type === 1 ? mathCeil((record.hr_week * 4.333 / 2) * record.sal_hr) : 0
-        );
-      }
-
     },
   ];
   const getPeriods = (month, year, Q = 0) => {
@@ -452,45 +439,46 @@ const PayrollDetails = () => {
           const year = currentDate.year();
           const month = currentDate.month();
           const dataIndex = `-day-${year}_${month + 1}_${day}`;
+          const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
           switch (_day) {
             case 0:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr;
-              obj[`_${dataIndex}`] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr) - obj.sunday_hr
+              obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr) - obj.sunday_hr
               break;
 
             case 1:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr;
-              obj[`_${dataIndex}`] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr) - obj.monday_hr
+              obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr) - obj.monday_hr
 
               break;
 
             case 2:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr;
 
-              obj[`_${dataIndex}`] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr) - obj.tuesday_hr
+              obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr) - obj.tuesday_hr
 
               break;
 
             case 3:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr;
-              obj[`_${dataIndex}`] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr) - obj.wednesday_hr
+              obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr) - obj.wednesday_hr
 
               break;
 
             case 4:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr;
-              obj[`_${dataIndex}`] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr) - obj.thursday_hr
+              obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr) - obj.thursday_hr
 
               break;
             case 5:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr;
-              obj[`_${dataIndex}`] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr) - obj.friday_hr
+              obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr) - obj.friday_hr
 
 
               break;
             case 6:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr;
-              obj[`_${dataIndex}`] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr) - obj.saturday_hr
+              obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr) - obj.saturday_hr
 
               break;
 
@@ -500,8 +488,10 @@ const PayrollDetails = () => {
           currentDate = currentDate.add(1, 'days');
         };
         obj.hrs_bi = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : getServiceHours(obj);
-        obj.week_pay = assignedContract.type === 1 ? mathCeil(obj.hrs_bi * obj.sal_hr) : 0;
-
+        obj.week_pay = mathCeil(obj.hrs_bi * obj.sal_hr)
+        obj.adjustment = calcAdjustment(obj);
+        obj.adjust = calcAdjustment(obj) * obj.sal_hr;
+        obj.salary = parseFloat(obj.adjust) + parseFloat(obj.week_pay);
 
 
         assignedContracts.push(assignedContract);
