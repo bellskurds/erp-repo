@@ -32,96 +32,7 @@ const getFormattedHours = (days) => {
   return hours.join(', ');
 }
 
-const columns = [
-  {
-    title: 'Customer',
-    dataIndex: ['parent_id', 'name'],
-    width: '100',
-  },
-  {
-    title: 'Employee',
-    dataIndex: ['employee', 'name'],
-    width: '100',
-  },
-  {
-    title: 'Hours',
-    dataIndex: 'email',
-    width: '200',
-    render: (text, record) => (
-      <>
-        {getFormattedHours(
-          [
-            record.monday ? [record.monday[0], record.monday[1]] : "",
-            record.tuesday ? [record.tuesday[0], record.tuesday[1]] : "",
-            record.wednesday ? [record.wednesday[0], record.wednesday[1]] : "",
-            record.thursday ? [record.thursday[0], record.thursday[1]] : "",
-            record.friday ? [record.friday[0], record.friday[1]] : "",
-            record.saturday ? [record.saturday[0], record.saturday[1]] : "",
-            record.sunday ? [record.sunday[0], record.sunday[1]] : "",
-          ]
-        )}
-      </>
-    ),
-  },
-  {
-    title: 'HR/Week',
-    dataIndex: 'hr_week',
-    width: '100',
-  },
-  {
-    title: 'Type',
-    dataIndex: ['contract', 'type'],
-    width: '100',
-    render: (text) => {
-      return (
-        contractTypes[text]
-      );
-    },
-  },
-  {
-    title: 'Sal/Hr',
-    dataIndex: 'sal_hr',
-    width: '100',
-  },
-  {
-    title: 'Hrs/BiWeekly',
-    width: '100',
-    dataIndex: 'hrs_bi',
-    render: (text, record) => {
-      const { contract } = record;
-      const { type } = contract
-      return (
-        type === 2 ? record[4] : text
-      );
-    }
-  },
-  {
-    title: 'Week Pay',
-    dataIndex: 'week_pay',
-    width: '25',
-  },
-  {
-    title: 'Adjustment',
-    dataIndex: 'phone',
-    width: '100',
-  },
-  {
-    title: 'Adjust($$$)',
-    dataIndex: 'phone',
-    width: '100',
-  },
-  {
-    title: 'Salary',
-    dataIndex: 'phone',
-    width: '100',
-    render: (text, record) => {
-      return (
-        record.type === 1 ? mathCeil((record.hr_week * 4.333 / 2) * record.sal_hr) : 0
-      );
-    }
 
-  },
-];
 
 const mathCeil = (value) => {
   return value.toFixed(2)
@@ -163,7 +74,8 @@ const PayrollDetails = () => {
   const [selectedCellValue, setSelectedCellValue] = useState(0);
   const [selectedDate, setSelectedDate] = useState();
   const [byEmail, setByEmail] = useState();
-  const editItem = (item, cellItem, current) => {
+  const [adjust, setAdjust] = useState(0);
+  const editItem = (item, cellItem, current, mainHour) => {
     const { hour, comment, by: { email: byEmail = '' } = {} } = cellItem
     if (item) {
       setTimeout(() => {
@@ -172,7 +84,7 @@ const PayrollDetails = () => {
           comment: comment,
         });
       }, 400);
-      setSelectedCellValue(hour)
+      setSelectedCellValue(mainHour)
       setSelectedDate(current);
       setByEmail(byEmail)
       setCurrentId(item._id);
@@ -199,7 +111,113 @@ const PayrollDetails = () => {
     setCurrentBiweek(newDate);
     return newDate;
   }
+  const calcAdjustment = (record) => {
+    var adjust = 0;
+    for (var key in record) {
+      if (key.includes('_day-')) {
+        adjust += record[key];
+      }
+    }
+    return adjust;
+  }
+  const columns = [
+    {
+      title: 'Customer',
+      dataIndex: ['parent_id', 'name'],
+      width: '100',
+    },
+    {
+      title: 'Employee',
+      dataIndex: ['employee', 'name'],
+      width: '100',
+    },
+    {
+      title: 'Hours',
+      dataIndex: 'email',
+      width: '200',
+      render: (text, record) => (
+        <>
+          {getFormattedHours(
+            [
+              record.monday ? [record.monday[0], record.monday[1]] : "",
+              record.tuesday ? [record.tuesday[0], record.tuesday[1]] : "",
+              record.wednesday ? [record.wednesday[0], record.wednesday[1]] : "",
+              record.thursday ? [record.thursday[0], record.thursday[1]] : "",
+              record.friday ? [record.friday[0], record.friday[1]] : "",
+              record.saturday ? [record.saturday[0], record.saturday[1]] : "",
+              record.sunday ? [record.sunday[0], record.sunday[1]] : "",
+            ]
+          )}
+        </>
+      ),
+    },
+    {
+      title: 'HR/Week',
+      dataIndex: 'hr_week',
+      width: '100',
+    },
+    {
+      title: 'Type',
+      dataIndex: ['contract', 'type'],
+      width: '100',
+      render: (text) => {
+        return (
+          contractTypes[text]
+        );
+      },
+    },
+    {
+      title: 'Sal/Hr',
+      dataIndex: 'sal_hr',
+      width: '100',
+    },
+    {
+      title: 'Hrs/BiWeekly',
+      width: '100',
+      dataIndex: 'hrs_bi',
+      render: (text, record) => {
+        const { contract } = record;
+        const { type } = contract
+        return (
+          type === 2 ? record[4] : text
+        );
+      }
+    },
+    {
+      title: 'Week Pay',
+      dataIndex: 'week_pay',
+      width: '25',
+    },
+    {
+      title: 'Adjustment',
+      dataIndex: 'phone',
+      width: '100',
+      render: (text, record) => {
+        return (
+          calcAdjustment(record)
+        );
+      }
+    },
+    {
+      title: 'Adjust($$$)',
+      dataIndex: 'phone',
+      width: '100',
+      render: (text, record) => {
+        return (calcAdjustment(record) * record.sal_hr)
+      }
+    },
+    {
+      title: 'Salary',
+      dataIndex: 'phone',
+      width: '100',
+      render: (text, record) => {
+        return (
+          record.type === 1 ? mathCeil((record.hr_week * 4.333 / 2) * record.sal_hr) : 0
+        );
+      }
 
+    },
+  ];
   const getPeriods = (month, year, Q = 0) => {
     const daysInMonth = new Date(year, month, 0).getDate();
     const prevMonth = new Date(year, month, 0);
@@ -327,50 +345,50 @@ const PayrollDetails = () => {
             switch (_day) {
               case 0:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.sunday_hr }, `${year}/${month + 1}/${day}`)}>
-                    {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.sunday_hr}
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.sunday_hr }, `${year}/${month + 1}/${day}`, record.sunday_hr)}>
+                    {parseFloat(text)}
                   </Typography.Text>
                 );
                 break;
               case 1:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.monday_hr }, `${year}/${month + 1}/${day}`)}>
-                    {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.monday_hr}
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.monday_hr }, `${year}/${month + 1}/${day}`, record.monday_hr)}>
+                    {parseFloat(text)}
                   </Typography.Text>
                 );
                 break;
               case 2:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.tuesday_hr }, `${year}/${month + 1}/${day}`)}>
-                    {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.tuesday_hr}
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.tuesday_hr }, `${year}/${month + 1}/${day}`, record.tuesday_hr)}>
+                    {parseFloat(text)}
                   </Typography.Text>
                 );
                 break;
               case 3:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.wednesday_hr }, `${year}/${month + 1}/${day}`)}>
-                    {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.wednesday_hr}
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.wednesday_hr }, `${year}/${month + 1}/${day}`, record.wednesday_hr)}>
+                    {parseFloat(text)}
                   </Typography.Text>
                 );
                 break;
               case 4:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.thursday_hr }, `${year}/${month + 1}/${day}`)}>
-                    {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.thursday_hr}
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.thursday_hr }, `${year}/${month + 1}/${day}`, record.thursday_hr)}>
+                    {parseFloat(text)}
                   </Typography.Text>
                 );
                 break;
               case 5:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.friday_hr }, `${year}/${month + 1}/${day}`)}>
-                    {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.friday_hr}
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.friday_hr }, `${year}/${month + 1}/${day}`, record.friday_hr)}>
+                    {parseFloat(text)}
                   </Typography.Text>
                 );
                 break;
               case 6:
                 return (
-                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.saturday_hr }, `${year}/${month + 1}/${day}`)}>
-                    {changedCellValue(allHours, `${year}/${month + 1}/${day}`, record) || record.saturday_hr}
+                  <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.saturday_hr }, `${year}/${month + 1}/${day}`, record.saturday_hr)}>
+                    {parseFloat(text)}
                   </Typography.Text>
                 );
                 break;
@@ -383,8 +401,9 @@ const PayrollDetails = () => {
 
         currentDate = currentDate.add(1, 'days');
       };
+      console.log(daysColumns);
       setChangedDays(daysColumns);
-
+      console.log();
       const { result: workContracts } = await request.list({ entity: "workContract" })
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" })
       const unassignedContracts = [];
@@ -423,6 +442,68 @@ const PayrollDetails = () => {
 
         obj.hrs_bi = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
         obj.week_pay = assignedContract.type === 1 ? mathCeil(obj.hrs_bi * obj.sal_hr) : 0;
+        let currentDate = moment(start_date);
+
+        const end = moment(end_date);
+
+        while (currentDate.isSameOrBefore(end)) {
+          const monthLable = currentDate.format("MMMM");
+          const day = currentDate.date();
+          const _day = currentDate.day();
+          const year = currentDate.year();
+          const month = currentDate.month();
+          const dataIndex = `day-${year}_${month + 1}_${day}`;
+          switch (_day) {
+            case 0:
+              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr;
+              obj[`_${dataIndex}`] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr) - obj.sunday_hr
+              break;
+
+            case 1:
+              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr;
+              obj[`_${dataIndex}`] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr) - obj.monday_hr
+
+              break;
+
+            case 2:
+              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr;
+
+              obj[`_${dataIndex}`] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr) - obj.tuesday_hr
+
+              break;
+
+            case 3:
+              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr;
+              obj[`_${dataIndex}`] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr) - obj.wednesday_hr
+
+              break;
+
+            case 4:
+              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr;
+              obj[`_${dataIndex}`] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr) - obj.thursday_hr
+
+              break;
+            case 5:
+              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr;
+              obj[`_${dataIndex}`] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr) - obj.friday_hr
+
+
+              break;
+            case 6:
+              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr;
+              obj[`_${dataIndex}`] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr) - obj.saturday_hr
+
+              break;
+
+            default:
+              break;
+          }
+          currentDate = currentDate.add(1, 'days');
+        };
+
+
+
+
         assignedContracts.push(assignedContract);
       });
       workContracts.map(contract => {
@@ -431,7 +512,9 @@ const PayrollDetails = () => {
           unassignedContracts.push(contract)
         }
       })
-      setListItems(_listItems)
+      console.log(_listItems, 'currentPeriod');
+
+      setListItems(assignedEmployees)
     }
     init()
   }, [
@@ -539,7 +622,6 @@ const PayrollDetails = () => {
         columns={[...columns, ...changedDays]}
         rowClassName="editable-row"
         style={{ width: '1000px' }}
-
       />
 
 
