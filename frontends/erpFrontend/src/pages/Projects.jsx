@@ -150,11 +150,21 @@ const Projects = () => {
       dispatch(crud.list({ entity }));
     }, 1000)
   }
+  const getDateLabel = (date) => {
+    if (!date) return '';
+    const start = moment(date[0]);
+    const end = moment(date[1]);
+    return `${start.format("MMMM")}${start.date()}(${start.year()}) - ${end.format("MMMM")}${end.date()}(${end.year()})`
+  }
+  const typeArr = ["", "Residential", "Commercial"]
   const columns = [
     {
       title: 'Date',
-      dataIndex: 'created',
+      dataIndex: 'periods',
       width: '15%',
+      render: (text) => {
+        return (getDateLabel(text))
+      }
     },
     {
       title: 'Project Id',
@@ -170,6 +180,9 @@ const Projects = () => {
       title: 'Type',
       dataIndex: 'type',
       width: '15%',
+      render: (text) => {
+        return (typeArr[text]);
+      }
     },
     {
       title: 'Reference',
@@ -185,6 +198,11 @@ const Projects = () => {
       title: 'Employees',
       dataIndex: 'employees',
       width: '15%',
+      render: (text) => {
+        return (
+          text ? JSON.parse(text).length : 0
+        );
+      }
     },
     {
       title: 'Cost',
