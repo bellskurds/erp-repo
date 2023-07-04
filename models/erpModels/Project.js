@@ -21,6 +21,9 @@ const projectSchema = new mongoose.Schema({
   cost: {
     type: Number,
   },
+  periods: {
+    type: Object,
+  },
   customer: {
     type: mongoose.Schema.ObjectId, ref: 'Client', autopopulate: true
   },

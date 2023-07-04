@@ -128,9 +128,13 @@ const Projects = () => {
   const [employeeList, setEmployeeList] = useState([]);
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
+
+    console.log(item, '111111');
     if (item) {
       setTimeout(() => {
-        if (formRef.current) formRef.current.setFieldsValue(item);
+
+        const { employees, _id, removed, enabled, created, periods, ...otherValues } = item;
+        if (formRef.current) formRef.current.setFieldsValue({ ...otherValues, periods: periods ? [moment(periods[0]), moment(periods[1])] : null });
       }, 400);
       setCurrentId(item._id);
       setCurrentItem(item);
@@ -261,8 +265,8 @@ const Projects = () => {
       const id = currentId;
       dispatch(crud.update({ entity, id, jsonData: values }));
     } else {
-      const { result } = await request.create({ entity, jsonData: values });
-      // dispatch(crud.create({ entity, jsonData: values }));
+      // const { result } = await request.create({ entity, jsonData: values });
+      dispatch(crud.create({ entity, jsonData: values }));
     }
     formRef.current.resetFields();
     setTimeout(() => {
@@ -444,7 +448,11 @@ const Projects = () => {
                   >
                     <SelectAsync entity={'client'} displayLabels={['name']} />
                   </Form.Item>
-                  <Form.Item name="periods" label="From ~ To">
+                  <Form.Item name="periods" label="From ~ To" rules={[
+                    {
+                      required: true,
+                    },
+                  ]}>
                     <DatePicker.RangePicker />
                   </Form.Item>
                   <Form.Item
@@ -489,11 +497,13 @@ const Projects = () => {
                       },
                     ]}
                   >
-                    <Select
+                    <SelectAsync entity={'reference'} displayLabels={['ref']} />
+
+                    {/* <Select
 
                       placeholder="Select Reference"
                       optionFilterProp="children"
-                      options={references} />
+                      options={references} /> */}
                   </Form.Item>
                   <Form.Item
                     name="cost"
