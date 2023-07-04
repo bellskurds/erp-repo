@@ -8,9 +8,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
 import { Link } from 'react-router-dom/cjs/react-router-dom';
-import SelectAsync from '@/components/SelectAsync';
 import { request } from '@/request';
 import moment from 'moment';
+import SelectAsync from '@/components/SelectAsync';
 
 
 
@@ -48,6 +48,9 @@ const Projects = () => {
   const [currentId, setCurrentId] = useState('');
   const [currentItem, setCurrentItem] = useState({});
   const [references, setReferences] = useState([]);
+  const [initEmployeeColumns, setInitEmployeeColumns] = useState([]);
+  const [endDate, setEndDate] = useState();
+  const [employeeList, setEmployeeList] = useState([]);
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
     if (item) {
@@ -73,55 +76,46 @@ const Projects = () => {
       title: 'Date',
       dataIndex: 'created',
       width: '15%',
-      editable: true,
     },
     {
       title: 'Project Id',
       dataIndex: 'project_id',
       width: '15%',
-      editable: true,
     },
     {
       title: 'Customer',
       dataIndex: ['customer', 'name'],
       width: '15%',
-      editable: true,
     },
     {
       title: 'Type',
       dataIndex: 'type',
       width: '15%',
-      editable: true,
     },
     {
       title: 'Reference',
       dataIndex: ['ref', 'ref'],
       width: '15%',
-      editable: true,
     },
     {
       title: 'Billing',
       dataIndex: 'billing',
       width: '15%',
-      editable: true,
     },
     {
       title: 'Employees',
       dataIndex: 'employees',
       width: '15%',
-      editable: true,
     },
     {
       title: 'Cost',
       dataIndex: 'cost',
       width: '15%',
-      editable: true,
     },
     {
       title: 'Status',
       dataIndex: 'status',
       width: '15%',
-      editable: true,
     },
     {
       title: 'Actions',
@@ -153,35 +147,7 @@ const Projects = () => {
 
   ];
 
-  const addEmployee = (e) => {
 
-    const addColumns = [
-      {
-        title: "Total",
-        dataIndex: "total"
-      },
-    ]
-    let currentDate = moment(new Date());
-    let dates = []; // Array to store the next 7 days
-
-    for (let i = 0; i < 7; i++) {
-      dates.push({ title: currentDate.format('YYYY-MM-DD') }); // Add the formatted date to the array
-      currentDate = currentDate.add(1, 'day'); // Increment the current date by 1 day
-    }
-
-    console.log(dates, 'dates');
-
-    const newComponent = <Row gutter={24}>
-      <Col span={8}>
-        <SelectAsync entity={'employee'} displayLabels={['name']} />;
-      </Col>
-      <Col span={12}>
-        <Table columns={[...addColumns, ...dates]} style={{ width: '50%' }} />;
-      </Col>
-    </Row>
-    setComponents([...components, newComponent]);
-
-  }
   const mergedColumns = columns.map((col) => {
     if (!col.editable) {
       return col;
@@ -203,7 +169,7 @@ const Projects = () => {
   const onSearch = (value) => console.log(value);
   const onFinish = (values) => {
 
-    console.log(values, '-----------')
+    console.log(employeeList, '-----------')
     // if (isUpdate && currentId) {
     //   const id = currentId;
     //   dispatch(crud.update({ entity, id, jsonData: values }));
@@ -219,7 +185,50 @@ const Projects = () => {
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
+
+  const ExtraWeek = () => {
+    console.log(endDate, '123123');
+    const start_ = endDate.date();
+    const end_ = start_ + 7;
+
+    let currentDate = endDate;
+    let dates = []; // Array to store the next 7 days
+    for (let i = start_; i < end_; i++) {
+      dates.push({ title: currentDate.format('YYYY-MM-DD'), render: () => { return (0) } }); // Add the formatted date to the array
+      currentDate = currentDate.add(1, 'day'); // Increment the current date by 1 day
+    }
+    setInitEmployeeColumns([...initEmployeeColumns, ...dates])
+  }
+  const addEmployee = () => {
+    setEmployeeList([...employeeList, { key: employeeList.length }])
+  }
   useEffect(() => {
+
+    const Columns = [
+      {
+        title: "Employee",
+        dataIndex: "employee",
+        render: () => {
+          return (
+            <SelectAsync entity={"employee"} displayLabels={["name"]} />
+          );
+        }
+      },
+      {
+        title: "Total",
+        dataIndex: "total"
+      },
+    ]
+    let currentDate = moment(new Date());
+    let dates = []; // Array to store the next 7 days
+    for (let i = 0; i < 7; i++) {
+      dates.push({ title: currentDate.format('YYYY-MM-DD'), render: () => { return (0) } }); // Add the formatted date to the array
+      currentDate = currentDate.add(1, 'day'); // Increment the current date by 1 day
+
+      setEndDate(currentDate);
+    }
+    console.log(dates, 'datesdates');
+    setInitEmployeeColumns([...Columns, ...dates])
     dispatch(crud.resetState());
     dispatch(crud.list({ entity }));
 
@@ -337,25 +346,6 @@ const Projects = () => {
                   </Form.Item>
                 </Col>
               </Row>
-              <hr />
-              <Row gutter={24}>
-
-                <Col span={12} wrapperCol={{
-                  offset: 8,
-                  span: 16,
-                }}>
-                  <Form.Item>
-                    <Button onClick={addEmployee}>Add Employee</Button>
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item>
-                    <Button>Extra Week</Button>
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              {components}
               <Form.Item
                 wrapperCol={{
                   offset: 8,
@@ -378,7 +368,12 @@ const Projects = () => {
                   cancel
                 </Button>
               </Form.Item>
+
+              <hr />
             </Form>
+            <Button onClick={addEmployee}>Add Employee</Button>
+            <Button onClick={ExtraWeek}>Extra Week</Button>
+            <Table dataSource={employeeList || []} columns={initEmployeeColumns} style={{ overflow: "scroll" }} />
           </>
         </Modal>
         <Layout>
