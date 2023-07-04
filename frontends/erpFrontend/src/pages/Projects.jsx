@@ -273,20 +273,20 @@ const Projects = () => {
   };
 
   const ExtraWeek = () => {
-    console.log(endDate, '123123');
     const start_ = endDate.date();
     const end_ = start_ + 7;
 
     let currentDate = endDate;
     let dates = []; // Array to store the next 7 days
     for (let i = start_; i < end_; i++) {
-      dates.push({ title: currentDate.format('YYYY-MM-DD'), dataIndex: `day_${currentDate.format('YYYY-MM-DD')}`, editable: true }); // Add the formatted date to the array
+      dates.push({ title: currentDate.format('YYYY-MM-DD'), dataIndex: `day_${currentDate.format('YYYY-MM-DD')}`, editable: true, render: (text) => { return (text || 0) } }); // Add the formatted date to the array
       currentDate = currentDate.add(1, 'day'); // Increment the current date by 1 day
     }
-    setInitEmployeeColumns([...initEmployeeColumns, ...dates])
+
+    setInitEmployeeColumns([...initEmployeeColumns, ...dates]);
   }
+
   const addEmployee = () => {
-    console.log(employeeColums, 'employeeColums');
     const defaultObj = {};
     for (var i = 0; i < employeeColums.length; i++) {
       var { dataIndex } = employeeColums[i];
@@ -294,7 +294,6 @@ const Projects = () => {
         defaultObj[dataIndex] = 0;
       }
     }
-    console.log(defaultObj, 'defaultObj');
     setEmployeeList([...employeeList, { key: employeeList.length, ...defaultObj }])
   }
   useEffect(() => {
@@ -322,14 +321,12 @@ const Projects = () => {
 
       setEndDate(currentDate);
     }
-    console.log([...Columns, ...dates], 'datesdates');
     setInitEmployeeColumns([...Columns, ...dates])
     dispatch(crud.resetState());
     dispatch(crud.list({ entity }));
 
     async function init() {
       const { result } = await request.list({ entity: 'reference' });
-      console.log(result, '555555');
       result.map(obj => {
         obj.value = obj._id;
         obj.label = obj.ref
@@ -340,9 +337,6 @@ const Projects = () => {
   }, []);
 
 
-  useEffect(() => {
-
-  }, [initEmployeeColumns])
 
   const handleSave = (row) => {
 
@@ -353,7 +347,7 @@ const Projects = () => {
       ...item,
       ...row,
     });
-    console.log(employeeColums, newData, 'employeeColums');
+    console.log(newData, 'employeeColums');
     const result = JSON.parse(JSON.stringify(newData));
     setEmployeeList([...result]);
   };
@@ -373,6 +367,17 @@ const Projects = () => {
       }),
     };
   });
+  useEffect(() => {
+    const newData = [...employeeList];
+    newData.map(obj => [
+      employeeColums.map(columns => {
+        const { dataIndex } = columns;
+        if (dataIndex.includes('day_') && !obj.hasOwnProperty(dataIndex)) {
+          obj[dataIndex] = 0;
+        }
+      })
+    ])
+  }, [initEmployeeColumns, employeeColums])
 
   return (
 
