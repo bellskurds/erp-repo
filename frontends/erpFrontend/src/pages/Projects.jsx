@@ -3,21 +3,96 @@ import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import { Button, Col, DatePicker, Form, Input, InputNumber, Layout, Modal, Popconfirm, Radio, Row, Select, Space, Table, Tag, Typography } from 'antd';
 import Search from 'antd/lib/transfer/search';
 import React, { useEffect, useRef, useState } from 'react';
-import CustomModal from 'modules/CustomModal'
 import { useDispatch, useSelector } from 'react-redux';
+
 import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
 import { Link } from 'react-router-dom/cjs/react-router-dom';
 import { request } from '@/request';
 import moment from 'moment';
 import SelectAsync from '@/components/SelectAsync';
+import { useContext } from 'react';
+const EditableContext = React.createContext(null);
 
-
-
+const EditableRow = ({ index, ...props }) => {
+  const [form] = Form.useForm();
+  return (
+    <Form form={form} component={false}>
+      <EditableContext.Provider value={form}>
+        <tr {...props} />
+      </EditableContext.Provider>
+    </Form>
+  );
+};
+const EditableCell = ({
+  title,
+  editable,
+  children,
+  dataIndex,
+  record,
+  handleSave,
+  ...restProps
+}) => {
+  const [editing, setEditing] = useState(false);
+  const inputRef = useRef(null);
+  const form = useContext(EditableContext);
+  useEffect(() => {
+    if (editing) {
+      inputRef.current.focus();
+    }
+  }, [editing]);
+  const toggleEdit = () => {
+    setEditing(!editing);
+    form.setFieldsValue({
+      [dataIndex]: record[dataIndex],
+    });
+  };
+  const save = async () => {
+    try {
+      const values = await form.validateFields();
+      toggleEdit();
+      handleSave({
+        ...record,
+        ...values,
+      });
+    } catch (errInfo) {
+      console.log('Save failed:', errInfo);
+    }
+  };
+  let childNode = children;
+  if (editable) {
+    childNode = editing ? (
+      <Form.Item
+        style={{
+          margin: 0,
+        }}
+        name={dataIndex}
+        rules={[
+          {
+            required: true,
+            message: `${title} is required.`,
+          },
+        ]}
+      >
+        <Input ref={inputRef} onPressEnter={save} onBlur={save} />
+      </Form.Item>
+    ) : (
+      <div
+        className="editable-cell-value-wrap"
+        style={{
+          paddingRight: 24,
+        }}
+        onClick={toggleEdit}
+      >
+        {children}
+      </div>
+    );
+  }
+  return <td {...restProps}>{childNode}</td>;
+};
 const Projects = () => {
   const entity = "project"
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [components, setComponents] = useState([]);
 
   const [isUpdate, setIsUpdate] = useState(false);
   const showModal = () => {
@@ -148,6 +223,16 @@ const Projects = () => {
   ];
 
 
+
+  const components = {
+    body: {
+      row: EditableRow,
+      cell: EditableCell,
+    },
+  };
+
+
+
   const mergedColumns = columns.map((col) => {
     if (!col.editable) {
       return col;
@@ -169,17 +254,18 @@ const Projects = () => {
   const onSearch = (value) => console.log(value);
   const onFinish = (values) => {
 
-    console.log(employeeList, '-----------')
-    // if (isUpdate && currentId) {
-    //   const id = currentId;
-    //   dispatch(crud.update({ entity, id, jsonData: values }));
-    // } else {
-    //   dispatch(crud.create({ entity, jsonData: values }));
-    // }
-    // formRef.current.resetFields();
-    // dispatch(crud.resetState());
-    // dispatch(crud.list({ entity }));
-    // handleCancel()
+    if (isUpdate && currentId) {
+      const id = currentId;
+      dispatch(crud.update({ entity, id, jsonData: values }));
+    } else {
+      dispatch(crud.create({ entity, jsonData: values }));
+    }
+    formRef.current.resetFields();
+    setTimeout(() => {
+      dispatch(crud.resetState());
+      dispatch(crud.list({ entity }));
+    }, [400])
+    handleCancel()
   };
   const formRef = useRef(null);
   const onFinishFailed = (errorInfo) => {
@@ -194,13 +280,22 @@ const Projects = () => {
     let currentDate = endDate;
     let dates = []; // Array to store the next 7 days
     for (let i = start_; i < end_; i++) {
-      dates.push({ title: currentDate.format('YYYY-MM-DD'), render: () => { return (0) } }); // Add the formatted date to the array
+      dates.push({ title: currentDate.format('YYYY-MM-DD'), dataIndex: `day_${currentDate.format('YYYY-MM-DD')}`, editable: true }); // Add the formatted date to the array
       currentDate = currentDate.add(1, 'day'); // Increment the current date by 1 day
     }
     setInitEmployeeColumns([...initEmployeeColumns, ...dates])
   }
   const addEmployee = () => {
-    setEmployeeList([...employeeList, { key: employeeList.length }])
+    console.log(employeeColums, 'employeeColums');
+    const defaultObj = {};
+    for (var i = 0; i < employeeColums.length; i++) {
+      var { dataIndex } = employeeColums[i];
+      if (dataIndex.includes('day_')) {
+        defaultObj[dataIndex] = 0;
+      }
+    }
+    console.log(defaultObj, 'defaultObj');
+    setEmployeeList([...employeeList, { key: employeeList.length, ...defaultObj }])
   }
   useEffect(() => {
 
@@ -222,12 +317,12 @@ const Projects = () => {
     let currentDate = moment(new Date());
     let dates = []; // Array to store the next 7 days
     for (let i = 0; i < 7; i++) {
-      dates.push({ title: currentDate.format('YYYY-MM-DD'), render: () => { return (0) } }); // Add the formatted date to the array
+      dates.push({ title: currentDate.format('YYYY-MM-DD'), editable: true, dataIndex: `day_${currentDate.format('YYYY-MM-DD')}` }); // Add the formatted date to the array
       currentDate = currentDate.add(1, 'day'); // Increment the current date by 1 day
 
       setEndDate(currentDate);
     }
-    console.log(dates, 'datesdates');
+    console.log([...Columns, ...dates], 'datesdates');
     setInitEmployeeColumns([...Columns, ...dates])
     dispatch(crud.resetState());
     dispatch(crud.list({ entity }));
@@ -244,7 +339,41 @@ const Projects = () => {
     init();
   }, []);
 
-  console.log(items, '33333434343')
+
+  useEffect(() => {
+
+  }, [initEmployeeColumns])
+
+  const handleSave = (row) => {
+
+    const newData = [...employeeList];
+    const index = newData.findIndex((item) => row.key === item.key);
+    const item = newData[index];
+    newData.splice(index, 1, {
+      ...item,
+      ...row,
+    });
+    console.log(employeeColums, newData, 'employeeColums');
+    const result = JSON.parse(JSON.stringify(newData));
+    setEmployeeList([...result]);
+  };
+  const employeeColums = initEmployeeColumns.map((col) => {
+    if (!col.editable) {
+      return col;
+    }
+    return {
+      ...col,
+      onCell: (record) => ({
+        record,
+        editable: col.editable,
+        dataIndex: col.dataIndex,
+        title: col.title,
+        handleSave,
+
+      }),
+    };
+  });
+
   return (
 
     <DashboardLayout>
@@ -373,7 +502,13 @@ const Projects = () => {
             </Form>
             <Button onClick={addEmployee}>Add Employee</Button>
             <Button onClick={ExtraWeek}>Extra Week</Button>
-            <Table dataSource={employeeList || []} columns={initEmployeeColumns} style={{ overflow: "scroll" }} />
+            <Table
+              dataSource={employeeList || []}
+              columns={employeeColums}
+              style={{ overflow: "scroll" }}
+              components={components}
+
+            />
           </>
         </Modal>
         <Layout>
