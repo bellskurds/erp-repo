@@ -25,7 +25,7 @@ const projectSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId, ref: 'Client', autopopulate: true
   },
   employees: {
-    type: Number,
+    type: Object,
   },
   ref: {
     type: mongoose.Schema.ObjectId, ref: 'Reference', autopopulate: true

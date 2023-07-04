@@ -252,13 +252,17 @@ const Projects = () => {
 
   const { pagination, items } = listResult;
   const onSearch = (value) => console.log(value);
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
 
+    values['employees'] = JSON.stringify(employeeList);
+
+    console.log(values, 'values', employeeList, 'employeeList');
     if (isUpdate && currentId) {
       const id = currentId;
       dispatch(crud.update({ entity, id, jsonData: values }));
     } else {
-      dispatch(crud.create({ entity, jsonData: values }));
+      const { result } = await request.create({ entity, jsonData: values });
+      // dispatch(crud.create({ entity, jsonData: values }));
     }
     formRef.current.resetFields();
     setTimeout(() => {
@@ -294,7 +298,7 @@ const Projects = () => {
         defaultObj[dataIndex] = 0;
       }
     }
-    setEmployeeList([...employeeList, { key: employeeList.length, ...defaultObj }])
+    setEmployeeList([...employeeList, { key: new Date().valueOf(), ...defaultObj }])
   }
   useEffect(() => {
 
@@ -302,15 +306,18 @@ const Projects = () => {
       {
         title: "Employee",
         dataIndex: "employee",
-        render: () => {
+        render: (_, record) => {
           return (
-            <SelectAsync entity={"employee"} displayLabels={["name"]} />
+            <SelectAsync entity={"employee"} displayLabels={["name"]} onChange={(e) => { changeEmployee(e, record.key) }} />
           );
         }
       },
       {
         title: "Total",
-        dataIndex: "total"
+        dataIndex: "total",
+        render: (_, record) => {
+          return (totalHours(record) || 0);
+        }
       },
     ]
     let currentDate = moment(new Date());
@@ -336,10 +343,22 @@ const Projects = () => {
     init();
   }, []);
 
+  const changeEmployee = (id, key) => {
+    const newData = [...employeeList];
+    const index = newData.findIndex((item) => key === item.key);
+    const item = newData[index];
+    newData.splice(index, 1, {
+      ...item,
+      ...{ employee: id }
+    });
 
+    const result = JSON.parse(JSON.stringify(newData));
+    setEmployeeList([...result]);
+
+  }
 
   const handleSave = (row) => {
-
+    console.log(row, '111111111');
     const newData = [...employeeList];
     const index = newData.findIndex((item) => row.key === item.key);
     const item = newData[index];
@@ -379,6 +398,15 @@ const Projects = () => {
     ])
   }, [initEmployeeColumns, employeeColums])
 
+  const totalHours = (record) => {
+    var total = 0;
+    for (var key in record) {
+      if (key.includes('day_')) {
+        total += parseFloat(record[key]);
+      }
+    }
+    return total;
+  }
   return (
 
     <DashboardLayout>
