@@ -14,6 +14,12 @@ import SelectAsync from '@/components/SelectAsync';
 import { useContext } from 'react';
 const EditableContext = React.createContext(null);
 
+const statusLabel = ["", "Active", "Canceled", "Finished"]
+const statusArr = [
+  { value: 1, label: "Active" },
+  { value: 2, label: "Canceled" },
+  { value: 3, label: "Finished" },
+]
 const EditableRow = ({ index, ...props }) => {
   const [form] = Form.useForm();
   return (
@@ -199,6 +205,11 @@ const Projects = () => {
       title: 'Billing',
       dataIndex: 'billing',
       width: '15%',
+      render: (text) => {
+        return (
+          `$${text}`
+        );
+      }
     },
     {
       title: 'Employees',
@@ -214,11 +225,19 @@ const Projects = () => {
       title: 'Cost',
       dataIndex: 'cost',
       width: '15%',
+      render: (text) => {
+        return (
+          `$${text}`
+        );
+      }
     },
     {
       title: 'Status',
       dataIndex: 'status',
       width: '15%',
+      render: (text) => {
+        return (statusLabel[text]);
+      }
     },
     {
       title: 'Actions',
@@ -344,21 +363,21 @@ const Projects = () => {
     ]
     let currentDate = moment(new Date());
     let dates = []; // Array to store the next 7 days
+
+    console.log(initEmployeeColumns, employeeList, 'employeeListemployeeListemployeeList');
     for (let i = 0; i < 7; i++) {
       dates.push({ title: currentDate.format('YYYY-MM-DD'), editable: true, dataIndex: `day_${currentDate.format('YYYY-MM-DD')}` }); // Add the formatted date to the array
       currentDate = currentDate.add(1, 'day'); // Increment the current date by 1 day
 
       setEndDate(currentDate);
     }
-    setInitEmployeeColumns([...Columns, ...dates]);
 
+    setInitEmployeeColumns([...Columns, ...dates]);
     // if (employeeList.length) {
     //   setInitEmployeeColumns(initEmployeeColumns)
     // } else {
     // }
 
-
-    console.log(employeeList, initEmployeeColumns, 'employeeListemployeeList');
   }, [employeeList]);
 
   useEffect(() => {
@@ -392,7 +411,7 @@ const Projects = () => {
   };
 
   useEffect(() => {
-
+    console.log(initEmployeeColumns);
   }, [initEmployeeColumns])
 
   useEffect(() => {
@@ -418,7 +437,10 @@ const Projects = () => {
   }
 
   const changeEmployee = (id, { key }) => {
+
+
     const newData = [...employeeList];
+    console.log(newData, 'newData');
     const index = newData.findIndex((item) => key === item.key);
     const item = newData[index];
     newData.splice(index, 1, {
@@ -484,6 +506,17 @@ const Projects = () => {
                     ]}
                   >
                     <Input type='number' />
+                  </Form.Item>
+                  <Form.Item
+                    name="status"
+                    label="Status"
+                    rules={[
+                      {
+                        required: true,
+                      },
+                    ]}
+                  >
+                    <Select options={statusArr} />
                   </Form.Item>
 
 
