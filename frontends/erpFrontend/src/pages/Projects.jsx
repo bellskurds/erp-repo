@@ -1,5 +1,5 @@
 import { DashboardLayout, DefaultLayout } from '@/layout';
-import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Col, DatePicker, Form, Input, InputNumber, Layout, Modal, Popconfirm, Radio, Row, Select, Space, Table, Tag, Typography } from 'antd';
 import Search from 'antd/lib/transfer/search';
 import React, { useEffect, useRef, useState } from 'react';
@@ -19,7 +19,8 @@ const statusArr = [
   { value: 1, label: "Active" },
   { value: 2, label: "Canceled" },
   { value: 3, label: "Finished" },
-]
+];
+const searchFields = "project_id"
 const EditableRow = ({ index, ...props }) => {
   const [form] = Form.useForm();
   return (
@@ -99,6 +100,8 @@ const EditableCell = ({
 const Projects = () => {
   const entity = "project"
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [filterData, setFilterData] = useState([]);
 
   const [isUpdate, setIsUpdate] = useState(false);
   const showModal = () => {
@@ -292,7 +295,10 @@ const Projects = () => {
   const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
 
   const { pagination, items } = listResult;
-  const onSearch = (value) => console.log(value);
+
+
+  const [paginations, setPaginations] = useState(pagination)
+
   const onFinish = async (values) => {
 
     values['employees'] = JSON.stringify(employeeList);
@@ -452,6 +458,29 @@ const Projects = () => {
 
     setEmployeeList(result);
   }
+
+  useEffect(() => {
+    async function fetchData() {
+
+      if (!searchText) {
+        // setFilterData(pagination)
+        setFilterData(items)
+      } else {
+        const options = {
+          q: searchText,
+          fields: searchFields,
+        };
+        const { result, paginations } = await request.search({ entity, options })
+        setFilterData(result)
+        setPaginations(paginations)
+      }
+
+    }
+    fetchData();
+
+
+
+  }, [searchText])
   return (
 
     <DashboardLayout>
@@ -622,28 +651,23 @@ const Projects = () => {
           </>
         </Modal>
         <Layout>
-          <Row>
-            {/* <Col span={10}>
-              <Search placeholder="input search text" onSearch={onSearch} enterButton />
-            </Col> */}
-            <Col span={8}>
-              <Input placeholder='search' />
+          <Row gutter={24} style={{ textAlign: 'right' }}>
+            <Col span={6}>
+              <Input
+                placeholder='Search'
+                prefix={<SearchOutlined />}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
             </Col>
-            <Col span={16}>
+            <Col span={6}>
               <DatePicker.RangePicker />
+            </Col>
+            <Col span={12}>
               <Select
-                placeholder="Select a person"
+                placeholder="Status Filter"
                 optionFilterProp="children"
-                options={[{
-                  label: 'Active',
-                  value: 1
-                }, {
-                  label: 'Cancelled',
-                  value: 2
-                }, {
-                  label: 'Finished',
-                  value: 3
-                }]} />
+                options={statusArr} />
               <Button onClick={showModal} type="primary">Create Project</Button>
             </Col>
           </Row>
@@ -657,6 +681,7 @@ const Projects = () => {
               dataSource={items}
               columns={mergedColumns}
               rowClassName="editable-row"
+              pagination={searchText ? paginations : pagination}
 
 
             />
