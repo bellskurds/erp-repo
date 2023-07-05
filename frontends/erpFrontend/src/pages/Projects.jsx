@@ -135,7 +135,13 @@ const Projects = () => {
 
         const { employees, _id, removed, enabled, created, periods, ...otherValues } = item;
         if (formRef.current) formRef.current.setFieldsValue({ ...otherValues, periods: periods ? [moment(periods[0]), moment(periods[1])] : null });
+
+        console.log(JSON.parse(employees), 'JSON.parse(employees)');
+        // setEmployeeList(JSON.parse(employees))
+
       }, 400);
+
+
       setCurrentId(item._id);
       setCurrentItem(item);
       setIsModalVisible(true);
@@ -230,12 +236,6 @@ const Projects = () => {
             <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
               <DeleteOutlined style={{ fontSize: "20px" }} />
             </Popconfirm>
-            <Typography.Text>
-              <Link to={`/customer/details/${record._id}`}>
-                <EyeOutlined style={{ fontSize: "20px" }} />
-              </Link>
-            </Typography.Text>
-
           </>
         )
 
@@ -313,8 +313,8 @@ const Projects = () => {
 
   const addEmployee = () => {
     const defaultObj = {};
-    for (var i = 0; i < employeeColums.length; i++) {
-      var { dataIndex } = employeeColums[i];
+    for (var i = 0; i < initEmployeeColumns.length; i++) {
+      var { dataIndex } = initEmployeeColumns[i];
       if (dataIndex.includes('day_')) {
         defaultObj[dataIndex] = 0;
       }
@@ -350,7 +350,18 @@ const Projects = () => {
 
       setEndDate(currentDate);
     }
-    setInitEmployeeColumns([...Columns, ...dates])
+    setInitEmployeeColumns([...Columns, ...dates]);
+
+    // if (employeeList.length) {
+    //   setInitEmployeeColumns(initEmployeeColumns)
+    // } else {
+    // }
+
+
+    console.log(employeeList, initEmployeeColumns, 'employeeListemployeeList');
+  }, [employeeList]);
+
+  useEffect(() => {
     dispatch(crud.resetState());
     dispatch(crud.list({ entity }));
 
@@ -363,15 +374,8 @@ const Projects = () => {
       setReferences(result);
     }
     init();
-  }, [employeeList]);
-  useEffect(() => {
-    console.log(employeeList, 'employeeListemployeeList');
-    // setEmployeeList(employeeList)
-  }, [employeeList])
-
-
+  }, [])
   const handleSave = (row) => {
-    console.log(row, '111111111');
     const newData = [...employeeList];
     const index = newData.findIndex((item) => row.key === item.key);
     const item = newData[index];
@@ -386,33 +390,22 @@ const Projects = () => {
       return newValue
     });
   };
-  const employeeColums = initEmployeeColumns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-    return {
-      ...col,
-      onCell: (record) => ({
-        record,
-        editable: col.editable,
-        dataIndex: col.dataIndex,
-        title: col.title,
-        handleSave,
 
-      }),
-    };
-  });
+  useEffect(() => {
+
+  }, [initEmployeeColumns])
+
   useEffect(() => {
     const newData = [...employeeList];
     newData.map(obj => [
-      employeeColums.map(columns => {
+      initEmployeeColumns.map(columns => {
         const { dataIndex } = columns;
         if (dataIndex.includes('day_') && !obj.hasOwnProperty(dataIndex)) {
           obj[dataIndex] = 0;
         }
       })
     ])
-  }, [initEmployeeColumns, employeeColums])
+  }, [initEmployeeColumns])
 
   const totalHours = (record) => {
     var total = 0;
@@ -573,7 +566,22 @@ const Projects = () => {
             <Button onClick={ExtraWeek}>Extra Week</Button>
             <Table
               dataSource={employeeList || []}
-              columns={employeeColums}
+              columns={initEmployeeColumns.map((col) => {
+                if (!col.editable) {
+                  return col;
+                }
+                return {
+                  ...col,
+                  onCell: (record) => ({
+                    record,
+                    editable: col.editable,
+                    dataIndex: col.dataIndex,
+                    title: col.title,
+                    handleSave,
+
+                  }),
+                };
+              })}
               style={{ overflow: "scroll" }}
               components={components}
 
