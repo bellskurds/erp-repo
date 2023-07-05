@@ -118,6 +118,7 @@ const Projects = () => {
   }
   const [customerId, setCustomerId] = useState(generateCustomerId());
 
+  const [employeeList, setEmployeeList] = useState([]);
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState('');
   const [currentId, setCurrentId] = useState('');
@@ -125,7 +126,6 @@ const Projects = () => {
   const [references, setReferences] = useState([]);
   const [initEmployeeColumns, setInitEmployeeColumns] = useState([]);
   const [endDate, setEndDate] = useState();
-  const [employeeList, setEmployeeList] = useState([]);
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
 
@@ -278,7 +278,6 @@ const Projects = () => {
 
     values['employees'] = JSON.stringify(employeeList);
 
-    console.log(values, 'values', employeeList, 'employeeList');
     if (isUpdate && currentId) {
       const id = currentId;
       dispatch(crud.update({ entity, id, jsonData: values }));
@@ -330,7 +329,8 @@ const Projects = () => {
         dataIndex: "employee",
         render: (_, record) => {
           return (
-            <SelectAsync entity={"employee"} displayLabels={["name"]} onChange={(e) => { changeEmployee(e, record.key) }} />
+            // <Select onChange={changeEmployee} options={[{ value: 1, label: '111' }, { value: 2, label: "334" }]} />
+            <SelectAsync entity={"employee"} displayLabels={["name"]} onChange={(e) => changeEmployee(e, record)} />
           );
         }
       },
@@ -363,21 +363,12 @@ const Projects = () => {
       setReferences(result);
     }
     init();
-  }, []);
+  }, [employeeList]);
+  useEffect(() => {
+    console.log(employeeList, 'employeeListemployeeList');
+    // setEmployeeList(employeeList)
+  }, [employeeList])
 
-  const changeEmployee = (id, key) => {
-    const newData = [...employeeList];
-    const index = newData.findIndex((item) => key === item.key);
-    const item = newData[index];
-    newData.splice(index, 1, {
-      ...item,
-      ...{ employee: id }
-    });
-
-    const result = JSON.parse(JSON.stringify(newData));
-    setEmployeeList([...result]);
-
-  }
 
   const handleSave = (row) => {
     console.log(row, '111111111');
@@ -389,8 +380,11 @@ const Projects = () => {
       ...row,
     });
     console.log(newData, 'employeeColums');
-    const result = JSON.parse(JSON.stringify(newData));
-    setEmployeeList([...result]);
+    // const result = JSON.parse(JSON.stringify(newData));
+    setEmployeeList(prev => {
+      const newValue = [...newData];
+      return newValue
+    });
   };
   const employeeColums = initEmployeeColumns.map((col) => {
     if (!col.editable) {
@@ -428,6 +422,20 @@ const Projects = () => {
       }
     }
     return total;
+  }
+
+  const changeEmployee = (id, { key }) => {
+    const newData = [...employeeList];
+    const index = newData.findIndex((item) => key === item.key);
+    const item = newData[index];
+    newData.splice(index, 1, {
+      ...item,
+      employee: id
+    });
+    console.log(newData, 'newData');
+    const result = JSON.parse(JSON.stringify(newData));
+
+    setEmployeeList(result);
   }
   return (
 
