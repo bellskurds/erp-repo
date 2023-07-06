@@ -464,34 +464,26 @@ const Projects = () => {
   }
 
   useEffect(() => {
-    async function fetchData() {
+    const searchedColumn = 'project_id'
+    const filteredData = items.filter((record) => {
+      const { customer } = record;
+      return record[searchedColumn].toString().toLowerCase().includes(searchText.toLowerCase()) || customer['name'].toString().toLowerCase().includes(searchText.toLowerCase())
+    });
+    setFilterData(filteredData)
+    setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
 
-      if (!searchText) {
-        // setFilterData(pagination)
-        setFilterData(items)
-      } else {
-        const options = {
-          q: searchText,
-          fields: searchFields,
-        };
-        const { result, paginations } = await request.search({ entity, options })
-        setFilterData(result)
-        setPaginations(paginations)
-      }
-
-    }
-    fetchData();
+    console.log(filteredData, 'filteredData');
   }, [searchText]);
   const handelDataTableLoad = useCallback((pagination) => {
     const { current, pageSize, total } = pagination;
 
-    const start = items.length ? (current - 1) * 10 + 1 : 0;
+    const start = filterData.length ? (current - 1) * 10 + 1 : 0;
     const end = current * 10 > total ? total : current * 10;
 
-    setFilterData(items.slice(start, end));
     setPaginations(pagination)
+    // setFilterData(filterData.slice(start, end));
     // console.log(filterData, 'filterData');
-    console.log(items, pagination, start, end, filterData.length, filterData.slice(start, end), 'pagination');
+    // console.log(items, pagination, start, end, filterData.length, filterData.slice(start, end), 'pagination');
     return true;
     // if (!searchText) {
     //   const options = { page: pagination.current || 1 };
