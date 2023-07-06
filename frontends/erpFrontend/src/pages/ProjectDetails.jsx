@@ -164,12 +164,18 @@ const ProjectDetails = () => {
   const exportToExcel = () => {
     const excelLists = [];
     listItems.map(obj => {
-      const { customer, ref, enabled, key, periods, removed, status, type, __v, _id, billing, cost, ...others } = obj;
+      const { customer, ref, enabled, key, periods, removed, status, type, __v, _id, billing, cost, employee, quincena, created, project_id, ...others } = obj;
       const { name: customer_name } = customer;
       const { ref: ref_name } = ref;
-      excelLists.push({ ...others });
+      excelLists.push({
+        customer: customer_name,
+        employee: employee,
+        project: project_id,
+        reference: ref_name,
+        quincena: quincena,
+        ...others
+      });
     })
-    console.log(excelLists, 'excelLists');
     const worksheet = XLSX.utils.json_to_sheet(excelLists);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
