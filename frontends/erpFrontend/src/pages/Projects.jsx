@@ -467,8 +467,8 @@ const Projects = () => {
     const filteredData = items.filter((record) => {
       const { customer } = record;
 
-      const recordStartDate = new Date(moment(record.periods[0]).format("YYYY-MM-DD"));
-      const recordEndDate = new Date(moment(record.periods[1]).format("YYYY-MM-DD"));
+      const recordStartDate = record.periods ? new Date(moment(record.periods[0]).format("YYYY-MM-DD")) : null;
+      const recordEndDate = record.periods ? new Date(moment(record.periods[1]).format("YYYY-MM-DD")) : null;
       const startDate = rangeDate ? new Date(rangeDate[0].format("YYYY-MM-DD")) : null;
       const endDate = rangeDate ? new Date(rangeDate[1].format("YYYY-MM-DD")) : null;
       return (
