@@ -398,8 +398,11 @@ const Projects = () => {
     init();
   }, []);
   useEffect(() => {
+
+    console.log(items);
     setFilterData(items);
-  }, [items])
+    setPaginations(paginations)
+  }, [items.length])
   const handleSave = (row) => {
     const newData = [...employeeList];
     const index = newData.findIndex((item) => row.key === item.key);
