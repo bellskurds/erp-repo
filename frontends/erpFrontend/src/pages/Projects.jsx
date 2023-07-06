@@ -134,6 +134,7 @@ const Projects = () => {
   const [currentItem, setCurrentItem] = useState({});
   const [references, setReferences] = useState([]);
   const [initEmployeeColumns, setInitEmployeeColumns] = useState([]);
+  const [paginations, setPaginations] = useState([])
   const [endDate, setEndDate] = useState();
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
@@ -294,7 +295,7 @@ const Projects = () => {
   });
   const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
   const { pagination, items } = listResult;
-  const [paginations, setPaginations] = useState(pagination)
+
 
   const onFinish = async (values) => {
 
@@ -401,8 +402,8 @@ const Projects = () => {
 
     console.log(items);
     setFilterData(items);
-    setPaginations(paginations)
-  }, [items.length])
+    setPaginations(pagination)
+  }, [items, pagination])
   const handleSave = (row) => {
     const newData = [...employeeList];
     const index = newData.findIndex((item) => row.key === item.key);
@@ -514,6 +515,8 @@ const Projects = () => {
   }, [filterData, searchText]);
   const Footer = () => {
     const pages = paginations
+
+    console.log(paginations, 'paginationspaginations');
     const { current, count, total, page } = pages
     const currentPage = current || page;
     const totalSize = total || count;
