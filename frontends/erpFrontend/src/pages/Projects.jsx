@@ -141,15 +141,11 @@ const Projects = () => {
   const [status, setStatus] = useState();
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
-
-    console.log(item, '111111');
     if (item) {
       setTimeout(() => {
 
         const { employees, _id, removed, enabled, created, periods, ...otherValues } = item;
         if (formRef.current) formRef.current.setFieldsValue({ ...otherValues, periods: periods ? [moment(periods[0]), moment(periods[1])] : null });
-
-        console.log(JSON.parse(employees), 'JSON.parse(employees)');
         setEmployeeList(JSON.parse(employees))
 
       }, 400);
@@ -355,7 +351,7 @@ const Projects = () => {
         dataIndex: "employee",
         render: (_, record) => {
           return (
-            <SelectAsync entity={"employee"} displayLabels={["name"]} onChange={(e) => changeEmployee(e, record)} />
+            <SelectAsync entity={"employee"} displayLabels={["name"]} onChange={(e) => changeEmployee(e, record)} value={_} />
           );
         }
       },
@@ -369,8 +365,6 @@ const Projects = () => {
     ]
     let currentDate = moment(new Date());
     let dates = []; // Array to store the next 7 days
-
-    console.log(employeeList, 'employeeListemployeeListemployeeList');
     if (employeeList && employeeList.length) {
       const item = employeeList[0];
       Object.keys(item).map((key, index) => {
@@ -416,8 +410,6 @@ const Projects = () => {
     init();
   }, []);
   useEffect(() => {
-
-    console.log(items);
     setFilterData(items);
     setPaginations(pagination)
   }, [items, pagination])
@@ -429,18 +421,11 @@ const Projects = () => {
       ...item,
       ...row,
     });
-    console.log(newData, 'employeeColums');
-    // const result = JSON.parse(JSON.stringify(newData));
     setEmployeeList(prev => {
       const newValue = [...newData];
       return newValue
     });
   };
-
-  useEffect(() => {
-    console.log(initEmployeeColumns);
-  }, [initEmployeeColumns])
-
   useEffect(() => {
     const newData = [...employeeList];
     newData.map(obj => [
@@ -463,21 +448,15 @@ const Projects = () => {
     return total;
   }
 
-  const changeEmployee = (id, { key }) => {
+  const changeEmployee = (value, record) => {
 
-
-    const newData = [...employeeList];
-    console.log(newData, 'newData');
-    const index = newData.findIndex((item) => key === item.key);
-    const item = newData[index];
-    newData.splice(index, 1, {
-      ...item,
-      employee: id
+    record.employee = value;
+    const updatedData = employeeList.map((item) => {
+      if (item.key === record.key) {
+        return record;
+      }
+      return item;
     });
-    console.log(newData, 'newData');
-    const result = JSON.parse(JSON.stringify(newData));
-
-    setEmployeeList(result);
   }
   useEffect(() => {
     const filteredData = items.filter((record) => {
@@ -497,13 +476,10 @@ const Projects = () => {
     })
     setFilterData(filteredData);
     setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
-    console.log(filteredData, 'filteredData');
   }, [searchText, status, rangeDate])
 
   const handelDataTableLoad = useCallback((pagination) => {
-    const { current, pageSize, total } = pagination;
-    const start = filterData.length ? (current - 1) * 10 + 1 : 0;
-    const end = current * 10 > total ? total : current * 10;
+    const { current, total } = pagination;
     setPaginations(pagination)
     return true;
   }, [filterData, searchText]);
