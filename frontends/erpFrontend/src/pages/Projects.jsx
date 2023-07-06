@@ -355,7 +355,6 @@ const Projects = () => {
         dataIndex: "employee",
         render: (_, record) => {
           return (
-            // <Select onChange={changeEmployee} options={[{ value: 1, label: '111' }, { value: 2, label: "334" }]} />
             <SelectAsync entity={"employee"} displayLabels={["name"]} onChange={(e) => changeEmployee(e, record)} />
           );
         }
@@ -375,8 +374,6 @@ const Projects = () => {
     if (employeeList && employeeList.length) {
       const item = employeeList[0];
       Object.keys(item).map((key, index) => {
-
-        console.log(key, 'key');
         if (key.includes('day_')) {
           dates.push({
             title: key.split('day_')[1],
