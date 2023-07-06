@@ -104,6 +104,7 @@ const Projects = () => {
   const [filterData, setFilterData] = useState([]);
 
   const [isUpdate, setIsUpdate] = useState(false);
+  const [rangeDate, setRangeDate] = useState();
   const showModal = () => {
 
     setCurrentId(new Date().valueOf())
@@ -463,6 +464,8 @@ const Projects = () => {
     setEmployeeList(result);
   }
 
+
+
   useEffect(() => {
     const searchedColumn = 'project_id'
     const filteredData = items.filter((record) => {
@@ -474,6 +477,30 @@ const Projects = () => {
 
     console.log(filteredData, 'filteredData');
   }, [searchText]);
+
+  useEffect(() => {
+    if (!rangeDate) {
+      setFilterData(items);
+      setPaginations(pagination)
+    }
+    else {
+      const filteredData = items.filter((record) => {
+        const recordStartDate = new Date(moment(record.periods[0]).format("YYYY-MM-DD"));
+        const recordEndDate = new Date(moment(record.periods[1]).format("YYYY-MM-DD"));
+        const startDate = new Date(rangeDate[0].format("YYYY-MM-DD"))
+        const endDate = new Date(rangeDate[1].format("YYYY-MM-DD"))
+        return (
+          (!startDate || recordStartDate >= startDate) &&
+          (!endDate || recordEndDate <= endDate)
+        );
+      })
+      setFilterData(filteredData);
+      setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
+      console.log(filteredData, 'filteredData');
+    }
+  }, [rangeDate])
+
+
   const handelDataTableLoad = useCallback((pagination) => {
     const { current, pageSize, total } = pagination;
 
@@ -699,7 +726,7 @@ const Projects = () => {
               />
             </Col>
             <Col span={6}>
-              <DatePicker.RangePicker />
+              <DatePicker.RangePicker value={rangeDate} onChange={(e) => { setRangeDate(e) }} />
             </Col>
             <Col span={12}>
               <Select
