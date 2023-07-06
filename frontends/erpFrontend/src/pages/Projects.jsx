@@ -2,7 +2,7 @@ import { DashboardLayout, DefaultLayout } from '@/layout';
 import { DeleteOutlined, EditOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Col, DatePicker, Form, Input, InputNumber, Layout, Modal, Popconfirm, Radio, Row, Select, Space, Table, Tag, Typography } from 'antd';
 import Search from 'antd/lib/transfer/search';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { crud } from '@/redux/crud/actions';
@@ -146,7 +146,7 @@ const Projects = () => {
         if (formRef.current) formRef.current.setFieldsValue({ ...otherValues, periods: periods ? [moment(periods[0]), moment(periods[1])] : null });
 
         console.log(JSON.parse(employees), 'JSON.parse(employees)');
-        // setEmployeeList(JSON.parse(employees))
+        setEmployeeList(JSON.parse(employees))
 
       }, 400);
 
@@ -293,10 +293,7 @@ const Projects = () => {
     };
   });
   const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
-
   const { pagination, items } = listResult;
-
-
   const [paginations, setPaginations] = useState(pagination)
 
   const onFinish = async (values) => {
@@ -399,7 +396,10 @@ const Projects = () => {
       setReferences(result);
     }
     init();
-  }, [])
+  }, []);
+  useEffect(() => {
+    setFilterData(items);
+  }, [items])
   const handleSave = (row) => {
     const newData = [...employeeList];
     const index = newData.findIndex((item) => row.key === item.key);
@@ -477,10 +477,50 @@ const Projects = () => {
 
     }
     fetchData();
+  }, [searchText]);
+  const handelDataTableLoad = useCallback((pagination) => {
+    const { current, pageSize, total } = pagination;
 
+    const start = items.length ? (current - 1) * 10 + 1 : 0;
+    const end = current * 10 > total ? total : current * 10;
 
+    setFilterData(items.slice(start, end));
+    setPaginations(pagination)
+    // console.log(filterData, 'filterData');
+    console.log(items, pagination, start, end, filterData.length, filterData.slice(start, end), 'pagination');
+    return true;
+    // if (!searchText) {
+    //   const options = { page: pagination.current || 1 };
+    //   dispatch(crud.list({ entity, options }));
+    // } else {
 
-  }, [searchText])
+    //   async function fetchData() {
+    //     const options = {
+    //       q: searchText,
+    //       fields: searchFields,
+    //       page: pagination.current || 1
+    //     };
+    //     const { result, paginations } = await request.search({ entity, options })
+    //     console.log(result, paginations, 'result, paginations');
+    //     setFilterData(result)
+    //     setPaginations(paginations)
+    //   }
+    //   fetchData();
+    // }
+
+  }, [filterData, searchText]);
+  const Footer = () => {
+    const pages = paginations
+    const { current, count, total, page } = pages
+    const currentPage = current || page;
+    const totalSize = total || count;
+
+    return (
+      <>
+        Mostrando registros del {filterData.length ? ((currentPage - 1) * 10 + 1) : 0} al {currentPage * 10 > (totalSize) ? (totalSize) : currentPage * 10} de un total de {totalSize} registros
+      </>
+    );
+  }
   return (
 
     <DashboardLayout>
@@ -678,10 +718,12 @@ const Projects = () => {
               bordered
               rowKey={(item) => item._id}
               key={(item) => item._id}
-              dataSource={items}
+              dataSource={filterData}
               columns={mergedColumns}
               rowClassName="editable-row"
-              pagination={searchText ? paginations : pagination}
+              pagination={paginations}
+              onChange={handelDataTableLoad}
+              footer={Footer}
 
 
             />
