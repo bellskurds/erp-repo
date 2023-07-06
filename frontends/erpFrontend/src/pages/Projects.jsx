@@ -137,6 +137,7 @@ const Projects = () => {
   const [initEmployeeColumns, setInitEmployeeColumns] = useState([]);
   const [paginations, setPaginations] = useState([])
   const [endDate, setEndDate] = useState();
+  const [status, setStatus] = useState();
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
 
@@ -500,13 +501,19 @@ const Projects = () => {
     }
   }, [rangeDate])
 
-
+  useEffect(() => {
+    const filteredData = items.filter(({ status: itemStatus }) => {
+      return (
+        status === itemStatus
+      );
+    })
+    setFilterData(filteredData);
+    setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
+  }, [status])
   const handelDataTableLoad = useCallback((pagination) => {
     const { current, pageSize, total } = pagination;
-
     const start = filterData.length ? (current - 1) * 10 + 1 : 0;
     const end = current * 10 > total ? total : current * 10;
-
     setPaginations(pagination)
     // setFilterData(filterData.slice(start, end));
     // console.log(filterData, 'filterData');
@@ -534,8 +541,6 @@ const Projects = () => {
   }, [filterData, searchText]);
   const Footer = () => {
     const pages = paginations
-
-    console.log(paginations, 'paginationspaginations');
     const { current, count, total, page } = pages
     const currentPage = current || page;
     const totalSize = total || count;
@@ -732,6 +737,7 @@ const Projects = () => {
               <Select
                 placeholder="Status Filter"
                 optionFilterProp="children"
+                onChange={(e) => { setStatus(e) }}
                 options={statusArr} />
               <Button onClick={showModal} type="primary">Create Project</Button>
             </Col>
