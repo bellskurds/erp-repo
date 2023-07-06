@@ -21,6 +21,11 @@ const statusArr = [
   { value: 2, label: "Canceled" },
   { value: 3, label: "Finished" },
 ];
+const statusArr1 = [
+  { value: 1, label: "Active" },
+  { value: 2, label: "Canceled" },
+  { value: 3, label: "Finished" },
+];
 const searchFields = "project_id"
 const EditableRow = ({ index, ...props }) => {
   const [form] = Form.useForm();
@@ -559,7 +564,7 @@ const Projects = () => {
                       },
                     ]}
                   >
-                    <Select options={statusArr} />
+                    <Select options={statusArr1} />
                   </Form.Item>
 
 
