@@ -1,4 +1,6 @@
-import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { DownloadOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import * as XLSX from 'xlsx';
+
 import { Button, Col, Layout, Row, Table } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import moment from 'moment';
@@ -8,14 +10,11 @@ import { request } from '@/request';
 const ProjectDetails = () => {
   const entity = "payroll"
   const url = useParams().id;
-  const [allHours, setAllHours] = useState([]);
-  const [saveStatus, setSaveStatus] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(parseInt(url.split("-")[1]));
   const [currentYear, setCurrentYear] = useState(parseInt(url.split("-")[0]));
   const [currentQ, setCurrentQ] = useState(parseInt(url.split("-")[2]));
   const [currentPeriod, setCurrentPeriod] = useState('1-15')
   const [changedDays, setChangedDays] = useState([]);
-  const [biWeek, setBiWeek] = useState(0);
   const columns = [
     {
       title: 'Customer',
@@ -24,7 +23,7 @@ const ProjectDetails = () => {
     },
     {
       title: 'Employee',
-      dataIndex: ['employee', 'name'],
+      dataIndex: 'employee',
       width: '100',
     },
     {
@@ -112,7 +111,8 @@ const ProjectDetails = () => {
         currentDate = currentDate.add(1, 'days');
       };
       setChangedDays(daysColumns);
-      const { result: projects } = await request.list({ entity: "project" })
+      const { result: projects } = await request.list({ entity: "project" });
+      const { result: employeeItems } = await request.list({ entity: "employee" });
       const projectListItems = projects.filter(({ periods, status }) =>
         status === 1 &&
         (
@@ -132,7 +132,7 @@ const ProjectDetails = () => {
       projectListItems.map(({ employees, ...obj }) => {
         const employeeLists = JSON.parse(employees);
         employeeLists.map(employee => {
-          nestedItems.push({ ...employee, ...obj, quincena: getQuincena(employee, start_date, end_date) })
+          nestedItems.push({ ...employee, ...obj, employee: getEmployeeName(employee, employeeItems), quincena: getQuincena(employee, start_date, end_date) })
         })
         if (!employeeLists.length) {
           nestedItems.push({ ...obj, key: new Date().valueOf() })
@@ -142,8 +142,12 @@ const ProjectDetails = () => {
     }
     init()
   }, [
-    currentPeriod, saveStatus
+    currentPeriod
   ]);
+  const getEmployeeName = ({ employee }, employees) => {
+    const item = employees.find(obj => obj._id === employee);
+    return item ? item.name : ''
+  }
   const getQuincena = (record, start_date, end_date) => {
     let currentDate = moment(start_date);
     const end = moment(end_date);
@@ -157,8 +161,20 @@ const ProjectDetails = () => {
     }
     return hours || 0;
   }
-  useEffect(() => {
-  }, [biWeek])
+  const exportToExcel = () => {
+    const excelLists = [];
+    listItems.map(obj => {
+      const { customer, ref, enabled, key, periods, removed, status, type, __v, _id, billing, cost, ...others } = obj;
+      const { name: customer_name } = customer;
+      const { ref: ref_name } = ref;
+      excelLists.push({ ...others });
+    })
+    console.log(excelLists, 'excelLists');
+    const worksheet = XLSX.utils.json_to_sheet(excelLists);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    XLSX.writeFile(workbook, `${moment().format('YYYY-MM-DD')}(${currentPeriod}).xlsx`);
+  }
   return (
 
     <Layout style={{ padding: '100px', overflow: 'auto' }}>
@@ -171,6 +187,7 @@ const ProjectDetails = () => {
 
           </h3>
         </Col>
+        <Button type="primary" icon={<DownloadOutlined />} onClick={exportToExcel} >Export to excel</Button>
       </Row>
       <Table
         bordered
