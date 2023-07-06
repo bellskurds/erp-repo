@@ -69,13 +69,14 @@ const Projects = () => {
       title: 'Reference',
       dataIndex: 'ref',
       width: '15%',
-      editable: true,
     },
     {
       title: 'Created',
       dataIndex: 'created',
       width: '15%',
-      editable: true,
+      render: (text) => {
+        return (new Date(text).toLocaleDateString())
+      }
     },
     {
       title: 'Actions',
