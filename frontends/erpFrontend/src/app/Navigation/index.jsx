@@ -84,6 +84,11 @@ export default function Navigation() {
             <Link to={'/projects'} />
             Projects
           </Menu.Item>
+
+          <Menu.Item key={'ProjectPayrollManagement'} icon={<ProfileOutlined />}>
+            <Link to={'/project_payment_management'} />
+            Project Payment Management
+          </Menu.Item>
           {/* <Menu.Item key={'Quote'} icon={<FileSyncOutlined />}>
             <Link to={'/quote'} />
             Quote
