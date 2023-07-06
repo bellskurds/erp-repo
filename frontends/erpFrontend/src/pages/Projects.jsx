@@ -465,86 +465,33 @@ const Projects = () => {
 
     setEmployeeList(result);
   }
-
-
-
   useEffect(() => {
-    const searchedColumn = 'project_id'
     const filteredData = items.filter((record) => {
       const { customer } = record;
-      return record[searchedColumn].toString().toLowerCase().includes(searchText.toLowerCase()) || customer['name'].toString().toLowerCase().includes(searchText.toLowerCase())
-    });
-    setFilterData(filteredData)
+
+      const recordStartDate = new Date(moment(record.periods[0]).format("YYYY-MM-DD"));
+      const recordEndDate = new Date(moment(record.periods[1]).format("YYYY-MM-DD"));
+      const startDate = rangeDate ? new Date(rangeDate[0].format("YYYY-MM-DD")) : null;
+      const endDate = rangeDate ? new Date(rangeDate[1].format("YYYY-MM-DD")) : null;
+      return (
+        (!searchText || record['project_id'].toString().toLowerCase().includes(searchText.toLowerCase()) ||
+          customer['name'].toString().toLowerCase().includes(searchText.toLowerCase())) &&
+        (!rangeDate || (startDate && endDate && recordStartDate >= startDate && recordEndDate <= endDate)) &&
+        (!status || record.status === status)
+      );
+
+    })
+    setFilterData(filteredData);
     setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
-
     console.log(filteredData, 'filteredData');
-  }, [searchText]);
+  }, [searchText, status, rangeDate])
 
-  useEffect(() => {
-    if (!rangeDate) {
-      setFilterData(items);
-      setPaginations(pagination)
-    }
-    else {
-      const filteredData = items.filter((record) => {
-        const recordStartDate = new Date(moment(record.periods[0]).format("YYYY-MM-DD"));
-        const recordEndDate = new Date(moment(record.periods[1]).format("YYYY-MM-DD"));
-        const startDate = new Date(rangeDate[0].format("YYYY-MM-DD"))
-        const endDate = new Date(rangeDate[1].format("YYYY-MM-DD"))
-        return (
-          (!startDate || recordStartDate >= startDate) &&
-          (!endDate || recordEndDate <= endDate)
-        );
-      })
-      setFilterData(filteredData);
-      setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
-      console.log(filteredData, 'filteredData');
-    }
-  }, [rangeDate])
-
-  useEffect(() => {
-    if (!status) {
-      setFilterData(items);
-      setPaginations(pagination)
-    }
-    else {
-      const filteredData = items.filter(({ status: itemStatus }) => {
-        return (
-          status === itemStatus
-        );
-      })
-      setFilterData(filteredData);
-      setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
-    }
-  }, [status])
   const handelDataTableLoad = useCallback((pagination) => {
     const { current, pageSize, total } = pagination;
     const start = filterData.length ? (current - 1) * 10 + 1 : 0;
     const end = current * 10 > total ? total : current * 10;
     setPaginations(pagination)
-    // setFilterData(filterData.slice(start, end));
-    // console.log(filterData, 'filterData');
-    // console.log(items, pagination, start, end, filterData.length, filterData.slice(start, end), 'pagination');
     return true;
-    // if (!searchText) {
-    //   const options = { page: pagination.current || 1 };
-    //   dispatch(crud.list({ entity, options }));
-    // } else {
-
-    //   async function fetchData() {
-    //     const options = {
-    //       q: searchText,
-    //       fields: searchFields,
-    //       page: pagination.current || 1
-    //     };
-    //     const { result, paginations } = await request.search({ entity, options })
-    //     console.log(result, paginations, 'result, paginations');
-    //     setFilterData(result)
-    //     setPaginations(paginations)
-    //   }
-    //   fetchData();
-    // }
-
   }, [filterData, searchText]);
   const Footer = () => {
     const pages = paginations
