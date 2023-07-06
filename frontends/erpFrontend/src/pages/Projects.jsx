@@ -144,6 +144,7 @@ const Projects = () => {
   const [paginations, setPaginations] = useState([])
   const [endDate, setEndDate] = useState();
   const [status, setStatus] = useState();
+  const [summatoryCost, setSummatoryCost] = useState();
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
     if (item) {
@@ -153,7 +154,7 @@ const Projects = () => {
         if (formRef.current) formRef.current.setFieldsValue({ ...otherValues, periods: periods ? [moment(periods[0]), moment(periods[1])] : null });
         setEmployeeList(JSON.parse(employees))
 
-      }, 400);
+      }, 200);
 
 
       setCurrentId(item._id);
@@ -302,7 +303,6 @@ const Projects = () => {
 
 
   const onFinish = async (values) => {
-
     values['employees'] = JSON.stringify(employeeList);
 
     if (isUpdate && currentId) {
@@ -371,6 +371,23 @@ const Projects = () => {
     let currentDate = moment(new Date());
     let dates = []; // Array to store the next 7 days
     if (employeeList && employeeList.length) {
+      let totalCost = 0;
+      employeeList.map(item => {
+        Object.keys(item).map(key => {
+          if (key.includes('day_')) {
+
+            totalCost += parseFloat(item[key]);
+
+            console.log(totalCost);
+          }
+        })
+      });
+      formRef.current.setFieldsValue({ cost: totalCost })
+
+      setSummatoryCost(totalCost);
+
+
+
       const item = employeeList[0];
       Object.keys(item).map((key, index) => {
         if (key.includes('day_')) {
@@ -608,13 +625,13 @@ const Projects = () => {
                   <Form.Item
                     name="cost"
                     label="Cost"
-                    rules={[
-                      {
-                        required: true,
-                      },
-                    ]}
+                  // rules={[
+                  //   {
+                  //     required: true,
+                  //   },
+                  // ]}
                   >
-                    <Input type='number' />
+                    <Input type='number' readOnly value={summatoryCost} />
                   </Form.Item>
                 </Col>
               </Row>
