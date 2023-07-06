@@ -371,20 +371,37 @@ const Projects = () => {
     let currentDate = moment(new Date());
     let dates = []; // Array to store the next 7 days
 
-    console.log(initEmployeeColumns, employeeList, 'employeeListemployeeListemployeeList');
-    for (let i = 0; i < 7; i++) {
-      dates.push({ title: currentDate.format('YYYY-MM-DD'), editable: true, dataIndex: `day_${currentDate.format('YYYY-MM-DD')}` }); // Add the formatted date to the array
-      currentDate = currentDate.add(1, 'day'); // Increment the current date by 1 day
+    console.log(employeeList, 'employeeListemployeeListemployeeList');
+    if (employeeList && employeeList.length) {
+      const item = employeeList[0];
+      Object.keys(item).map((key, index) => {
 
-      setEndDate(currentDate);
+        console.log(key, 'key');
+        if (key.includes('day_')) {
+          dates.push({
+            title: key.split('day_')[1],
+            dataIndex: key,
+            editable: true,
+          })
+          const end = moment(key.split('day_')[1]);
+          end.add(1, 'day')
+          setEndDate(end)
+        }
+      })
+    } else {
+      for (let i = 0; i < 7; i++) {
+        dates.push({
+          title: currentDate.format('YYYY-MM-DD'),
+          dataIndex: `day_${currentDate.format('YYYY-MM-DD')}`,
+          editable: true,
+        }); // Add the formatted date to the array
+        currentDate = currentDate.add(1, 'day'); // Increment the current date by 1 day
+
+        setEndDate(currentDate);
+      }
     }
 
     setInitEmployeeColumns([...Columns, ...dates]);
-    // if (employeeList.length) {
-    //   setInitEmployeeColumns(initEmployeeColumns)
-    // } else {
-    // }
-
   }, [employeeList]);
 
   useEffect(() => {
