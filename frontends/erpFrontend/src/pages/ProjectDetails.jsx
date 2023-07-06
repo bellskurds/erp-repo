@@ -135,8 +135,11 @@ const ProjectDetails = () => {
           nestedItems.push({ ...employee, ...obj, employee: getEmployeeName(employee, employeeItems), quincena: getQuincena(employee, start_date, end_date) })
         })
         if (!employeeLists.length) {
-          nestedItems.push({ ...obj, key: new Date().valueOf() })
+          nestedItems.push({ ...obj })
         }
+      })
+      nestedItems.map((obj, index) => {
+        obj['key'] = index
       })
       setListItems(JSON.parse(JSON.stringify(nestedItems)))
     }
