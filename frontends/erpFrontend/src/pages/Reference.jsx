@@ -93,12 +93,6 @@ const Projects = () => {
             <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
               <DeleteOutlined style={{ fontSize: "20px" }} />
             </Popconfirm>
-            <Typography.Text>
-              <Link to={`/customer/details/${record._id}`}>
-                <EyeOutlined style={{ fontSize: "20px" }} />
-              </Link>
-            </Typography.Text>
-
           </>
         )
 
