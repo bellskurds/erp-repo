@@ -91,8 +91,6 @@ const ProjectDetails = () => {
   }
   useEffect(() => {
     async function init() {
-      const { result: allHours } = await request.list({ entity });
-      setAllHours(allHours)
       const startDay = parseInt(currentPeriod.split("-")[0]);
       const endDay = parseInt(currentPeriod.split("-")[1]);
       const start_date = new Date(currentYear, startDay === 31 ? (currentMonth - 2) : (currentMonth - 1), startDay);
@@ -157,7 +155,7 @@ const ProjectDetails = () => {
       hours += parseFloat(record[`day_${year}-${month}-${day}`]) || 0;
       currentDate = currentDate.add(1, 'days');
     }
-    return hours;
+    return hours || 0;
   }
   useEffect(() => {
   }, [biWeek])
