@@ -98,10 +98,10 @@ export default function Navigation() {
             Payment Invoice
           </Menu.Item> */}
 
-          <Menu.Item key={'Admin'} icon={<TeamOutlined />}>
+          {/* <Menu.Item key={'Admin'} icon={<TeamOutlined />}>
             <Link to={'/admin'} />
             Admin
-          </Menu.Item>
+          </Menu.Item> */}
           <SubMenu key={'Settings'} icon={<SettingOutlined />} title={'Settings'}>
             <Menu.Item key={'PaymentMode'}>
               <Link to={'/payment/mode'} />
