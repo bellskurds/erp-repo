@@ -16,6 +16,7 @@ const EditableContext = React.createContext(null);
 
 const statusLabel = ["", "Active", "Canceled", "Finished"]
 const statusArr = [
+  { value: 0, label: "all" },
   { value: 1, label: "Active" },
   { value: 2, label: "Canceled" },
   { value: 3, label: "Finished" },
@@ -502,13 +503,19 @@ const Projects = () => {
   }, [rangeDate])
 
   useEffect(() => {
-    const filteredData = items.filter(({ status: itemStatus }) => {
-      return (
-        status === itemStatus
-      );
-    })
-    setFilterData(filteredData);
-    setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
+    if (!status) {
+      setFilterData(items);
+      setPaginations(pagination)
+    }
+    else {
+      const filteredData = items.filter(({ status: itemStatus }) => {
+        return (
+          status === itemStatus
+        );
+      })
+      setFilterData(filteredData);
+      setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
+    }
   }, [status])
   const handelDataTableLoad = useCallback((pagination) => {
     const { current, pageSize, total } = pagination;
