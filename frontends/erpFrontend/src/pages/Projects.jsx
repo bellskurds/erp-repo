@@ -63,11 +63,12 @@ const EditableCell = ({
   const save = async () => {
     try {
       const values = await form.validateFields();
+
       toggleEdit();
       handleSave({
         ...record,
         ...values,
-      });
+      }, values);
     } catch (errInfo) {
       console.log('Save failed:', errInfo);
     }
@@ -147,7 +148,9 @@ const Projects = () => {
   const [summatoryCost, setSummatoryCost] = useState();
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
+
     if (item) {
+
       setTimeout(() => {
 
         const { employees, _id, removed, enabled, created, periods, ...otherValues } = item;
@@ -155,10 +158,10 @@ const Projects = () => {
         setEmployeeList(JSON.parse(employees))
 
       }, 200);
-
+      console.log(item, '33334343');
+      setCurrentItem(item);
 
       setCurrentId(item._id);
-      setCurrentItem(item);
       setIsModalVisible(true);
       setIsUpdate(true);
     }
@@ -271,18 +274,12 @@ const Projects = () => {
     },
 
   ];
-
-
-
   const components = {
     body: {
       row: EditableRow,
       cell: EditableCell,
     },
   };
-
-
-
   const mergedColumns = columns.map((col) => {
     if (!col.editable) {
       return col;
@@ -300,30 +297,73 @@ const Projects = () => {
   });
   const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
   const { pagination, items } = listResult;
-
-
   const onFinish = async (values) => {
-    values['employees'] = JSON.stringify(employeeList);
 
-    if (isUpdate && currentId) {
-      const id = currentId;
-      dispatch(crud.update({ entity, id, jsonData: values }));
-    } else {
-      // const { result } = await request.create({ entity, jsonData: values });
-      dispatch(crud.create({ entity, jsonData: values }));
-    }
-    formRef.current.resetFields();
-    setTimeout(() => {
-      dispatch(crud.resetState());
-      dispatch(crud.list({ entity }));
-    }, [400])
-    handleCancel()
+    values['employees'] = JSON.stringify(employeeList);
+    const obj1 = JSON.parse(currentItem.employees);
+    const obj2 = employeeList;
+    const result = getObjectDiff(obj1, obj2);
+    console.log(result, '2222222222');
+    // if (isUpdate && currentId) {
+    //   const id = currentId;
+    //   dispatch(crud.update({ entity, id, jsonData: values }));
+    // } else {
+    //   // const { result } = await request.create({ entity, jsonData: values });
+    //   dispatch(crud.create({ entity, jsonData: values }));
+    // }
+    // formRef.current.resetFields();
+    // setTimeout(() => {
+    //   dispatch(crud.resetState());
+    //   dispatch(crud.list({ entity }));
+    // }, [400])
+    // handleCancel()
   };
   const formRef = useRef(null);
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
+  const getObjectDiff = (obj1, obj2) => {
+    const diff = [];
 
+    // Check for changed properties and values
+    for (let i = 0; i < obj1.length; i++) {
+      const obj1Props = Object.keys(obj1[i]);
+      const obj2Props = Object.keys(obj2[i]);
+      const changedProps = [];
+
+      for (let prop of obj1Props) {
+        if (obj2[i].hasOwnProperty(prop) && obj1[i][prop] !== obj2[i][prop]) {
+          changedProps.push({ [prop]: obj2[i][prop] });
+        }
+      }
+
+      if (changedProps.length > 0) {
+        diff.push({ index: i, changes: changedProps });
+      }
+    }
+
+    // Check for added properties and values
+    for (let i = 0; i < obj2.length; i++) {
+      const obj2Props = Object.keys(obj2[i]);
+
+      for (let prop of obj2Props) {
+        let found = false;
+
+        for (let j = 0; j < obj1.length; j++) {
+          if (obj1[j].hasOwnProperty(prop)) {
+            found = true;
+            break;
+          }
+        }
+
+        if (!found) {
+          diff.push({ index: i, added: { [prop]: obj2[i][prop] } });
+        }
+      }
+    }
+
+    return diff;
+  }
   const ExtraWeek = () => {
     const start_ = endDate.date();
     const end_ = start_ + 7;
@@ -435,7 +475,9 @@ const Projects = () => {
     setFilterData(items);
     setPaginations(pagination)
   }, [items, pagination])
-  const handleSave = (row) => {
+  const handleSave = (row, values) => {
+
+    console.log(values, row, '33333');
     const newData = [...employeeList];
     const index = newData.findIndex((item) => row.key === item.key);
     const item = newData[index];
