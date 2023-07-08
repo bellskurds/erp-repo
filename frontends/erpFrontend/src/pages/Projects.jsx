@@ -300,23 +300,23 @@ const Projects = () => {
   const onFinish = async (values) => {
 
     values['employees'] = JSON.stringify(employeeList);
-    const obj1 = JSON.parse(currentItem.employees);
-    const obj2 = employeeList;
-    const result = getObjectDiff(obj1, obj2);
-    console.log(result, '2222222222');
-    // if (isUpdate && currentId) {
-    //   const id = currentId;
-    //   dispatch(crud.update({ entity, id, jsonData: values }));
-    // } else {
-    //   // const { result } = await request.create({ entity, jsonData: values });
-    //   dispatch(crud.create({ entity, jsonData: values }));
-    // }
-    // formRef.current.resetFields();
-    // setTimeout(() => {
-    //   dispatch(crud.resetState());
-    //   dispatch(crud.list({ entity }));
-    // }, [400])
-    // handleCancel()
+    // const obj1 = JSON.parse(currentItem.employees);
+    // const obj2 = employeeList;
+    // const result = getObjectDiff(obj1, obj2);
+    // console.log(result, '2222222222');
+    if (isUpdate && currentId) {
+      const id = currentId;
+      dispatch(crud.update({ entity, id, jsonData: values }));
+    } else {
+      // const { result } = await request.create({ entity, jsonData: values });
+      dispatch(crud.create({ entity, jsonData: values }));
+    }
+    formRef.current.resetFields();
+    setTimeout(() => {
+      dispatch(crud.resetState());
+      dispatch(crud.list({ entity }));
+    }, [400])
+    handleCancel()
   };
   const formRef = useRef(null);
   const onFinishFailed = (errorInfo) => {
