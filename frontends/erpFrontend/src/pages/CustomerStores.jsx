@@ -192,7 +192,6 @@ const CustomerStores = (props) => {
                 item.friday = item.friday ? [moment(item.friday[0]), moment(item.friday[1])] : null;
                 item.saturday = item.saturday ? [moment(item.saturday[0]), moment(item.saturday[1])] : null;
                 item.sunday = item.sunday ? [moment(item.sunday[0]), moment(item.sunday[1])] : null;
-                console.log(item, 'fffffffffffffffffffsssffffff')
                 if (formRef.current) formRef.current.setFieldsValue(item);
                 setCurrentId(item._id);
             }, 200);
@@ -313,12 +312,6 @@ const CustomerStores = (props) => {
                     onFinish={saveBankDetails}
                     onFinishFailed={onFinishFailed}
                     autoComplete="off"
-                    initialValues={{
-                        gender: 1,
-                        civil_status: 3,
-                        birthplace: "AU",
-
-                    }}
                 >
 
                     <Row gutter={24}>
