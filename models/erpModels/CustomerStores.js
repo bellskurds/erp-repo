@@ -58,7 +58,11 @@ const CustomerStoresSchema = new mongoose.Schema({
   },
 
   parent_id: {
-    type: String,
+
+    type: mongoose.Schema.ObjectId,
+    ref: 'Client',
+    autopopulate: true
+
   },
   insumos: {
     type: Boolean,
@@ -79,7 +83,7 @@ const CustomerStoresSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
-// CustomerStoresSchema.plugin(require('mongoose-autopopulate'));
+CustomerStoresSchema.plugin(require('mongoose-autopopulate'));
 // CustomerStoresSchema.index({
 //   name: 'text',
 //   surname: 'text',

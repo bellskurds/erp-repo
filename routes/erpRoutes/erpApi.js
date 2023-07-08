@@ -42,6 +42,7 @@ const employeeDocumentController = require('@/controllers/erpControllers/employe
 const ProjectController = require('@/controllers/erpControllers/ProjectController');
 const referenceController = require('@/controllers/erpControllers/referenceController');
 const payrollController = require('@/controllers/erpControllers/payrollController');
+const visitControlController = require('@/controllers/erpControllers/visitControlController');
 
 const baseFilePath = 'public/uploads/admin/'
 // //_______________________________ Admin management_______________________________
@@ -277,6 +278,17 @@ router.route('/customerStores/search').get(catchErrors(customerStoresController.
 router.route('/customerStores/list').get(catchErrors(customerStoresController.list));
 router.route('/customerStores/filter').get(catchErrors(customerStoresController.filter));
 router.route('/customerStores/byParentId').post(catchErrors(customerStoresController.getByParentId));
+
+
+// //_____________________________________ API for clients of visit control __________________________________________________
+router.route('/visitControl/create').post(catchErrors(visitControlController.create));
+router.route('/visitControl/read/:id').get(catchErrors(visitControlController.read));
+router.route('/visitControl/update/:id').patch(catchErrors(visitControlController.update));
+router.route('/visitControl/delete/:id').delete(catchErrors(visitControlController.delete));
+router.route('/visitControl/search').get(catchErrors(visitControlController.search));
+router.route('/visitControl/list').get(catchErrors(visitControlController.list));
+router.route('/visitControl/filter').get(catchErrors(visitControlController.filter));
+router.route('/visitControl/byParentId').post(catchErrors(visitControlController.getByParentId));
 
 
 

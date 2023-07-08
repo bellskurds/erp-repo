@@ -13,6 +13,10 @@ import {
   UserOutlined,
   ProfileOutlined,
   TeamOutlined,
+  MoneyCollectOutlined,
+  ProjectOutlined,
+  FundProjectionScreenOutlined,
+  ControlOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -75,19 +79,24 @@ export default function Navigation() {
             <Link to={'/customer'} />
             Customer
           </Menu.Item>
-          <Menu.Item key={'PayrollManagement'} icon={<ProfileOutlined />}>
+          <Menu.Item key={'PayrollManagement'} icon={<MoneyCollectOutlined />}>
             <Link to={'/payroll_management'} />
             Payroll Management
           </Menu.Item>
 
-          <Menu.Item key={'Projects'} icon={<ProfileOutlined />}>
+          <Menu.Item key={'Projects'} icon={<ProjectOutlined />}>
             <Link to={'/projects'} />
             Projects
           </Menu.Item>
 
-          <Menu.Item key={'ProjectPayrollManagement'} icon={<ProfileOutlined />}>
+          <Menu.Item key={'ProjectPayrollManagement'} icon={<FundProjectionScreenOutlined />}>
             <Link to={'/project_payment_management'} />
             Project Payment Management
+          </Menu.Item>
+
+          <Menu.Item key={'VisitControl'} icon={<ControlOutlined />}>
+            <Link to={'/visit_control'} />
+            Visit Control
           </Menu.Item>
           {/* <Menu.Item key={'Quote'} icon={<FileSyncOutlined />}>
             <Link to={'/quote'} />

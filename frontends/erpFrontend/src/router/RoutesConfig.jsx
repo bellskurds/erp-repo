@@ -77,6 +77,10 @@ export const routesConfig = [
     component: 'Projects',
   },
   {
+    path: '/visit_control',
+    component: 'VisitControl',
+  },
+  {
     path: '/quote',
     component: 'Quote',
   },

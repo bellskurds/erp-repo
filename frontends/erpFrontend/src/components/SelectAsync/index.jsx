@@ -36,6 +36,8 @@ export default function SelectAsync({
 
   return (
     <Select
+      showSearch
+      optionFilterProp="children"
       loading={isLoading}
       disabled={isLoading}
       value={currentValue}
