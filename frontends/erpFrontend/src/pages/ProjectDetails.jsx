@@ -186,24 +186,26 @@ const ProjectDetails = () => {
   }
   return (
 
-    <Layout style={{ padding: '100px', overflow: 'auto' }}>
+    <Layout
+      style={{ padding: '100px' }}
+    >
       <Row>
         <Col span={24}>
           <h3 style={{ textAlign: 'center' }}>
             <LeftOutlined onClick={prevData} />
             QUINCENA: {currentPeriod.split("-")[0]} DE {parseInt(currentPeriod.split("-")[0]) !== 31 ? new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' }) : new Date(currentYear, currentMonth - 2).toLocaleString('default', { month: 'long' })} AL {currentPeriod.split("-")[1]} DE {new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' })} {currentYear}
             <RightOutlined onClick={nextData} />
-
           </h3>
         </Col>
         <Button type="primary" icon={<DownloadOutlined />} onClick={exportToExcel} >Export to excel</Button>
       </Row>
       <Table
+        style={{ overflow: 'auto' }}
         bordered
         dataSource={listItems || []}
         columns={[...columns, ...changedDays]}
         rowClassName="editable-row"
-        style={{ width: '1000px' }}
+      // style={{ width: '1000px' }}
       />
     </Layout>
   );

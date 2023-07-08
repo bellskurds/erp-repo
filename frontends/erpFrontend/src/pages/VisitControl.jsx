@@ -1,5 +1,5 @@
 import { DashboardLayout, DefaultLayout } from '@/layout';
-import { DeleteOutlined, EditOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, EyeOutlined, LeftOutlined, RightOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Col, DatePicker, Form, Input, InputNumber, Layout, Modal, Popconfirm, Radio, Row, Select, Space, Table, Tag, Typography } from 'antd';
 import Search from 'antd/lib/transfer/search';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -111,6 +111,10 @@ const VisitControl = () => {
 
   const [isUpdate, setIsUpdate] = useState(false);
   const [rangeDate, setRangeDate] = useState();
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+
+
   const showModal = () => {
 
     setCurrentId(new Date().valueOf())
@@ -133,7 +137,7 @@ const VisitControl = () => {
     return new Date().valueOf();
   }
   const [customerId, setCustomerId] = useState(generateCustomerId());
-
+  const [changedMonth, setChangedMonth] = useState([]);
   const [employeeList, setEmployeeList] = useState([]);
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState('');
@@ -210,27 +214,27 @@ const VisitControl = () => {
       dataIndex: ['ref', 'ref'],
       width: '15%',
     },
-    {
-      title: 'Actions',
-      dataIndex: 'operation',
-      width: "10%",
-      align: 'center',
-      render: (_, record) => {
-        return (
+    // {
+    //   title: 'Actions',
+    //   dataIndex: 'operation',
+    //   width: "10%",
+    //   align: 'center',
+    //   render: (_, record) => {
+    //     return (
 
-          <>
-            <Typography.Link onClick={() => editItem(record)}>
-              <EditOutlined style={{ fontSize: "20px" }} />
-            </Typography.Link>
+    //       <>
+    //         <Typography.Link onClick={() => editItem(record)}>
+    //           <EditOutlined style={{ fontSize: "20px" }} />
+    //         </Typography.Link>
 
-            <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-              <DeleteOutlined style={{ fontSize: "20px" }} />
-            </Popconfirm>
-          </>
-        )
+    //         <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+    //           <DeleteOutlined style={{ fontSize: "20px" }} />
+    //         </Popconfirm>
+    //       </>
+    //     )
 
-      },
-    },
+    //   },
+    // },
 
   ];
   const components = {
@@ -416,6 +420,8 @@ const VisitControl = () => {
     setInitEmployeeColumns([...Columns, ...dates]);
   }, [employeeList]);
 
+
+
   useEffect(() => {
     dispatch(crud.resetState());
     dispatch(crud.list({ entity }));
@@ -505,6 +511,49 @@ const VisitControl = () => {
     setPaginations(pagination)
     return true;
   }, [filterData, searchText]);
+
+  const prevData = () => {
+    if (currentMonth === 1) {
+      setCurrentYear(currentYear - 1);
+      setCurrentMonth(12)
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
+  }
+  const nextData = () => {
+    if (currentMonth === 12) {
+      setCurrentYear(currentYear + 1);
+      setCurrentMonth(1);
+    }
+    else {
+      setCurrentMonth(currentMonth + 1);
+    }
+  }
+  useEffect(() => {
+
+    console.log(currentMonth, currentYear);
+    const startDay = 1;
+    const endDay = new Date(currentYear, currentMonth, 0).getDate();
+    const start_date = new Date(currentYear, currentMonth - 1, startDay);
+    const end_date = new Date(currentYear, currentMonth - 1, endDay);
+    let currentDate = moment(start_date);
+    const end = moment(end_date);
+    const daysColumns = [];
+    while (currentDate.isSameOrBefore(end)) {
+      const monthLable = currentDate.format("MMMM");
+      const day = currentDate.format("DD")
+      const year = currentDate.year();
+      const month = currentDate.format("MM");
+      daysColumns.push({
+        title: `${day}-${monthLable}`,
+        dataIndex: `day_${year}-${month}-${day}`,
+      })
+      currentDate = currentDate.add(1, 'days');
+    };
+    setChangedMonth(daysColumns)
+  }, [
+    currentMonth, currentYear
+  ])
   const Footer = () => {
     const pages = paginations
     const { current, count, total, page } = pages
@@ -620,8 +669,15 @@ const VisitControl = () => {
             </Form>
           </>
         </Modal>
-        <Layout>
+        <Layout >
           <Row gutter={24} style={{ textAlign: 'right' }}>
+            <Col span={24}>
+              <h3 style={{ textAlign: 'center' }}>
+                <LeftOutlined onClick={prevData} />
+                {currentMonth} {currentYear}
+                <RightOutlined onClick={nextData} />
+              </h3>
+            </Col>
             <Col span={6}>
               <Input
                 placeholder='Search'
@@ -637,12 +693,12 @@ const VisitControl = () => {
 
           <Form form={form} component={false}>
             <Table
-
+              style={{ overflow: 'auto' }}
               bordered
               rowKey={(item) => item._id}
               key={(item) => item._id}
               dataSource={filterData}
-              columns={mergedColumns}
+              columns={[...mergedColumns, ...changedMonth]}
               rowClassName="editable-row"
               pagination={paginations}
               onChange={handelDataTableLoad}
