@@ -183,28 +183,26 @@ const VisitControl = () => {
   const columns = [
     {
       title: 'Client(Branch)',
-      dataIndex: 'periods',
+      dataIndex: ['customer', 'name'],
       width: '15%',
-      render: (text) => {
-        return (getDateLabel(text))
-      }
+
     },
     {
       title: 'T',
-      dataIndex: 'project_id',
+      dataIndex: 'store_visit_value',
       width: '15%',
     },
     {
       title: 'R',
-      dataIndex: ['customer', 'name'],
+      dataIndex: 'visit_value',
       width: '15%',
     },
     {
       title: 'P',
-      dataIndex: 'type',
+      dataIndex: 'difference',
       width: '15%',
-      render: (text) => {
-        return (typeArr[text]);
+      render: (text, record) => {
+        return (record.store_visit_value || 0 - record.visit_value || 0);
       }
     },
     {
@@ -583,6 +581,17 @@ const VisitControl = () => {
                     ]}
                   >
                     <Input.TextArea />
+                  </Form.Item>
+                  <Form.Item
+                    name="visit_value"
+                    label="Visits"
+                    rules={[
+                      {
+                        required: true,
+                      },
+                    ]}
+                  >
+                    <Input type='number' />
                   </Form.Item>
                 </Col>
               </Row>
