@@ -60,6 +60,12 @@ const CustomerStoresSchema = new mongoose.Schema({
   parent_id: {
     type: String,
   },
+  insumos: {
+    type: Boolean,
+  },
+  visit_value: {
+    type: String,
+  },
   removed: {
     type: Boolean,
     default: false,

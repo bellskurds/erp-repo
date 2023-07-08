@@ -15,6 +15,7 @@ const CustomerStores = (props) => {
     const currentEmployeeId = props.parentId
     const [isBankModal, setIsBankModal] = useState(false);
     const formRef = useRef(null);
+    const [insumos, setInsumos] = useState(false);
     const bankColumns = [
         {
             title: 'Store',
@@ -149,15 +150,40 @@ const CustomerStores = (props) => {
             setIsBankModal(true);
             setIsUpdate(true);
             setTimeout(() => {
-
-
-                if (item.monday) setMondayValue(true);
-                if (item.tuesday) setTuesdayValue(true);
-                if (item.wednesday) setWednesdayValue(true);
-                if (item.thursday) setTursdayValue(true);
-                if (item.friday) setFridayValue(true);
-                if (item.saturday) setSaturdayValue(true);
-                if (item.sunday) setSundayValue(true);
+                formRef.current.resetFields();
+                if (item.hasOwnProperty('insumos') && item.insumos) {
+                    setInsumos(true)
+                } else {
+                    setInsumos(false)
+                }
+                if (item.monday) { setMondayValue(true) }
+                else {
+                    setMondayValue(false)
+                }
+                if (item.tuesday) setTuesdayValue(true)
+                else {
+                    setTuesdayValue(false)
+                }
+                if (item.wednesday) setWednesdayValue(true)
+                else {
+                    setWednesdayValue(false)
+                }
+                if (item.thursday) setTursdayValue(true)
+                else {
+                    setTursdayValue(false)
+                }
+                if (item.friday) setFridayValue(true)
+                else {
+                    setFridayValue(false)
+                }
+                if (item.saturday) setSaturdayValue(true)
+                else {
+                    setSaturdayValue(false)
+                }
+                if (item.sunday) setSundayValue(true)
+                else {
+                    setSundayValue(false)
+                }
 
                 item.monday = item.monday ? [moment(item.monday[0]), moment(item.monday[1])] : null;
                 item.tuesday = item.tuesday ? [moment(item.tuesday[0]), moment(item.tuesday[1])] : null;
@@ -189,8 +215,6 @@ const CustomerStores = (props) => {
     }
     const saveBankDetails = (values) => {
 
-        // console.log(values, '33333333333333333333');
-
         const parentId = currentEmployeeId;
         if (currentId && parentId && isUpdate) {
             const id = currentId;
@@ -215,17 +239,6 @@ const CustomerStores = (props) => {
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
     };
-    const setPrimary = (record) => {
-        const id = record._id;
-        const jsonData = { primary: true }
-        const entity = 'customerContacts'
-        dispatch(crud.update({ entity, id, jsonData }));
-        setTimeout(() => {
-            const jsonData = { parent_id: currentEmployeeId }
-            dispatch(crud.listByCustomerStores({ entity, jsonData }))
-        }, [500])
-    }
-
     const { result: Items } = useSelector(selectListsByCustomerStores);
 
     useEffect(() => {
@@ -278,6 +291,9 @@ const CustomerStores = (props) => {
     }, [timeRange])
     // const items = []
     // console.log(bankItems, 'ItemsItemsItemsItemsItems')
+    useEffect(() => {
+        console.log(insumos, '3333');
+    }, [insumos])
     return (
 
         <div className="whiteBox shadow">
@@ -352,7 +368,7 @@ const CustomerStores = (props) => {
                             </Form.Item>
                             <Form.Item
                                 name="monday"
-                                label={<Checkbox onChange={(e) => { e.target.checked ? setMondayValue(true) : setMondayValue(false) }}>Monday</Checkbox>}
+                                label={<Checkbox checked={mondayValue} onChange={(e) => { e.target.checked ? setMondayValue(true) : setMondayValue(false) }}>Monday</Checkbox>}
                             // rules={[
                             //     {
                             //         required: true,
@@ -366,7 +382,7 @@ const CustomerStores = (props) => {
                             </Form.Item>
                             <Form.Item
                                 name="tuesday"
-                                label={<Checkbox onChange={(e) => { e.target.checked ? setTuesdayValue(true) : setTuesdayValue(false) }}>Tuesday</Checkbox>}
+                                label={<Checkbox checked={tuesdayValue} onChange={(e) => { e.target.checked ? setTuesdayValue(true) : setTuesdayValue(false) }}>Tuesday</Checkbox>}
                             // rules={[
                             //     {
                             //         required: true,
@@ -380,7 +396,7 @@ const CustomerStores = (props) => {
                             </Form.Item>
                             <Form.Item
                                 name="wednesday"
-                                label={<Checkbox onChange={(e) => { e.target.checked ? setWednesdayValue(true) : setWednesdayValue(false) }}>Wednesday</Checkbox>}
+                                label={<Checkbox checked={wednesdayValue} onChange={(e) => { e.target.checked ? setWednesdayValue(true) : setWednesdayValue(false) }}>Wednesday</Checkbox>}
 
                             // rules={[
                             //     {
@@ -395,7 +411,7 @@ const CustomerStores = (props) => {
                             </Form.Item>
                             <Form.Item
                                 name="thursday"
-                                label={<Checkbox onChange={(e) => { e.target.checked ? setTursdayValue(true) : setTursdayValue(false) }}>Thursday</Checkbox>}
+                                label={<Checkbox checked={tursdayValue} onChange={(e) => { e.target.checked ? setTursdayValue(true) : setTursdayValue(false) }}>Thursday</Checkbox>}
 
                             // rules={[
                             //     {
@@ -411,7 +427,7 @@ const CustomerStores = (props) => {
                             <Form.Item
                                 name="friday"
 
-                                label={<Checkbox onChange={(e) => { e.target.checked ? setFridayValue(true) : setFridayValue(false) }}>Friday</Checkbox>}
+                                label={<Checkbox checked={fridayValue} onChange={(e) => { e.target.checked ? setFridayValue(true) : setFridayValue(false) }}>Friday</Checkbox>}
                             // rules={[
                             //     {
                             //         required: true,
@@ -426,7 +442,7 @@ const CustomerStores = (props) => {
                             <Form.Item
                                 name="saturday"
 
-                                label={<Checkbox onChange={(e) => { e.target.checked ? setSaturdayValue(true) : setSaturdayValue(false) }}>Saturday</Checkbox>}
+                                label={<Checkbox checked={saturdayValue} onChange={(e) => { e.target.checked ? setSaturdayValue(true) : setSaturdayValue(false) }}>Saturday</Checkbox>}
                             // rules={[
                             //     {
                             //         required: true,
@@ -441,7 +457,7 @@ const CustomerStores = (props) => {
                             <Form.Item
                                 name="sunday"
 
-                                label={<Checkbox onChange={(e) => { e.target.checked ? setSundayValue(true) : setSundayValue(false) }}>Sunday</Checkbox>}
+                                label={<Checkbox checked={sundayValue} onChange={(e) => { e.target.checked ? setSundayValue(true) : setSundayValue(false) }}>Sunday</Checkbox>}
                             // rules={[
                             //     {
                             //         required: true,
@@ -512,6 +528,44 @@ const CustomerStores = (props) => {
                             >
                                 <InputNumber />
                             </Form.Item>
+                            <Form.Item
+                                name="insumos"
+                                label="Insumos"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <Radio.Group
+                                    options={[
+                                        {
+                                            value: true,
+                                            label: "Yes"
+                                        },
+                                        {
+                                            value: false,
+                                            label: "No"
+                                        },
+                                    ]}
+
+                                    onChange={(e) => { console.log(e.target.value); setInsumos(e.target.value) }}
+                                />
+                            </Form.Item>
+                            {insumos &&
+                                <Form.Item
+                                    name="visit_value"
+                                    label="Visits"
+                                    rules={[
+                                        {
+                                            required: true,
+                                        },
+                                    ]}
+                                >
+                                    <Input type='number' />
+                                </Form.Item>
+                            }
+
                             <Form.Item
                                 name="products"
                                 label="Products"
