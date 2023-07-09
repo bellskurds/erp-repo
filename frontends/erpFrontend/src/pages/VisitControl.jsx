@@ -116,24 +116,18 @@ const VisitControl = () => {
 
   const visitType = [
     '',
-
     <TeamOutlined />,
     <SkinOutlined />,
     <SafetyOutlined />,
-
   ]
   const showModal = () => {
-
     setCurrentId(new Date().valueOf())
     setIsModalVisible(true);
     setIsUpdate(false);
     if (formRef.current) formRef.current.resetFields();
-
   };
   const dispatch = useDispatch();
-
   const handleOk = () => {
-    // handle ok button click here
     setIsModalVisible(false);
   };
 
@@ -206,6 +200,11 @@ const VisitControl = () => {
       title: 'T',
       dataIndex: 'store_visit_value',
       width: '15%',
+      // render: (_, record) => {
+      //   const { store } = record;
+      //   const { visit_value } = store;
+      //   return visit_value
+      // }
     },
     {
       title: 'R',
@@ -217,13 +216,19 @@ const VisitControl = () => {
       dataIndex: 'difference',
       width: '15%',
       render: (text, record) => {
-        return (record.store_visit_value || 0 - record.visit_value || 0);
+        return ((parseFloat(record.store_visit_value) || 0) - (parseFloat(record.visit_value) || 0));
       }
     },
     {
       title: 'INSU',
-      dataIndex: ['ref', 'ref'],
+      dataIndex: ['store', 'insumos'],
       width: '15%',
+      render: (_, record) => {
+        const { store } = record;
+        const { insumos } = store;
+        return insumos ? "YES" : "NO"
+      }
+
     },
     // {
     //   title: 'Actions',
@@ -500,23 +505,24 @@ const VisitControl = () => {
     });
   }
   useEffect(() => {
-    const filteredData = items.filter((record) => {
-      const { customer } = record;
+    console.log(filterData, 'filterData');
+    // const filteredData = filterData.filter((record) => {
+    //   const { customer } = record;
 
-      const recordStartDate = record.periods ? new Date(moment(record.periods[0]).format("YYYY-MM-DD")) : null;
-      const recordEndDate = record.periods ? new Date(moment(record.periods[1]).format("YYYY-MM-DD")) : null;
-      const startDate = rangeDate ? new Date(rangeDate[0].format("YYYY-MM-DD")) : null;
-      const endDate = rangeDate ? new Date(rangeDate[1].format("YYYY-MM-DD")) : null;
-      return (
-        (!searchText || record['project_id'].toString().toLowerCase().includes(searchText.toLowerCase()) ||
-          customer['name'].toString().toLowerCase().includes(searchText.toLowerCase())) &&
-        (!rangeDate || (startDate && endDate && recordStartDate >= startDate && recordEndDate <= endDate)) &&
-        (!status || record.status === status)
-      );
+    //   const recordStartDate = record.periods ? new Date(moment(record.periods[0]).format("YYYY-MM-DD")) : null;
+    //   const recordEndDate = record.periods ? new Date(moment(record.periods[1]).format("YYYY-MM-DD")) : null;
+    //   const startDate = rangeDate ? new Date(rangeDate[0].format("YYYY-MM-DD")) : null;
+    //   const endDate = rangeDate ? new Date(rangeDate[1].format("YYYY-MM-DD")) : null;
+    //   return (
+    //     (!searchText || record['project_id'].toString().toLowerCase().includes(searchText.toLowerCase()) ||
+    //       customer['name'].toString().toLowerCase().includes(searchText.toLowerCase())) &&
+    //     (!rangeDate || (startDate && endDate && recordStartDate >= startDate && recordEndDate <= endDate)) &&
+    //     (!status || record.status === status)
+    //   );
 
-    })
+    // })
     // setFilterData(filteredData);
-    setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
+    // setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
   }, [searchText, status, rangeDate])
 
   const handelDataTableLoad = useCallback((pagination) => {
@@ -568,29 +574,38 @@ const VisitControl = () => {
       };
       setChangedMonth(daysColumns)
       const { result: visitDatas } = await request.list({ entity: "visitControl" });
-      console.log(currentYear, currentMonth);
+      const { result: customerStores } = await request.list({ entity: "customerStores" });
+
+      const storeData = customerStores.map(obj => {
+        const { parent_id, ...otherObj } = obj;
+        return {
+          store: otherObj,
+          customer: parent_id
+        }
+      })
+
+      // console.log(storeData, 'customerStores');
+
       const fillteredData = visitDatas.filter(({ visit_date }) =>
       (
         new Date(visit_date).getFullYear() === currentYear
         && new Date(visit_date).getMonth() === (currentMonth - 1)
       )
       )
-      const groupedData = JSON.parse(JSON.stringify(groupArry(fillteredData)));
-
-      groupedData.map((obj, index) => {
-        const { values } = obj;
-        obj['key'] = index;
-        obj['visit_value'] = values.length
-        values.map(value => {
-          console.log(getDate(value.visit_date), 'value.date');
-          obj[`day_${getDate(value.visit_date)}`] = visitType[value.type];
+      storeData.map(obj => {
+        const { store, customer } = obj;
+        const { visit_value } = store;
+        obj['store_visit_value'] = visit_value || 0;
+        obj['visit_value'] = 0;
+        fillteredData.map(data => {
+          const { store: store1, customer: customer1, visit_date, type } = data;
+          if (store._id === store1._id && customer._id === customer1._id) {
+            obj['visit_value']++;
+            obj[`day_${getDate(visit_date)}`] = visitType[type]
+          }
         })
       })
-
-      console.log(groupedData);
-      setFilterData(groupedData)
-
-
+      setFilterData(storeData)
     }
     init();
 
