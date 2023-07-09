@@ -673,7 +673,7 @@ const Projects = () => {
                   //   },
                   // ]}
                   >
-                    <Input type='number' readOnly style={{ background: 'grey' }} value={summatoryCost} />
+                    <Input type='number' readOnly style={{ background: 'lightgrey' }} value={summatoryCost} />
                   </Form.Item>
                 </Col>
               </Row>
