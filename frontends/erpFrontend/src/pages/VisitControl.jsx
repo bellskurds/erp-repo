@@ -294,8 +294,8 @@ const VisitControl = () => {
         fillteredData.map(data => {
           const { store: store1, customer: customer1, visit_date, type, status } = data;
           if (store._id === store1._id && customer._id === customer1._id) {
-            obj[`day_${getDate(visit_date)}`] = visitType[type]
             if (status) {
+              obj[`day_${getDate(visit_date)}`] = visitType[type]
               obj['visit_value']++;
             }
           }
