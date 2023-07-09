@@ -17,6 +17,9 @@ const BankAccountSchema = new mongoose.Schema({
   account_no: {
     type: String,
   },
+  ruta: {
+    type: String,
+  },
   parent_id: {
     type: String,
   },

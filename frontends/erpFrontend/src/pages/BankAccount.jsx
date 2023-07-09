@@ -31,6 +31,10 @@ const BankAccount = (props) => {
             title: 'Account No',
             dataIndex: 'account_no',
         },
+        {
+            title: 'RUTA',
+            dataIndex: 'ruta',
+        },
 
         {
             title: 'Actions',
@@ -61,7 +65,7 @@ const BankAccount = (props) => {
     const editBankModal = () => {
         setIsBankModal(true);
         setIsUpdate(false);
-        // if (formRef) formRef.current.resetFields();
+        if (formRef.current) formRef.current.resetFields();
     }
     const editItem = (item) => {
         if (item) {
@@ -190,6 +194,17 @@ const BankAccount = (props) => {
                     <Form.Item
                         name="account_no"
                         label="Account No"
+                        rules={[
+                            {
+                                required: true,
+                            },
+                        ]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item
+                        name="ruta"
+                        label="RUTA"
                         rules={[
                             {
                                 required: true,
