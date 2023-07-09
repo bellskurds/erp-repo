@@ -1,6 +1,6 @@
 import { DashboardLayout, DefaultLayout } from '@/layout';
-import { DeleteOutlined, EditOutlined, EyeOutlined, LeftOutlined, RightOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, DatePicker, Form, Input, InputNumber, Layout, Modal, Popconfirm, Radio, Row, Select, Space, Table, Tag, Typography } from 'antd';
+import { DashOutlined, DeleteOutlined, EditOutlined, EyeOutlined, LeftOutlined, RightOutlined, SafetyOutlined, SearchOutlined, SkinOutlined, TeamOutlined } from '@ant-design/icons';
+import { Button, Col, DatePicker, Form, Input, InputNumber, Layout, Modal, Popconfirm, Radio, Row, Select, Space, Table, Tag, Typography, message } from 'antd';
 import Search from 'antd/lib/transfer/search';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -114,7 +114,14 @@ const VisitControl = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
+  const visitType = [
+    '',
 
+    <TeamOutlined />,
+    <SkinOutlined />,
+    <SafetyOutlined />,
+
+  ]
   const showModal = () => {
 
     setCurrentId(new Date().valueOf())
@@ -265,12 +272,12 @@ const VisitControl = () => {
   const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
   const { pagination, items } = listResult;
   const onFinish = async (values) => {
-
-    values['employees'] = JSON.stringify(employeeList);
-    // const obj1 = JSON.parse(currentItem.employees);
-    // const obj2 = employeeList;
-    // const result = getObjectDiff(obj1, obj2);
-    // console.log(result, '2222222222');
+    const { customer, visit_date, store } = values;
+    const { result } = await request.listById({ entity: 'visitControl', jsonData: { customer: customer, store: store, visit_date: getDate(visit_date) } });
+    values['visit_date'] = getDate(visit_date);
+    if ((result && result.length) || moment().isBefore(visit_date)) {
+      return message.error("can't you save on same date or future date ")
+    }
     if (isUpdate && currentId) {
       const id = currentId;
       dispatch(crud.update({ entity, id, jsonData: values }));
@@ -576,7 +583,7 @@ const VisitControl = () => {
         obj['visit_value'] = values.length
         values.map(value => {
           console.log(getDate(value.visit_date), 'value.date');
-          obj[`day_${getDate(value.visit_date)}`] = 1;
+          obj[`day_${getDate(value.visit_date)}`] = visitType[value.type];
         })
       })
 
@@ -702,6 +709,31 @@ const VisitControl = () => {
                     },
                   ]}>
                     <DatePicker />
+                  </Form.Item>
+                  <Form.Item
+                    name='type'
+                    label='Type'
+                    required={[
+                      {
+                        required: true
+                      }
+                    ]}
+                  >
+                    <Radio.Group
+                      options={[
+                        {
+                          value: 1,
+                          label: "Visit"
+                        },
+                        {
+                          value: 2,
+                          label: "Products"
+                        },
+                        {
+                          value: 3,
+                          label: "Inspection"
+                        }]}
+                    />
                   </Form.Item>
                   <Form.Item
                     name="comments"

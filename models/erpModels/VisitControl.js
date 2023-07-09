@@ -22,8 +22,10 @@ const visitControlSchema = new mongoose.Schema({
     autopopulate: true,
   },
   visit_date: {
-    type: Date,
-    default: Date.now,
+    type: String,
+  },
+  type: {
+    type: Number,
   },
   updated: {
     type: Date,
