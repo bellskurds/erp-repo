@@ -33,6 +33,9 @@ const visitControlSchema = new mongoose.Schema({
   type: {
     type: Number,
   },
+  status: {
+    type: Number,
+  },
   updated: {
     type: Date,
     default: Date.now,

@@ -1,6 +1,6 @@
 import { DashboardLayout, } from '@/layout';
-import { LeftOutlined, RightOutlined, SafetyOutlined, SearchOutlined, SkinOutlined, TeamOutlined } from '@ant-design/icons';
-import { Button, Col, DatePicker, Form, Input, Layout, Modal, Radio, Row, Select, Table, message } from 'antd';
+import { LeftOutlined, RightOutlined, SafetyOutlined, SearchOutlined, SkinOutlined, StopOutlined, TeamOutlined } from '@ant-design/icons';
+import { Button, Col, DatePicker, Form, Input, Layout, Modal, Popconfirm, Radio, Row, Select, Table, Typography, message } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -25,6 +25,17 @@ const VisitControl = () => {
     <SkinOutlined />,
     <SafetyOutlined />,
   ]
+  const visitLabel = [
+    '',
+    'Visit',
+    'Products',
+    'Inspection',
+  ]
+
+  const { id: currentUserId } = JSON.parse(localStorage.auth)
+  const formattedDateFunc = (date) => {
+    return moment(date).format("MM/DD/YYYY")
+  }
   const showModal = () => {
     setCurrentId(new Date().valueOf())
     setIsModalVisible(true);
@@ -51,7 +62,7 @@ const VisitControl = () => {
   const [paginations, setPaginations] = useState([])
   const [visitContols, setVisitControls] = useState([]);
   const [isHistory, setIsHistory] = useState(false);
-
+  const [historyData, setHistoryData] = useState([])
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
 
@@ -65,7 +76,8 @@ const VisitControl = () => {
 
       console.log(item, filteredData, 'globalData');
       // setTimeout(() => {
-
+      filteredData.sort((a, b) => { return new Date(a.visit_date) - new Date(b.visit_date) })
+      setHistoryData(filteredData)
       //   const { employees, _id, removed, enabled, created, periods, ...otherValues } = item;
       //   if (formRef.current) formRef.current.setFieldsValue({ ...otherValues, periods: periods ? [moment(periods[0]), moment(periods[1])] : null });
       //   setEmployeeList(JSON.parse(employees))
@@ -75,8 +87,7 @@ const VisitControl = () => {
       // setCurrentItem(item);
 
       setCurrentId(item._id);
-      setIsModalVisible(true);
-      setIsUpdate(true);
+      setIsHistory(true);
     }
   }
 
@@ -167,8 +178,7 @@ const VisitControl = () => {
   const onFinish = async (values) => {
 
 
-    const { id: userId } = JSON.parse(localStorage.auth)
-    values['by'] = userId
+    values['by'] = currentUserId
     const { customer, visit_date, store } = values;
     const { result } = await request.listById({ entity: 'visitControl', jsonData: { customer: customer, store: store, visit_date: getDate(visit_date) } });
     values['visit_date'] = getDate(visit_date);
@@ -282,10 +292,12 @@ const VisitControl = () => {
         obj['visit_value'] = 0;
         obj['key'] = index;
         fillteredData.map(data => {
-          const { store: store1, customer: customer1, visit_date, type } = data;
+          const { store: store1, customer: customer1, visit_date, type, status } = data;
           if (store._id === store1._id && customer._id === customer1._id) {
-            obj['visit_value']++;
             obj[`day_${getDate(visit_date)}`] = visitType[type]
+            if (status) {
+              obj['visit_value']++;
+            }
           }
         })
       })
@@ -331,6 +343,71 @@ const VisitControl = () => {
       setFilteredStores([])
     }
   }
+  const updateHistory = async (_item) => {
+
+    const { _id } = _item;
+    const jsonData = { status: 0, by: currentUserId };
+    const { result } = await request.update({ entity, id: _id, jsonData: jsonData })
+    // dispatch(crud.update({ entity, id: _id, jsonData: jsonData }))
+    const newData = [...historyData];
+    const index = newData.findIndex((item) => item._id === _id);
+    // const item = newData[index];
+    newData[index] = result
+    console.log(JSON.parse(JSON.stringify(newData)), 'newData');
+    setHistoryData([...newData])
+    setChangeStatus(!changeStatus)
+  }
+  const historyColumns = [
+    {
+      title: "Date",
+      dataIndex: 'visit_date',
+      render: (_) => {
+        return formattedDateFunc(_)
+      }
+    }
+    ,
+    {
+      title: "Type",
+      dataIndex: 'type',
+      render: (_) => {
+        return visitLabel[_];
+      }
+    }
+    ,
+    {
+      title: "Comment",
+      dataIndex: 'comments'
+    }
+    ,
+    {
+      title: "By",
+      dataIndex: ['by', 'name']
+    }
+    ,
+    {
+      title: "Action",
+      dataIndex: 'operation',
+      width: "10%",
+      align: 'center',
+      render: (_, record) => {
+        const { status } = record;
+        return (
+          status === 0 ?
+            'Canceled'
+            :
+            <>
+              <Typography.Text>
+                <Popconfirm title="Sure to cancel?" onConfirm={() => updateHistory(record)} >
+                  <StopOutlined style={{ fontSize: "20px" }} />
+                </Popconfirm>
+              </Typography.Text>
+
+            </>
+        )
+
+      },
+    }
+  ]
   return (
 
     <DashboardLayout>
@@ -457,7 +534,11 @@ const VisitControl = () => {
         </Modal>
 
         <Modal title="History Form" visible={isHistory} onCancel={closeModal} footer={null} width={700}>
-
+          <Table
+            columns={historyColumns}
+            dataSource={historyData || []}
+            rowKey={(item) => item._id}
+          />
         </Modal>
         <Layout >
           <Row gutter={24} style={{ textAlign: 'right' }}>
