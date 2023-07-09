@@ -138,6 +138,7 @@ const VisitControl = () => {
     return new Date().valueOf();
   }
   const [customerStores, setCustomerStores] = useState([]);
+  const [globalData, setGlobalData] = useState([]);
   const [filteredStores, setFilteredStores] = useState([]);
   const [changeStatus, setChangeStatus] = useState(false);
   const [changedMonth, setChangedMonth] = useState([]);
@@ -441,18 +442,18 @@ const VisitControl = () => {
     console.log(filteredStores, 'filteredStores');
   }, [filteredStores])
 
-  useEffect(() => {
-    dispatch(crud.resetState());
-    dispatch(crud.list({ entity }));
+  // useEffect(() => {
+  //   dispatch(crud.resetState());
+  //   dispatch(crud.list({ entity }));
 
-    async function init() {
-      const { result } = await request.listById({ entity: 'customerStores' });
+  //   async function init() {
+  //     const { result } = await request.listById({ entity: 'customerStores' });
 
-      setCustomerStores(result);
-      // setReferences(result);
-    }
-    init();
-  }, []);
+  //     setCustomerStores(result);
+  //     // setReferences(result);
+  //   }
+  //   init();
+  // }, []);
   useEffect(() => {
     // setFilterData(items);
     setPaginations(pagination)
@@ -505,24 +506,15 @@ const VisitControl = () => {
     });
   }
   useEffect(() => {
-    console.log(filterData, 'filterData');
-    // const filteredData = filterData.filter((record) => {
-    //   const { customer } = record;
-
-    //   const recordStartDate = record.periods ? new Date(moment(record.periods[0]).format("YYYY-MM-DD")) : null;
-    //   const recordEndDate = record.periods ? new Date(moment(record.periods[1]).format("YYYY-MM-DD")) : null;
-    //   const startDate = rangeDate ? new Date(rangeDate[0].format("YYYY-MM-DD")) : null;
-    //   const endDate = rangeDate ? new Date(rangeDate[1].format("YYYY-MM-DD")) : null;
-    //   return (
-    //     (!searchText || record['project_id'].toString().toLowerCase().includes(searchText.toLowerCase()) ||
-    //       customer['name'].toString().toLowerCase().includes(searchText.toLowerCase())) &&
-    //     (!rangeDate || (startDate && endDate && recordStartDate >= startDate && recordEndDate <= endDate)) &&
-    //     (!status || record.status === status)
-    //   );
-
-    // })
-    // setFilterData(filteredData);
-    // setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
+    const filteredData = globalData.filter((record) => {
+      const { customer, store } = record;
+      return (
+        (!searchText || customer['name'].toString().toLowerCase().includes(searchText.toLowerCase()) ||
+          store['store'].toString().toLowerCase().includes(searchText.toLowerCase()))
+      );
+    })
+    setFilterData(filteredData);
+    setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
   }, [searchText, status, rangeDate])
 
   const handelDataTableLoad = useCallback((pagination) => {
@@ -592,11 +584,12 @@ const VisitControl = () => {
         && new Date(visit_date).getMonth() === (currentMonth - 1)
       )
       )
-      storeData.map(obj => {
+      storeData.map((obj, index) => {
         const { store, customer } = obj;
         const { visit_value } = store;
         obj['store_visit_value'] = visit_value || 0;
         obj['visit_value'] = 0;
+        obj['key'] = index;
         fillteredData.map(data => {
           const { store: store1, customer: customer1, visit_date, type } = data;
           if (store._id === store1._id && customer._id === customer1._id) {
@@ -606,6 +599,9 @@ const VisitControl = () => {
         })
       })
       setFilterData(storeData)
+      setGlobalData(storeData)
+
+      setPaginations({ current: 1, pageSize: 10, total: storeData.length })
     }
     init();
 
