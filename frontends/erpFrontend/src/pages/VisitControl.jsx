@@ -49,21 +49,30 @@ const VisitControl = () => {
   const [currentId, setCurrentId] = useState('');
   const [currentItem, setCurrentItem] = useState({});
   const [paginations, setPaginations] = useState([])
+  const [visitContols, setVisitControls] = useState([]);
+  const [isHistory, setIsHistory] = useState(false);
 
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
 
     if (item) {
+      const { customer, store } = item
+      const filteredData = visitContols.filter(({ customer: customer1, store: store1, visit_date }) =>
+        customer._id === customer1._id && store._id === store1._id &&
+        new Date(visit_date).getFullYear() === currentYear
+        && new Date(visit_date).getMonth() === (currentMonth - 1)
+      )
 
-      setTimeout(() => {
+      console.log(item, filteredData, 'globalData');
+      // setTimeout(() => {
 
-        const { employees, _id, removed, enabled, created, periods, ...otherValues } = item;
-        if (formRef.current) formRef.current.setFieldsValue({ ...otherValues, periods: periods ? [moment(periods[0]), moment(periods[1])] : null });
-        setEmployeeList(JSON.parse(employees))
+      //   const { employees, _id, removed, enabled, created, periods, ...otherValues } = item;
+      //   if (formRef.current) formRef.current.setFieldsValue({ ...otherValues, periods: periods ? [moment(periods[0]), moment(periods[1])] : null });
+      //   setEmployeeList(JSON.parse(employees))
 
-      }, 200);
-      console.log(item, '33334343');
-      setCurrentItem(item);
+      // }, 200);
+      // console.log(item, '33334343');
+      // setCurrentItem(item);
 
       setCurrentId(item._id);
       setIsModalVisible(true);
@@ -76,8 +85,8 @@ const VisitControl = () => {
       title: 'Client(Branch)',
       dataIndex: ['customer', 'name'],
       width: '15%',
-      render: (text, { store }) => {
-        return (`${text}(${store.store})`)
+      render: (text, { store, ...otherObj }) => {
+        return (<label style={{ cursor: 'pointer' }} onClick={() => editItem({ store, ...otherObj })}>`${text}(${store.store})`</label>)
       }
     },
     {
@@ -156,6 +165,10 @@ const VisitControl = () => {
   const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
   const { pagination, items } = listResult;
   const onFinish = async (values) => {
+
+
+    const { id: userId } = JSON.parse(localStorage.auth)
+    values['by'] = userId
     const { customer, visit_date, store } = values;
     const { result } = await request.listById({ entity: 'visitControl', jsonData: { customer: customer, store: store, visit_date: getDate(visit_date) } });
     values['visit_date'] = getDate(visit_date);
@@ -201,7 +214,9 @@ const VisitControl = () => {
     setPaginations(pagination)
     return true;
   }, [filterData, searchText]);
-
+  const closeModal = () => {
+    setIsHistory(!isHistory);
+  }
   const prevData = () => {
     if (currentMonth === 1) {
       setCurrentYear(currentYear - 1);
@@ -241,8 +256,9 @@ const VisitControl = () => {
       };
       setChangedMonth(daysColumns)
       const { result: visitDatas } = await request.list({ entity: "visitControl" });
+      setVisitControls(visitDatas);
       const { result: customerStores } = await request.list({ entity: "customerStores" });
-
+      setCustomerStores(customerStores)
       const storeData = customerStores.map(obj => {
         const { parent_id, ...otherObj } = obj;
         return {
@@ -438,6 +454,10 @@ const VisitControl = () => {
               </Form.Item>
             </Form>
           </>
+        </Modal>
+
+        <Modal title="History Form" visible={isHistory} onCancel={closeModal} footer={null} width={700}>
+
         </Modal>
         <Layout >
           <Row gutter={24} style={{ textAlign: 'right' }}>

@@ -21,6 +21,12 @@ const visitControlSchema = new mongoose.Schema({
     required: true,
     autopopulate: true,
   },
+  by: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Admin',
+    required: true,
+    autopopulate: true,
+  },
   visit_date: {
     type: String,
   },
