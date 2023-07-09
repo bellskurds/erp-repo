@@ -136,7 +136,9 @@ const VisitControl = () => {
   const generateCustomerId = () => {
     return new Date().valueOf();
   }
-  const [customerId, setCustomerId] = useState(generateCustomerId());
+  const [customerStores, setCustomerStores] = useState([]);
+  const [filteredStores, setFilteredStores] = useState([]);
+  const [changeStatus, setChangeStatus] = useState(false);
   const [changedMonth, setChangedMonth] = useState([]);
   const [employeeList, setEmployeeList] = useState([]);
   const [form] = Form.useForm();
@@ -189,7 +191,9 @@ const VisitControl = () => {
       title: 'Client(Branch)',
       dataIndex: ['customer', 'name'],
       width: '15%',
-
+      render: (text, { store }) => {
+        return (`${text}(${store.store})`)
+      }
     },
     {
       title: 'T',
@@ -279,7 +283,8 @@ const VisitControl = () => {
       dispatch(crud.resetState());
       dispatch(crud.list({ entity }));
     }, [400])
-    handleCancel()
+    handleCancel();
+    setChangeStatus(!changeStatus);
   };
   const formRef = useRef(null);
   const onFinishFailed = (errorInfo) => {
@@ -420,7 +425,9 @@ const VisitControl = () => {
     setInitEmployeeColumns([...Columns, ...dates]);
   }, [employeeList]);
 
-
+  useEffect(() => {
+    console.log(filteredStores, 'filteredStores');
+  }, [filteredStores])
 
   useEffect(() => {
     dispatch(crud.resetState());
@@ -428,13 +435,14 @@ const VisitControl = () => {
 
     async function init() {
       const { result } = await request.listById({ entity: 'customerStores' });
-      console.log(result, '11111111111111111111');
+
+      setCustomerStores(result);
       // setReferences(result);
     }
     init();
   }, []);
   useEffect(() => {
-    setFilterData(items);
+    // setFilterData(items);
     setPaginations(pagination)
   }, [items, pagination])
   const handleSave = (row, values) => {
@@ -500,7 +508,7 @@ const VisitControl = () => {
       );
 
     })
-    setFilterData(filteredData);
+    // setFilterData(filteredData);
     setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
   }, [searchText, status, rangeDate])
 
@@ -531,29 +539,80 @@ const VisitControl = () => {
   }
   useEffect(() => {
 
-    console.log(currentMonth, currentYear);
-    const startDay = 1;
-    const endDay = new Date(currentYear, currentMonth, 0).getDate();
-    const start_date = new Date(currentYear, currentMonth - 1, startDay);
-    const end_date = new Date(currentYear, currentMonth - 1, endDay);
-    let currentDate = moment(start_date);
-    const end = moment(end_date);
-    const daysColumns = [];
-    while (currentDate.isSameOrBefore(end)) {
-      const monthLable = currentDate.format("MMMM");
-      const day = currentDate.format("DD")
-      const year = currentDate.year();
-      const month = currentDate.format("MM");
-      daysColumns.push({
-        title: `${day}-${monthLable}`,
-        dataIndex: `day_${year}-${month}-${day}`,
+    async function init() {
+
+      const startDay = 1;
+      const endDay = new Date(currentYear, currentMonth, 0).getDate();
+      const start_date = new Date(currentYear, currentMonth - 1, startDay);
+      const end_date = new Date(currentYear, currentMonth - 1, endDay);
+      let currentDate = moment(start_date);
+      const end = moment(end_date);
+      const daysColumns = [];
+      while (currentDate.isSameOrBefore(end)) {
+        const monthLable = currentDate.format("MMMM");
+        const day = currentDate.format("DD")
+        const year = currentDate.year();
+        const month = currentDate.format("MM");
+        daysColumns.push({
+          title: `${day}-${monthLable}`,
+          dataIndex: `day_${year}-${month}-${day}`,
+        })
+        currentDate = currentDate.add(1, 'days');
+      };
+      setChangedMonth(daysColumns)
+      const { result: visitDatas } = await request.list({ entity: "visitControl" });
+      console.log(currentYear, currentMonth);
+      const fillteredData = visitDatas.filter(({ visit_date }) =>
+      (
+        new Date(visit_date).getFullYear() === currentYear
+        && new Date(visit_date).getMonth() === (currentMonth - 1)
+      )
+      )
+      const groupedData = JSON.parse(JSON.stringify(groupArry(fillteredData)));
+
+      groupedData.map((obj, index) => {
+        const { values } = obj;
+        obj['key'] = index;
+        obj['visit_value'] = values.length
+        values.map(value => {
+          console.log(getDate(value.visit_date), 'value.date');
+          obj[`day_${getDate(value.visit_date)}`] = 1;
+        })
       })
-      currentDate = currentDate.add(1, 'days');
-    };
-    setChangedMonth(daysColumns)
+
+      console.log(groupedData);
+      setFilterData(groupedData)
+
+
+    }
+    init();
+
   }, [
-    currentMonth, currentYear
+    currentMonth, currentYear, changeStatus
   ])
+  const dateValue = (value) => {
+    return `${new Date(value).getFullYear()}-${new Date(value).getMonth()}`
+  }
+  const getDate = (value) => {
+    return moment(value).format("YYYY-MM-DD")
+  }
+  const groupArry = (data) => {
+    const groupedData = data.reduce((result, item) => {
+      const key = `${dateValue(item.visit_date)}-${item.customer._id}-${item.store._id}`;
+      if (!result[key]) {
+        result[key] = { date: item.visit_date, customer: item.customer, store: item.store, values: [] };
+      }
+      result[key].values.push(item);
+      // console.log(key, item, 'dfdf');
+      return result;
+    }, {});
+    const groupedArray = Object.values(groupedData);
+
+    return groupedArray;
+  }
+
+
+
   const Footer = () => {
     const pages = paginations
     const { current, count, total, page } = pages
@@ -565,6 +624,23 @@ const VisitControl = () => {
         Mostrando registros del {filterData.length ? ((currentPage - 1) * 10 + 1) : 0} al {currentPage * 10 > (totalSize) ? (totalSize) : currentPage * 10} de un total de {totalSize} registros
       </>
     );
+  }
+  const changedClient = (e) => {
+    const filteredData = customerStores.filter(({ parent_id }) => parent_id._id === e);
+
+    if (filteredData.length) {
+      const storeData = [];
+      filteredData.map(({ _id, store }) => {
+        storeData.push({
+          value: _id,
+          label: store
+        })
+      })
+      setFilteredStores(storeData);
+    } else {
+      formRef.current.resetFields(['store'])
+      setFilteredStores([])
+    }
   }
   return (
 
@@ -602,15 +678,22 @@ const VisitControl = () => {
                     ]}
                   >
                     <SelectAsync
-
                       entity={'client'}
                       displayLabels={['name']}
-                      showSearch
-                      placeholder="Select a person"
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                      }
+                      onChange={changedClient}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name="store"
+                    label="Store"
+                    rules={[
+                      {
+                        required: true,
+                      },
+                    ]}
+                  >
+                    <Select
+                      options={filteredStores}
                     />
                   </Form.Item>
                   <Form.Item name="visit_date" label="Date/Time" rules={[
@@ -630,17 +713,6 @@ const VisitControl = () => {
                     ]}
                   >
                     <Input.TextArea />
-                  </Form.Item>
-                  <Form.Item
-                    name="visit_value"
-                    label="Visits"
-                    rules={[
-                      {
-                        required: true,
-                      },
-                    ]}
-                  >
-                    <Input type='number' />
                   </Form.Item>
                 </Col>
               </Row>
@@ -695,8 +767,6 @@ const VisitControl = () => {
             <Table
               style={{ overflow: 'auto' }}
               bordered
-              rowKey={(item) => item._id}
-              key={(item) => item._id}
               dataSource={filterData}
               columns={[...mergedColumns, ...changedMonth]}
               rowClassName="editable-row"
