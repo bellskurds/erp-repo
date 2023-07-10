@@ -1,15 +1,21 @@
 import { crud } from "@/redux/crud/actions";
-import { selectFilteredItemsByParent, selectListItems, selectListsByCustomerContact, selectListsByCustomerStores, selectListsBylistByCustomerStores, selectReadItem } from "@/redux/crud/selectors";
-import { DeleteOutlined, EditOutlined, EyeOutlined, StarFilled, StarOutlined, setTwoToneColor } from "@ant-design/icons";
-import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Tag, TimePicker, Typography } from "antd";
+import { selectListsByCustomerStores } from "@/redux/crud/selectors";
+import { DeleteOutlined, EditOutlined, EyeOutlined, } from "@ant-design/icons";
+import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Table, TimePicker, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom/cjs/react-router-dom.min";
-import countryList from 'country-list'
 import moment from "moment";
 import { request } from "@/request";
 
-
+const compare = (a, b) => {
+    if (a.primary && !b.primary) {
+        return -1; // a comes before b
+    } else if (!a.primary && b.primary) {
+        return 1; // b comes before a
+    } else {
+        return 0; // no change in order
+    }
+};
 const CustomerStores = (props) => {
     const entity = 'customerStores';
     const dispatch = useDispatch();
@@ -22,6 +28,7 @@ const CustomerStores = (props) => {
     const [productBilling, setProductBilling] = useState(0);
     const [otherBilling, setOtherBilling] = useState(0);
     const [listItems, setListItems] = useState([]);
+    const [employeeDatas, setEmployeeDatas] = useState([]);
     useEffect(() => {
         console.log(labourBilling + productBilling + otherBilling);
         if (formRef.current) {
@@ -128,6 +135,29 @@ const CustomerStores = (props) => {
             },
         },
     ];
+    const employeeColumns = [
+        {
+            title: "Name",
+            dataIndex: "name"
+        },
+        {
+            title: "Hours",
+            dataIndex: "hours"
+        },
+        {
+            title: "Salary",
+            dataIndex: "salary"
+        },
+        {
+            title: "Contract",
+            dataIndex: "contract"
+
+        },
+        {
+            title: "Hrs/sem",
+            dataIndex: "hr_week"
+        },
+    ]
     const [currentId, setCurrentId] = useState('');
     const [isUpdate, setIsUpdate] = useState(false);
 
@@ -266,7 +296,43 @@ const CustomerStores = (props) => {
     };
     const { result: Items } = useSelector(selectListsByCustomerStores);
     const showEmployees = (data) => {
-        console.log(data, 'datadatadata');
+        setIsModal(true)
+        const lists = []
+        data.map((item, index) => {
+            const { contract, store, employee, hr_week } = item;
+            const obj = {
+                key: index,
+                name: employee.name,
+                hours: getFormattedHours(
+                    [
+                        store.monday ? [store.monday[0], store.monday[1]] : "",
+                        store.tuesday ? [store.tuesday[0], store.tuesday[1]] : "",
+                        store.wednesday ? [store.wednesday[0], store.wednesday[1]] : "",
+                        store.thursday ? [store.thursday[0], store.thursday[1]] : "",
+                        store.friday ? [store.friday[0], store.friday[1]] : "",
+                        store.saturday ? [store.saturday[0], store.saturday[1]] : "",
+                        store.sunday ? [store.sunday[0], store.sunday[1]] : "",
+                    ]
+                ),
+                salary: contract.sal_monthly,
+                contract: `${contract.start_date}-${contract.end_date}`,
+                hr_week: getTotalWeekHours(
+                    [
+                        store.monday ? [new Date(store.monday[0]).getHours(), new Date(store.monday[1]).getHours()] : [0, 0],
+                        store.tuesday ? [new Date(store.tuesday[0]).getHours(), new Date(store.tuesday[1]).getHours()] : [0, 0],
+                        store.wednesday ? [new Date(store.wednesday[0]).getHours(), new Date(store.wednesday[1]).getHours()] : [0, 0],
+                        store.thursday ? [new Date(store.thursday[0]).getHours(), new Date(store.thursday[1]).getHours()] : [0, 0],
+                        store.friday ? [new Date(store.friday[0]).getHours(), new Date(store.friday[1]).getHours()] : [0, 0],
+                        store.saturday ? [new Date(store.saturday[0]).getHours(), new Date(store.saturday[1]).getHours()] : [0, 0],
+                        store.sunday ? [new Date(store.sunday[0]).getHours(), new Date(store.sunday[1]).getHours()] : [0, 0],
+                    ]
+                )
+            }
+            lists.push(obj);
+        })
+        setEmployeeDatas(lists)
+
+        console.log(data);
     }
     useEffect(() => {
 
@@ -290,7 +356,7 @@ const CustomerStores = (props) => {
                     const { contract, employee, store } = obj
                     const { _id: store_id1 } = store;
                     if (store_id === store_id1) {
-                        item['employees_'].push(item)
+                        item['employees_'].push(obj)
                     }
                 })
                 item['employees'] = item['employees_'].length
@@ -306,19 +372,6 @@ const CustomerStores = (props) => {
     }, [
         Items
     ])
-    const compare = (a, b) => {
-        if (a.primary && !b.primary) {
-            return -1; // a comes before b
-        } else if (!a.primary && b.primary) {
-            return 1; // b comes before a
-        } else {
-            return 0; // no change in order
-        }
-    };
-    const countryLists = countryList.getData().map((item) => ({
-        value: item.code,
-        label: item.name
-    }))
     const [mondayValue, setMondayValue] = useState(null);
     const [tuesdayValue, setTuesdayValue] = useState(null);
     const [wednesdayValue, setWednesdayValue] = useState(null);
@@ -326,11 +379,14 @@ const CustomerStores = (props) => {
     const [fridayValue, setFridayValue] = useState(null);
     const [saturdayValue, setSaturdayValue] = useState(null);
     const [sundayValue, setSundayValue] = useState(null);
-    const [timeRange, setTimeRange] = useState([]);
     const [isProducts, setIsProducts] = useState(false);
+    const [isModal, setIsModal] = useState(false);
     const [products, setProducts] = useState("");
     const handleProducts = () => {
         setIsProducts(false)
+    }
+    const cancelModal = () => {
+        setIsModal(false)
     }
     const showProducts = (products) => {
         setIsProducts(true);
@@ -342,6 +398,13 @@ const CustomerStores = (props) => {
         <div className="whiteBox shadow">
             <Modal title="Products" visible={isProducts} onCancel={handleProducts} footer={null}>
                 <h3>{products}</h3>
+            </Modal>
+            <Modal title="Employees" visible={isModal} onCancel={cancelModal} footer={null} width={1000}>
+                <Table
+                    columns={employeeColumns}
+                    dataSource={employeeDatas || []}
+
+                />
             </Modal>
             <Modal title="Create Form" visible={isBankModal} onCancel={handleBankModal} footer={null} width={1000}>
                 <Form
