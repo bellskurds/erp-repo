@@ -109,9 +109,16 @@ const Store = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [filterData, setFilterData] = useState([]);
-
+  const [currentProducts, setCurrentProducts] = useState();
   const [isUpdate, setIsUpdate] = useState(false);
   const [rangeDate, setRangeDate] = useState();
+
+  useEffect(() => {
+
+    if (currentProducts) setIsProducts(true)
+  }, [
+    currentProducts
+  ])
   const showModal = () => {
 
     setCurrentId(new Date().valueOf())
@@ -217,61 +224,17 @@ const Store = () => {
       title: 'Products',
       dataIndex: 'products',
       width: '15%',
-      render: (text) => {
-        return text && <EyeOutlined style={{ fontSize: "20px" }} />
-
+      render: (text, record) => {
+        const { products } = record
+        return text && <EyeOutlined onClick={() => setCurrentProducts(products)} style={{ fontSize: "20px" }} />
       }
     },
     {
-      title: 'Employees',
-      dataIndex: 'employees',
+      title: 'Specs',
+      dataIndex: 'spec',
       width: '15%',
-      render: (text) => {
-        return (
-          text ? JSON.parse(text).length : 0
-        );
-      }
-    },
-    {
-      title: 'Cost',
-      dataIndex: 'cost',
-      width: '15%',
-      render: (text) => {
-        return (
-          `$${text}`
-        );
-      }
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      width: '15%',
-      render: (text) => {
-        return (statusLabel[text]);
-      }
-    },
-    {
-      title: 'Actions',
-      dataIndex: 'operation',
-      width: "10%",
-      align: 'center',
-      render: (_, record) => {
-        return (
 
-          <>
-            <Typography.Link onClick={() => editItem(record)}>
-              <EditOutlined style={{ fontSize: "20px" }} />
-            </Typography.Link>
-
-            <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-              <DeleteOutlined style={{ fontSize: "20px" }} />
-            </Popconfirm>
-          </>
-        )
-
-      },
     },
-
   ];
   const components = {
     body: {
@@ -558,6 +521,10 @@ const Store = () => {
       </>
     );
   }
+  const [isProducts, setIsProducts] = useState(false);
+  const handleProducts = () => {
+    setIsProducts(false)
+  }
   return (
 
     <DashboardLayout>
@@ -726,6 +693,9 @@ const Store = () => {
 
             />
           </>
+        </Modal>
+        <Modal title="Products" visible={isProducts} onCancel={handleProducts} footer={null}>
+          <h3>{currentProducts}</h3>
         </Modal>
         <Layout>
           <Row gutter={24} style={{ textAlign: 'right' }}>
