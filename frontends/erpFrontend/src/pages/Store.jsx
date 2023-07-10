@@ -128,42 +128,6 @@ const Store = () => {
   const [status, setStatus] = useState();
   const [summatoryCost, setSummatoryCost] = useState();
   const isEditing = (record) => record._id === editingKey;
-  const editItem = (item) => {
-
-    if (item) {
-
-      setTimeout(() => {
-
-        const { employees, _id, removed, enabled, created, periods, ...otherValues } = item;
-        if (formRef.current) formRef.current.setFieldsValue({ ...otherValues, periods: periods ? [moment(periods[0]), moment(periods[1])] : null });
-        setEmployeeList(JSON.parse(employees))
-
-      }, 200);
-      console.log(item, '33334343');
-      setCurrentItem(item);
-
-      setCurrentId(item._id);
-      setIsModalVisible(true);
-      setIsUpdate(true);
-    }
-  }
-  const deleteItem = (item) => {
-    const id = item._id;
-    dispatch(crud.delete({ entity, id }))
-    setTimeout(() => {
-      dispatch(crud.resetState());
-      dispatch(crud.list({ entity }));
-    }, 1000)
-  }
-  const getDateLabel = (date) => {
-    if (!date) return '';
-    const start = moment(date[0]);
-    const end = moment(date[1]);
-    return `${start.format("MMMM")}${start.date()}(${start.year()}) - ${end.format("MMMM")}${end.date()}(${end.year()})`
-  }
-
-
-  const typeArr = ["", "Residential", "Commercial"]
   const columns = [
     {
       title: 'Customer',
@@ -256,114 +220,10 @@ const Store = () => {
     console.log(data);
   }
 
-  const mergedColumns = columns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-    return {
-      ...col,
-      onCell: (record) => ({
-        record,
-        inputType: col.dataIndex === 'age' ? 'number' : 'text',
-        dataIndex: col.dataIndex,
-        title: col.title,
-        editing: isEditing(record),
-      }),
-    };
-  });
   const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
   const { pagination, items } = listResult;
-  const onFinish = async (values) => {
-
-    values['employees'] = JSON.stringify(employeeList);
-    // const obj1 = JSON.parse(currentItem.employees);
-    // const obj2 = employeeList;
-    // const result = getObjectDiff(obj1, obj2);
-    // console.log(result, '2222222222');
-    if (isUpdate && currentId) {
-      const id = currentId;
-      dispatch(crud.update({ entity, id, jsonData: values }));
-    } else {
-      // const { result } = await request.create({ entity, jsonData: values });
-      dispatch(crud.create({ entity, jsonData: values }));
-    }
-    formRef.current.resetFields();
-    setTimeout(() => {
-      dispatch(crud.resetState());
-      dispatch(crud.list({ entity }));
-    }, [400])
-    handleCancel()
-  };
   const formRef = useRef(null);
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-  };
-  const getObjectDiff = (obj1, obj2) => {
-    const diff = [];
 
-    // Check for changed properties and values
-    for (let i = 0; i < obj1.length; i++) {
-      const obj1Props = Object.keys(obj1[i]);
-      const obj2Props = Object.keys(obj2[i]);
-      const changedProps = [];
-
-      for (let prop of obj1Props) {
-        if (obj2[i].hasOwnProperty(prop) && obj1[i][prop] !== obj2[i][prop]) {
-          changedProps.push({ [prop]: obj2[i][prop] });
-        }
-      }
-
-      if (changedProps.length > 0) {
-        diff.push({ index: i, changes: changedProps });
-      }
-    }
-
-    // Check for added properties and values
-    for (let i = 0; i < obj2.length; i++) {
-      const obj2Props = Object.keys(obj2[i]);
-
-      for (let prop of obj2Props) {
-        let found = false;
-
-        for (let j = 0; j < obj1.length; j++) {
-          if (obj1[j].hasOwnProperty(prop)) {
-            found = true;
-            break;
-          }
-        }
-
-        if (!found) {
-          diff.push({ index: i, added: { [prop]: obj2[i][prop] } });
-        }
-      }
-    }
-
-    return diff;
-  }
-  const ExtraWeek = () => {
-    const start_ = endDate.date();
-    const end_ = start_ + 7;
-
-    let currentDate = endDate;
-    let dates = []; // Array to store the next 7 days
-    for (let i = start_; i < end_; i++) {
-      dates.push({ title: currentDate.format('YYYY-MM-DD'), dataIndex: `day_${currentDate.format('YYYY-MM-DD')}`, editable: true, render: (text) => { return (text || 0) } }); // Add the formatted date to the array
-      currentDate = currentDate.add(1, 'day'); // Increment the current date by 1 day
-    }
-
-    setInitEmployeeColumns([...initEmployeeColumns, ...dates]);
-  }
-
-  const addEmployee = () => {
-    const defaultObj = {};
-    for (var i = 0; i < initEmployeeColumns.length; i++) {
-      var { dataIndex } = initEmployeeColumns[i];
-      if (dataIndex.includes('day_')) {
-        defaultObj[dataIndex] = 0;
-      }
-    }
-    setEmployeeList([...employeeList, { key: new Date().valueOf(), ...defaultObj }])
-  }
   useEffect(() => {
     dispatch(crud.resetState());
     dispatch(crud.list({ entity }));
@@ -373,9 +233,17 @@ const Store = () => {
 
     async function init() {
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" });
+      const { result: recurrentCustomers } = await request.list({ entity: "recurrentInvoice" });
       items.map(item => {
-        const { _id: store_id } = item
+        const { _id: store_id, parent_id: customer } = item
         item['employees_'] = [];
+        item['status'] = 0;
+        recurrentCustomers.map(recurrent => {
+          const { parent_id } = recurrent;
+          if (parent_id._id === customer._id) {
+            item['status'] = 1;
+          }
+        })
         assignedEmployees.map(obj => {
           const { store } = obj
           const { _id: store_id1 } = store;
@@ -385,38 +253,15 @@ const Store = () => {
         })
         item['employees'] = item['employees_'].length
       })
-      console.log(items, 'items1111');
+      console.log(items, recurrentCustomers, 'items1111');
       setFilterData(items);
       setGlobalData(items);
       setPaginations(pagination)
     }
     init();
   }, [items, pagination])
-  const handleSave = (row, values) => {
-
-    console.log(values, row, '33333');
-    const newData = [...employeeList];
-    const index = newData.findIndex((item) => row.key === item.key);
-    const item = newData[index];
-    newData.splice(index, 1, {
-      ...item,
-      ...row,
-    });
-    setEmployeeList(prev => {
-      const newValue = [...newData];
-      return newValue
-    });
-  };
 
   useEffect(() => {
-    console.log(filterData, 'filterData');
-
-    // const searchData = [];
-    // if (!filterData.length) {
-    //   searchData.push([...globalData])
-    // } else {
-    //   searchData.push([...filterData])
-    // }
     const filteredData = globalData.filter((record) => {
       const { parent_id: customer, store } = record;
       const { name, email } = customer || {}
@@ -495,7 +340,7 @@ const Store = () => {
               rowKey={(item) => item._id}
               key={(item) => item._id}
               dataSource={filterData}
-              columns={mergedColumns}
+              columns={columns}
               rowClassName="editable-row"
               pagination={paginations}
               onChange={handelDataTableLoad}
