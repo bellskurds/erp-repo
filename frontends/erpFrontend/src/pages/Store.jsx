@@ -16,16 +16,10 @@ const EditableContext = React.createContext(null);
 
 const statusLabel = ["", "Active", "Canceled", "Finished"]
 const statusArr = [
-  { value: 0, label: "all" },
-  { value: 1, label: "Active" },
-  { value: 2, label: "Canceled" },
-  { value: 3, label: "Finished" },
+  { value: 0, label: "All Customers" },
+  { value: 1, label: "Recurrent Customer" },
 ];
-const statusArr1 = [
-  { value: 1, label: "Active" },
-  { value: 2, label: "Canceled" },
-  { value: 3, label: "Finished" },
-];
+
 
 const getFormattedHours = (days) => {
   const dayLabels = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
@@ -92,6 +86,7 @@ const Store = () => {
   const [rangeDate, setRangeDate] = useState();
   const [isModal, setIsModal] = useState(false);
   const [employeeDatas, setEmployeeDatas] = useState([]);
+  const [globalData, setGlobalData] = useState([]);
 
   useEffect(() => {
 
@@ -392,6 +387,7 @@ const Store = () => {
       })
       console.log(items, 'items1111');
       setFilterData(items);
+      setGlobalData(items);
       setPaginations(pagination)
     }
     init();
@@ -411,57 +407,28 @@ const Store = () => {
       return newValue
     });
   };
+
   useEffect(() => {
-    const newData = [...employeeList];
-    newData.map(obj => [
-      initEmployeeColumns.map(columns => {
-        const { dataIndex } = columns;
-        if (dataIndex.includes('day_') && !obj.hasOwnProperty(dataIndex)) {
-          obj[dataIndex] = 0;
-        }
-      })
-    ])
-  }, [initEmployeeColumns])
+    console.log(filterData, 'filterData');
 
-  const totalHours = (record) => {
-    var total = 0;
-    for (var key in record) {
-      if (key.includes('day_')) {
-        total += parseFloat(record[key]);
-      }
-    }
-    return total;
-  }
-
-  const changeEmployee = (value, record) => {
-
-    record.employee = value;
-    const updatedData = employeeList.map((item) => {
-      if (item.key === record.key) {
-        return record;
-      }
-      return item;
-    });
-  }
-  useEffect(() => {
-    const filteredData = items.filter((record) => {
-      const { customer } = record;
-
-      const recordStartDate = record.periods ? new Date(moment(record.periods[0]).format("YYYY-MM-DD")) : null;
-      const recordEndDate = record.periods ? new Date(moment(record.periods[1]).format("YYYY-MM-DD")) : null;
-      const startDate = rangeDate ? new Date(rangeDate[0].format("YYYY-MM-DD")) : null;
-      const endDate = rangeDate ? new Date(rangeDate[1].format("YYYY-MM-DD")) : null;
+    // const searchData = [];
+    // if (!filterData.length) {
+    //   searchData.push([...globalData])
+    // } else {
+    //   searchData.push([...filterData])
+    // }
+    const filteredData = globalData.filter((record) => {
+      const { parent_id: customer, store } = record;
+      const { name, email } = customer || {}
       return (
-        (!searchText || record['project_id'].toString().toLowerCase().includes(searchText.toLowerCase()) ||
-          customer['name'].toString().toLowerCase().includes(searchText.toLowerCase())) &&
-        (!rangeDate || (startDate && endDate && recordStartDate >= startDate && recordEndDate <= endDate)) &&
+        (!searchText || store.toString().toLowerCase().includes(searchText.toLowerCase()) ||
+          name.toString().toLowerCase().includes(searchText.toLowerCase()) || email.toString().toLowerCase().includes(searchText.toLowerCase())) &&
         (!status || record.status === status)
       );
-
     })
     setFilterData(filteredData);
     setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
-  }, [searchText, status, rangeDate])
+  }, [searchText, status])
 
   const handelDataTableLoad = useCallback((pagination) => {
     const { current, total } = pagination;
@@ -512,16 +479,12 @@ const Store = () => {
                 onChange={(e) => setSearchText(e.target.value)}
               />
             </Col>
-            <Col span={6}>
-              <DatePicker.RangePicker value={rangeDate} onChange={(e) => { setRangeDate(e) }} />
-            </Col>
-            <Col span={12}>
+            <Col span={18}>
               <Select
                 placeholder="Status Filter"
                 optionFilterProp="children"
                 onChange={(e) => { setStatus(e) }}
                 options={statusArr} />
-              <Button onClick={showModal} type="primary">Create Project</Button>
             </Col>
           </Row>
 
