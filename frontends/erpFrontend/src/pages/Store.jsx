@@ -240,7 +240,7 @@ const Store = () => {
         item['status'] = 0;
         recurrentCustomers.map(recurrent => {
           const { parent_id } = recurrent;
-          if (parent_id._id === customer._id) {
+          if (customer && parent_id._id === customer._id) {
             item['status'] = 1;
           }
         })
