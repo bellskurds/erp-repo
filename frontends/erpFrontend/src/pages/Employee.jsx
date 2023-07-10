@@ -10,11 +10,47 @@ import { selectListItems } from '@/redux/crud/selectors';
 import { Link } from 'react-router-dom/cjs/react-router-dom';
 import { request } from '@/request';
 
+const customerColumns = [
+  {
+    title: "Customer Name",
+    dataIndex: "name"
+  },
+  {
+    title: "Hours",
+    dataIndex: "hours"
+  },
+  {
+    title: "Location",
+    dataIndex: "location"
+  },
+  {
+    title: "Insumos",
+    dataIndex: "insumos"
 
+  },
+]
+const getFormattedHours = (days) => {
+  const dayLabels = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
+  const hours = [];
+
+  for (let i = 0; i < days.length; i++) {
+    if (!days[i]) continue
+    const [start, end] = days[i];
+
+    if (start === end) {
+      hours.push(dayLabels[i] + ' ' + new Date(start).getHours());
+    } else if (i === 0 || start !== days[i - 1][0] || end !== days[i - 1][1]) {
+      hours.push(dayLabels[i] + '( ' + new Date(start).getHours() + '-' + new Date(end).getHours() + ')');
+    }
+  }
+  return hours.join(', ');
+}
 const Employees = () => {
   const entity = "employee"
-  const searchFields = 'name,email';
+  const searchFields = 'name,personal_id';
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModal, setIsModal] = useState(false);
+  const [customerData, setCustomerData] = useState([]);
 
   const [searchText, setSearchText] = useState('');
   const [isUpdate, setIsUpdate] = useState(false);
@@ -58,6 +94,35 @@ const Employees = () => {
       dispatch(crud.list({ entity }));
     }, 1000)
   }
+  const showCustomers = (data) => {
+    setIsModal(true)
+    const lists = []
+    data.map((item, index) => {
+      const { store, parent_id: customer, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = item;
+      const obj = {
+        key: index,
+        name: customer.name,
+        hours: getFormattedHours(
+          [
+            monday ? [monday[0], monday[1]] : "",
+            tuesday ? [tuesday[0], tuesday[1]] : "",
+            wednesday ? [wednesday[0], wednesday[1]] : "",
+            thursday ? [thursday[0], thursday[1]] : "",
+            friday ? [friday[0], friday[1]] : "",
+            saturday ? [saturday[0], saturday[1]] : "",
+            sunday ? [sunday[0], sunday[1]] : "",
+          ]
+        ),
+        location: store.location,
+        insumos: store.insumos ? "yes" : "no"
+      }
+      lists.push(obj);
+    })
+    setCustomerData(lists)
+
+    console.log(data);
+  }
+
   const columns = [
     {
       title: 'Personal Id',
@@ -70,9 +135,13 @@ const Employees = () => {
       width: '15%',
     },
     {
-      title: 'Email',
-      dataIndex: 'email',
+      title: 'Customers',
+      dataIndex: 'customers',
       width: '15%',
+      render: (_, record) => {
+        const { customers_ } = record
+        return <label onClick={() => showCustomers(customers_)}>{_}</label>
+      }
     },
     {
       title: 'Phone',
@@ -128,7 +197,25 @@ const Employees = () => {
   const { pagination, items } = listResult;
   const [paginations, setPaginations] = useState(pagination)
   useEffect(() => {
-    setFilterData(items)
+    async function init() {
+      const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" });
+      items.map(item => {
+        const { _id: employee_id } = item
+        item['customers_'] = [];
+        assignedEmployees.map(obj => {
+          const { employee } = obj
+          const { _id: employee_id1 } = employee;
+          if (employee_id === employee_id1) {
+            item['customers_'].push(obj)
+          }
+        })
+        item['customers'] = item['customers_'].length
+      })
+      console.log(items, 'itemsitemsitemsitems');
+
+      setFilterData(items)
+    }
+    init();
   }, [items])
   const onFinish = (values) => {
     if (isUpdate && currentId) {
@@ -206,6 +293,9 @@ const Employees = () => {
         Mostrando registros del {filterData.length ? ((currentPage - 1) * 10 + 1) : 0} al {currentPage * 10 > (totalSize) ? (totalSize) : currentPage * 10} de un total de {totalSize} registros
       </>
     );
+  }
+  const cancelModal = () => {
+    setIsModal(false)
   }
   return (
 
@@ -302,6 +392,14 @@ const Employees = () => {
               </Form.Item>
             </Form>
           </>
+        </Modal>
+
+        <Modal title="Customers" visible={isModal} onCancel={cancelModal} footer={null} width={1000}>
+          <Table
+            columns={customerColumns}
+            dataSource={customerData || []}
+
+          />
         </Modal>
         <Layout>
           <Row gutter={24} style={{ textAlign: 'right' }}>
