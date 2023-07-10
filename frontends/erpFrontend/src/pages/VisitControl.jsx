@@ -97,7 +97,7 @@ const VisitControl = () => {
       dataIndex: ['customer', 'name'],
       width: '15%',
       render: (text, { store, ...otherObj }) => {
-        return (<label style={{ cursor: 'pointer' }} onClick={() => editItem({ store, ...otherObj })}>`${text}(${store.store})`</label>)
+        return (<label style={{ cursor: 'pointer' }} onClick={() => editItem({ store, ...otherObj })}>{text}(${store.store})</label>)
       }
     },
     {
@@ -307,7 +307,6 @@ const VisitControl = () => {
       setPaginations({ current: 1, pageSize: 10, total: storeData.length })
     }
     init();
-
   }, [
     currentMonth, currentYear, changeStatus
   ])
@@ -408,6 +407,7 @@ const VisitControl = () => {
       },
     }
   ]
+
   return (
 
     <DashboardLayout>
@@ -543,9 +543,10 @@ const VisitControl = () => {
         <Layout >
           <Row gutter={24} style={{ textAlign: 'right' }}>
             <Col span={24}>
+
               <h3 style={{ textAlign: 'center' }}>
                 <LeftOutlined onClick={prevData} />
-                {currentMonth} {currentYear}
+                <label>{moment(new Date(currentYear, currentMonth - 1, 1)).format("MMMM")} {currentYear}</label>
                 <RightOutlined onClick={nextData} />
               </h3>
             </Col>
