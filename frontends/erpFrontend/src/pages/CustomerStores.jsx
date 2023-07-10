@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
 import countryList from 'country-list'
 import moment from "moment";
+import { request } from "@/request";
 
 
 const CustomerStores = (props) => {
@@ -20,7 +21,7 @@ const CustomerStores = (props) => {
     const [labourBilling, setLabourBilling] = useState(0);
     const [productBilling, setProductBilling] = useState(0);
     const [otherBilling, setOtherBilling] = useState(0);
-    const [totalBilling, setTotalBilling] = useState(0);
+    const [listItems, setListItems] = useState([]);
     useEffect(() => {
         console.log(labourBilling + productBilling + otherBilling);
         if (formRef.current) {
@@ -35,6 +36,14 @@ const CustomerStores = (props) => {
         {
             title: 'Store',
             dataIndex: 'store',
+        },
+        {
+            title: 'Employees',
+            dataIndex: 'employees',
+            render: (_, record) => {
+                const { employees_ } = record
+                return <label onClick={() => showEmployees(employees_)}>{_}</label>
+            }
         },
         {
             title: 'Hours',
@@ -256,17 +265,47 @@ const CustomerStores = (props) => {
         console.log('Failed:', errorInfo);
     };
     const { result: Items } = useSelector(selectListsByCustomerStores);
-
+    const showEmployees = (data) => {
+        console.log(data, 'datadatadata');
+    }
     useEffect(() => {
+
+        async function init() {
+        }
+        init();
         const id = currentEmployeeId;
         const jsonData = { parent_id: id }
-        // dispatch(crud.resetState());
-        console.log(id, jsonData, '333333333334343433')
         dispatch(crud.listByCustomerStores({ entity, jsonData }));
     }, []);
 
-    const items = Items.items || [];
+    useEffect(() => {
+        async function init() {
+            const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" });
+            const items = Items.items || [];
+            items.sort(compare);
+            items.map(item => {
+                const { _id: store_id } = item
+                item['employees_'] = [];
+                assignedEmployees.map(obj => {
+                    const { contract, employee, store } = obj
+                    const { _id: store_id1 } = store;
+                    if (store_id === store_id1) {
+                        item['employees_'].push(item)
+                    }
+                })
+                item['employees'] = item['employees_'].length
+            })
 
+            console.log(items, assignedEmployees, 'assignedEmployees');
+
+            setListItems(items)
+        }
+
+        init();
+
+    }, [
+        Items
+    ])
     const compare = (a, b) => {
         if (a.primary && !b.primary) {
             return -1; // a comes before b
@@ -276,11 +315,6 @@ const CustomerStores = (props) => {
             return 0; // no change in order
         }
     };
-    items.sort(compare);
-    // console.log(Items, '44444333')
-    // const items = Items.items
-    // const items = Items.items ? Items.items.filter(obj => obj.parent_id === currentEmployeeId) : [];
-
     const countryLists = countryList.getData().map((item) => ({
         value: item.code,
         label: item.name
@@ -302,14 +336,7 @@ const CustomerStores = (props) => {
         setIsProducts(true);
         setProducts(products || "")
     }
-    useEffect(() => {
-        console.log(timeRange, '--------------------')
-    }, [timeRange])
-    // const items = []
-    // console.log(bankItems, 'ItemsItemsItemsItemsItems')
-    useEffect(() => {
-        console.log(insumos, '3333');
-    }, [insumos])
+
     return (
 
         <div className="whiteBox shadow">
@@ -375,7 +402,7 @@ const CustomerStores = (props) => {
                                     },
                                 ]}
                             >
-                                <Input value={totalBilling} type="number" readOnly style={{ background: 'lightgrey' }} />
+                                <Input type="number" readOnly style={{ background: 'lightgrey' }} />
                             </Form.Item>
                             <Form.Item
                                 name="labour_billing"
@@ -694,7 +721,7 @@ const CustomerStores = (props) => {
                 bordered
                 rowKey={(item) => item._id}
                 key={(item) => item._id}
-                dataSource={items || []}
+                dataSource={listItems || []}
                 columns={bankColumns}
                 rowClassName="editable-row"
 
