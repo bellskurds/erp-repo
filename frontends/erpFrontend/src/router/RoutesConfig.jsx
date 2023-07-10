@@ -81,6 +81,10 @@ export const routesConfig = [
     component: 'VisitControl',
   },
   {
+    path: '/store',
+    component: 'Store',
+  },
+  {
     path: '/quote',
     component: 'Quote',
   },

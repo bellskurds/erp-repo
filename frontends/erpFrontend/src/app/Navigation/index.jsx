@@ -98,6 +98,11 @@ export default function Navigation() {
             <Link to={'/visit_control'} />
             Visit Control
           </Menu.Item>
+
+          <Menu.Item key={'StoreList'} icon={<ControlOutlined />}>
+            <Link to={'/store'} />
+            Store
+          </Menu.Item>
           {/* <Menu.Item key={'Quote'} icon={<FileSyncOutlined />}>
             <Link to={'/quote'} />
             Quote
