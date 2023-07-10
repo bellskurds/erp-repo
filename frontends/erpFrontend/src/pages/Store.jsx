@@ -26,84 +26,62 @@ const statusArr1 = [
   { value: 2, label: "Canceled" },
   { value: 3, label: "Finished" },
 ];
-const searchFields = "project_id"
-const EditableRow = ({ index, ...props }) => {
-  const [form] = Form.useForm();
-  return (
-    <Form form={form} component={false}>
-      <EditableContext.Provider value={form}>
-        <tr {...props} />
-      </EditableContext.Provider>
-    </Form>
-  );
-};
-const EditableCell = ({
-  title,
-  editable,
-  children,
-  dataIndex,
-  record,
-  handleSave,
-  ...restProps
-}) => {
-  const [editing, setEditing] = useState(false);
-  const inputRef = useRef(null);
-  const form = useContext(EditableContext);
-  useEffect(() => {
-    if (editing) {
-      inputRef.current.focus();
-    }
-  }, [editing]);
-  const toggleEdit = () => {
-    setEditing(!editing);
-    form.setFieldsValue({
-      [dataIndex]: record[dataIndex],
-    });
-  };
-  const save = async () => {
-    try {
-      const values = await form.validateFields();
 
-      toggleEdit();
-      handleSave({
-        ...record,
-        ...values,
-      }, values);
-    } catch (errInfo) {
-      console.log('Save failed:', errInfo);
+const getFormattedHours = (days) => {
+  const dayLabels = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
+  const hours = [];
+
+  for (let i = 0; i < days.length; i++) {
+    if (!days[i]) continue
+    const [start, end] = days[i];
+
+    if (start === end) {
+      hours.push(dayLabels[i] + ' ' + new Date(start).getHours());
+    } else if (i === 0 || start !== days[i - 1][0] || end !== days[i - 1][1]) {
+      hours.push(dayLabels[i] + '( ' + new Date(start).getHours() + '-' + new Date(end).getHours() + ')');
     }
-  };
-  let childNode = children;
-  if (editable) {
-    childNode = editing ? (
-      <Form.Item
-        style={{
-          margin: 0,
-        }}
-        name={dataIndex}
-        rules={[
-          {
-            required: true,
-            message: `${title} is required.`,
-          },
-        ]}
-      >
-        <Input ref={inputRef} onPressEnter={save} onBlur={save} />
-      </Form.Item>
-    ) : (
-      <div
-        className="editable-cell-value-wrap"
-        style={{
-          paddingRight: 24,
-        }}
-        onClick={toggleEdit}
-      >
-        {children}
-      </div>
-    );
   }
-  return <td {...restProps}>{childNode}</td>;
-};
+  return hours.join(', ');
+}
+const getTotalWeekHours = (days) => {
+  let totalHours = 0;
+
+  for (const day of days) {
+    const startTime = day[0];
+    const endTime = day[1];
+
+    const startHour = parseInt(startTime);
+    const endHour = parseInt(endTime);
+
+    const hours = endHour - startHour;
+    totalHours += hours;
+  }
+  return totalHours;
+
+}
+const employeeColumns = [
+  {
+    title: "Name",
+    dataIndex: "name"
+  },
+  {
+    title: "Hours",
+    dataIndex: "hours"
+  },
+  {
+    title: "Salary",
+    dataIndex: "salary"
+  },
+  {
+    title: "Contract",
+    dataIndex: "contract"
+
+  },
+  {
+    title: "Hrs/sem",
+    dataIndex: "hr_week"
+  },
+]
 const Store = () => {
   const entity = "customerStores"
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -112,6 +90,8 @@ const Store = () => {
   const [currentProducts, setCurrentProducts] = useState();
   const [isUpdate, setIsUpdate] = useState(false);
   const [rangeDate, setRangeDate] = useState();
+  const [isModal, setIsModal] = useState(false);
+  const [employeeDatas, setEmployeeDatas] = useState([]);
 
   useEffect(() => {
 
@@ -217,8 +197,12 @@ const Store = () => {
     },
     {
       title: 'Employees',
-      dataIndex: ['ref', 'ref'],
+      dataIndex: 'employees',
       width: '15%',
+      render: (_, record) => {
+        const { employees_ } = record
+        return <label onClick={() => showEmployees(employees_)}>{_}</label>
+      }
     },
     {
       title: 'Products',
@@ -236,12 +220,47 @@ const Store = () => {
 
     },
   ];
-  const components = {
-    body: {
-      row: EditableRow,
-      cell: EditableCell,
-    },
-  };
+
+  const showEmployees = (data) => {
+    setIsModal(true)
+    const lists = []
+    data.map((item, index) => {
+      const { contract, store, employee, hr_week } = item;
+      const obj = {
+        key: index,
+        name: employee.name,
+        hours: getFormattedHours(
+          [
+            store.monday ? [store.monday[0], store.monday[1]] : "",
+            store.tuesday ? [store.tuesday[0], store.tuesday[1]] : "",
+            store.wednesday ? [store.wednesday[0], store.wednesday[1]] : "",
+            store.thursday ? [store.thursday[0], store.thursday[1]] : "",
+            store.friday ? [store.friday[0], store.friday[1]] : "",
+            store.saturday ? [store.saturday[0], store.saturday[1]] : "",
+            store.sunday ? [store.sunday[0], store.sunday[1]] : "",
+          ]
+        ),
+        salary: contract.sal_monthly,
+        contract: `${contract.start_date}-${contract.end_date}`,
+        hr_week: getTotalWeekHours(
+          [
+            store.monday ? [new Date(store.monday[0]).getHours(), new Date(store.monday[1]).getHours()] : [0, 0],
+            store.tuesday ? [new Date(store.tuesday[0]).getHours(), new Date(store.tuesday[1]).getHours()] : [0, 0],
+            store.wednesday ? [new Date(store.wednesday[0]).getHours(), new Date(store.wednesday[1]).getHours()] : [0, 0],
+            store.thursday ? [new Date(store.thursday[0]).getHours(), new Date(store.thursday[1]).getHours()] : [0, 0],
+            store.friday ? [new Date(store.friday[0]).getHours(), new Date(store.friday[1]).getHours()] : [0, 0],
+            store.saturday ? [new Date(store.saturday[0]).getHours(), new Date(store.saturday[1]).getHours()] : [0, 0],
+            store.sunday ? [new Date(store.sunday[0]).getHours(), new Date(store.sunday[1]).getHours()] : [0, 0],
+          ]
+        )
+      }
+      lists.push(obj);
+    })
+    setEmployeeDatas(lists)
+
+    console.log(data);
+  }
+
   const mergedColumns = columns.map((col) => {
     if (!col.editable) {
       return col;
@@ -351,91 +370,31 @@ const Store = () => {
     setEmployeeList([...employeeList, { key: new Date().valueOf(), ...defaultObj }])
   }
   useEffect(() => {
-
-    const Columns = [
-      {
-        title: "Employee",
-        dataIndex: "employee",
-        render: (_, record) => {
-          return (
-            <SelectAsync entity={"employee"} displayLabels={["name"]} onChange={(e) => changeEmployee(e, record)} value={_} />
-          );
-        }
-      },
-      {
-        title: "Total",
-        dataIndex: "total",
-        render: (_, record) => {
-          return (totalHours(record) || 0);
-        }
-      },
-    ]
-    let currentDate = moment(new Date());
-    let dates = []; // Array to store the next 7 days
-    if (employeeList && employeeList.length) {
-      let totalCost = 0;
-      employeeList.map(item => {
-        Object.keys(item).map(key => {
-          if (key.includes('day_')) {
-
-            totalCost += parseFloat(item[key]);
-
-            console.log(totalCost);
-          }
-        })
-      });
-      formRef.current.setFieldsValue({ cost: totalCost })
-
-      setSummatoryCost(totalCost);
-
-
-
-      const item = employeeList[0];
-      Object.keys(item).map((key, index) => {
-        if (key.includes('day_')) {
-          dates.push({
-            title: key.split('day_')[1],
-            dataIndex: key,
-            editable: true,
-          })
-          const end = moment(key.split('day_')[1]);
-          end.add(1, 'day')
-          setEndDate(end)
-        }
-      })
-    } else {
-      for (let i = 0; i < 7; i++) {
-        dates.push({
-          title: currentDate.format('YYYY-MM-DD'),
-          dataIndex: `day_${currentDate.format('YYYY-MM-DD')}`,
-          editable: true,
-        }); // Add the formatted date to the array
-        currentDate = currentDate.add(1, 'day'); // Increment the current date by 1 day
-
-        setEndDate(currentDate);
-      }
-    }
-
-    setInitEmployeeColumns([...Columns, ...dates]);
-  }, [employeeList]);
-
-  useEffect(() => {
     dispatch(crud.resetState());
     dispatch(crud.list({ entity }));
 
-    async function init() {
-      const { result } = await request.list({ entity: 'reference' });
-      result.map(obj => {
-        obj.value = obj._id;
-        obj.label = obj.ref
-      })
-      setReferences(result);
-    }
-    init();
   }, []);
   useEffect(() => {
-    setFilterData(items);
-    setPaginations(pagination)
+
+    async function init() {
+      const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" });
+      items.map(item => {
+        const { _id: store_id } = item
+        item['employees_'] = [];
+        assignedEmployees.map(obj => {
+          const { store } = obj
+          const { _id: store_id1 } = store;
+          if (store_id === store_id1) {
+            item['employees_'].push(obj)
+          }
+        })
+        item['employees'] = item['employees_'].length
+      })
+      console.log(items, 'items1111');
+      setFilterData(items);
+      setPaginations(pagination)
+    }
+    init();
   }, [items, pagination])
   const handleSave = (row, values) => {
 
@@ -525,177 +484,23 @@ const Store = () => {
   const handleProducts = () => {
     setIsProducts(false)
   }
+  const cancelModal = () => {
+    setIsModal(false)
+  }
   return (
 
     <DashboardLayout>
       <Layout style={{ minHeight: '100vh' }}>
-        <Modal title="Create Form" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null} width={1000}>
-          <>
-            <Form
-              ref={formRef}
-              name="basic"
-              labelCol={{
-                span: 8,
-              }}
-              wrapperCol={{
-                span: 16,
-              }}
-              initialValues={{
-                remember: true,
-              }}
-              onFinish={onFinish}
-              onFinishFailed={onFinishFailed}
-              autoComplete="off"
-            >
 
-              <Row gutter={24}>
-
-                <Col span={12}>
-                  <Form.Item
-                    name="customer"
-                    label="Customer"
-                    rules={[
-                      {
-                        required: true,
-                      },
-                    ]}
-                  >
-                    <SelectAsync entity={'client'} displayLabels={['name']} />
-                  </Form.Item>
-                  <Form.Item name="periods" label="From ~ To" rules={[
-                    {
-                      required: true,
-                    },
-                  ]}>
-                    <DatePicker.RangePicker />
-                  </Form.Item>
-                  <Form.Item
-                    name="billing"
-                    label="Billing"
-                    rules={[
-                      {
-                        required: true,
-                      },
-                    ]}
-                  >
-                    <Input type='number' />
-                  </Form.Item>
-                  <Form.Item
-                    name="status"
-                    label="Status"
-                    rules={[
-                      {
-                        required: true,
-                      },
-                    ]}
-                  >
-                    <Select options={statusArr1} />
-                  </Form.Item>
-
-
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    name="type"
-                    label="Type"
-                    rules={[
-                      {
-                        required: true,
-                      },
-                    ]}
-                  >
-                    <Radio.Group options={[{
-                      label: "Residential",
-                      value: 1
-                    }, {
-                      label: "Commercial",
-                      value: 2
-                    }]} />
-                  </Form.Item>
-                  <Form.Item
-                    name="ref"
-                    label="Reference"
-                    rules={[
-
-                      {
-                        required: true,
-                      },
-                    ]}
-                  >
-                    <SelectAsync entity={'reference'} displayLabels={['ref']} />
-
-                    {/* <Select
-
-                      placeholder="Select Reference"
-                      optionFilterProp="children"
-                      options={references} /> */}
-                  </Form.Item>
-                  <Form.Item
-                    name="cost"
-                    label="Cost"
-                  // rules={[
-                  //   {
-                  //     required: true,
-                  //   },
-                  // ]}
-                  >
-                    <Input type='number' readOnly style={{ background: 'lightgrey' }} value={summatoryCost} />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Form.Item
-                wrapperCol={{
-                  offset: 8,
-                  span: 16,
-                }}
-              >
-
-
-                {
-                  isUpdate ? <Button type="primary" htmlType="submit">
-                    Update
-                  </Button> :
-                    <Button type="primary" htmlType="submit">
-                      Save
-                    </Button>
-
-                }
-
-                <Button type="ghost" onClick={handleCancel}>
-                  cancel
-                </Button>
-              </Form.Item>
-
-              <hr />
-            </Form>
-            <Button onClick={addEmployee}>Add Employee</Button>
-            <Button onClick={ExtraWeek}>Extra Week</Button>
-            <Table
-              dataSource={employeeList || []}
-              columns={initEmployeeColumns.map((col) => {
-                if (!col.editable) {
-                  return col;
-                }
-                return {
-                  ...col,
-                  onCell: (record) => ({
-                    record,
-                    editable: col.editable,
-                    dataIndex: col.dataIndex,
-                    title: col.title,
-                    handleSave,
-
-                  }),
-                };
-              })}
-              style={{ overflow: "scroll" }}
-              components={components}
-
-            />
-          </>
-        </Modal>
         <Modal title="Products" visible={isProducts} onCancel={handleProducts} footer={null}>
           <h3>{currentProducts}</h3>
+        </Modal>
+
+        <Modal title="Employees" visible={isModal} onCancel={cancelModal} footer={null} width={1000}>
+          <Table
+            columns={employeeColumns}
+            dataSource={employeeDatas || []}
+          />
         </Modal>
         <Layout>
           <Row gutter={24} style={{ textAlign: 'right' }}>
