@@ -14,7 +14,22 @@ const CustomerStoresSchema = new mongoose.Schema({
   location: {
     type: String,
   },
+  waze_location: {
+    type: String,
+  },
   billing: {
+    type: Number,
+  },
+  labour_billing: {
+    type: Number,
+  },
+  product_billing: {
+    type: Number,
+  },
+  inspection: {
+    type: Number,
+  },
+  other_billing: {
     type: Number,
   },
   status: {
@@ -33,6 +48,9 @@ const CustomerStoresSchema = new mongoose.Schema({
     type: Number,
   },
   products: {
+    type: String
+  },
+  spec: {
     type: String
   },
   monday: {
@@ -69,6 +87,9 @@ const CustomerStoresSchema = new mongoose.Schema({
   },
   visit_value: {
     type: String,
+  },
+  deliver: {
+    type: Number,
   },
   removed: {
     type: Boolean,

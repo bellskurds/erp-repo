@@ -1,6 +1,6 @@
 import { crud } from "@/redux/crud/actions";
 import { selectFilteredItemsByParent, selectListItems, selectListsByCustomerContact, selectListsByCustomerStores, selectListsBylistByCustomerStores, selectReadItem } from "@/redux/crud/selectors";
-import { DeleteOutlined, EditOutlined, EyeOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, EyeOutlined, StarFilled, StarOutlined, setTwoToneColor } from "@ant-design/icons";
 import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Tag, TimePicker, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -16,6 +16,21 @@ const CustomerStores = (props) => {
     const [isBankModal, setIsBankModal] = useState(false);
     const formRef = useRef(null);
     const [insumos, setInsumos] = useState(false);
+
+    const [labourBilling, setLabourBilling] = useState(0);
+    const [productBilling, setProductBilling] = useState(0);
+    const [otherBilling, setOtherBilling] = useState(0);
+    const [totalBilling, setTotalBilling] = useState(0);
+    useEffect(() => {
+        console.log(labourBilling + productBilling + otherBilling);
+        if (formRef.current) {
+            formRef.current.setFieldsValue({
+                billing: (labourBilling || 0) + (productBilling || 0) + (otherBilling || 0)
+            })
+        }
+    }, [
+        labourBilling, productBilling, otherBilling
+    ])
     const bankColumns = [
         {
             title: 'Store',
@@ -64,11 +79,10 @@ const CustomerStores = (props) => {
         {
             title: 'Location',
             dataIndex: 'location',
-            render: (text, record) => (
-                <>
-                    {record.location && countryLists.find(obj => obj.value === record.location).label}
-                </>
-            )
+        },
+        {
+            title: 'Waze Location',
+            dataIndex: 'waze_location',
         },
         {
             title: 'Billing',
@@ -109,9 +123,12 @@ const CustomerStores = (props) => {
     const [isUpdate, setIsUpdate] = useState(false);
 
     const editBankModal = () => {
+        setLabourBilling(0);
+        setProductBilling(0);
+        setOtherBilling(0)
         setIsBankModal(true);
         setIsUpdate(false);
-        // if (formRef) formRef.current.resetFields();
+        if (formRef.current) formRef.current.resetFields();
     }
     const getFormattedHours = (days) => {
         const dayLabels = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
@@ -315,7 +332,7 @@ const CustomerStores = (props) => {
                 >
 
                     <Row gutter={24}>
-                        <Col span={15}>
+                        <Col span={13}>
                             <Form.Item
                                 name="store"
                                 label="Store Name"
@@ -336,17 +353,18 @@ const CustomerStores = (props) => {
                                     },
                                 ]}
                             >
-                                <Select
-                                    showSearch
-                                    placeholder="Select a person"
-                                    optionFilterProp="children"
-                                    // onChange={onChange}
-                                    // onSearch={onSearch}
-                                    filterOption={(input, option) =>
-                                        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                                    }
-                                    options={countryLists}
-                                />
+                                <Input />
+                            </Form.Item>
+                            <Form.Item
+                                name="waze_location"
+                                label="Waze Location"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <Input />
                             </Form.Item>
                             <Form.Item
                                 name="billing"
@@ -357,7 +375,40 @@ const CustomerStores = (props) => {
                                     },
                                 ]}
                             >
-                                <InputNumber />
+                                <Input value={totalBilling} type="number" readOnly style={{ background: 'lightgrey' }} />
+                            </Form.Item>
+                            <Form.Item
+                                name="labour_billing"
+                                label="Labour Billing"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <InputNumber onChange={(e) => setLabourBilling(e)} type="number" />
+                            </Form.Item>
+                            <Form.Item
+                                name="product_billing"
+                                label="Product Billing"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <InputNumber onChange={(e) => setProductBilling(e)} type="number" />
+                            </Form.Item>
+                            <Form.Item
+                                name="other_billing"
+                                label="Other Billing"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <InputNumber onChange={(e) => setOtherBilling(e)} type="number" />
                             </Form.Item>
                             <Form.Item
                                 name="monday"
@@ -465,7 +516,7 @@ const CustomerStores = (props) => {
 
 
                         </Col>
-                        <Col span={9}>
+                        <Col span={11}>
                             <Form.Item
                                 name="status"
                                 label="Status"
@@ -546,22 +597,56 @@ const CustomerStores = (props) => {
                                 />
                             </Form.Item>
                             {insumos &&
-                                <Form.Item
-                                    name="visit_value"
-                                    label="Visits"
-                                    rules={[
-                                        {
-                                            required: true,
-                                        },
-                                    ]}
-                                >
-                                    <Input type='number' />
-                                </Form.Item>
+                                <>
+                                    <Form.Item
+                                        name="visit_value"
+                                        label="Visits"
+                                        rules={[
+                                            {
+                                                required: true,
+                                            },
+                                        ]}
+                                    >
+                                        <Input type='number' />
+                                    </Form.Item>
+                                    <Form.Item
+                                        name="deliver"
+                                        label="Monthly deliver"
+                                        rules={[
+                                            {
+                                                required: true,
+                                            },
+                                        ]}
+                                    >
+                                        <Input type='number' />
+                                    </Form.Item>
+                                </>
                             }
-
+                            <Form.Item
+                                name="inspection"
+                                label="Monthly inspections"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <InputNumber type="number" />
+                            </Form.Item>
                             <Form.Item
                                 name="products"
                                 label="Products"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <Input.TextArea />
+                            </Form.Item>
+                            <Form.Item
+                                name="spec"
+                                label="Specs"
                                 rules={[
                                     {
                                         required: true,
