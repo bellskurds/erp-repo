@@ -376,19 +376,6 @@ const Projects = () => {
     console.log('Failed:', errorInfo);
   };
 
-  const ExtraWeek = () => {
-    const start_ = endDate.date();
-    const end_ = start_ + 7;
-
-    let currentDate = endDate;
-    let dates = []; // Array to store the next 7 days
-    for (let i = start_; i < end_; i++) {
-      dates.push({ title: currentDate.format('YYYY-MM-DD'), dataIndex: `day_${currentDate.format('YYYY-MM-DD')}`, editable: true, render: (text) => { return (text || 0) } }); // Add the formatted date to the array
-      currentDate = currentDate.add(1, 'day'); // Increment the current date by 1 day
-    }
-
-    setInitEmployeeColumns([...initEmployeeColumns, ...dates]);
-  }
 
   useEffect(() => {
     if (periodsDate) {
@@ -574,6 +561,22 @@ const Projects = () => {
 
   useEffect(() => {
     console.log(filterData, 'filterData');
+    let _billing = 0;
+    let _ecost = 0;
+    let _ocost = 0;
+    let _Profitability = 0;
+
+    filterData.map(item => {
+      const { billing, e_cost, o_cost, profitability } = item
+      _billing += parseFloat(billing) || 0;
+      _ecost += parseFloat(e_cost) || 0;
+      _ocost += parseFloat(o_cost) || 0;
+      _Profitability += parseFloat(profitability) || 0;
+    });
+    setAllBilling(_billing);
+    setAllECost(_ecost);
+    setAllOCost(_ocost);
+    setAllProfitability(_Profitability);
 
   }, [filterData])
   const Footer = () => {
