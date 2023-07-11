@@ -2,13 +2,27 @@ import { DashboardLayout, } from '@/layout';
 import { LeftOutlined, RightOutlined, SafetyOutlined, SearchOutlined, SkinOutlined, StopOutlined, TeamOutlined } from '@ant-design/icons';
 import { Button, Col, DatePicker, Form, Input, Layout, Modal, Popconfirm, Radio, Row, Select, Table, Typography, message } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import { crud } from '@/redux/crud/actions';
-import { selectListItems } from '@/redux/crud/selectors';
 import { request } from '@/request';
 import moment from 'moment';
 import SelectAsync from '@/components/SelectAsync';
+
+const getBusinessDays = (year, month) => {
+  const startDate = 1;
+  const endDate = new Date(year, month, 0).getDate();
+  let businessDays = 0;
+  for (let date = startDate; date <= endDate; date++) {
+    if (new Date(year, month - 1, date).getDay() !== 0) {
+      businessDays++;
+    }
+  }
+  console.log(year, 'year,month', month, businessDays);
+
+  return businessDays;
+}
+
 
 const VisitControl = () => {
   const entity = "visitControl"
@@ -31,7 +45,6 @@ const VisitControl = () => {
     'Products',
     'Inspection',
   ]
-
   const { id: currentUserId } = JSON.parse(localStorage.auth)
   const formattedDateFunc = (date) => {
     return moment(date).format("MM/DD/YYYY")
@@ -54,18 +67,14 @@ const VisitControl = () => {
   const [filteredStores, setFilteredStores] = useState([]);
   const [changeStatus, setChangeStatus] = useState(false);
   const [changedMonth, setChangedMonth] = useState([]);
-  const [employeeList, setEmployeeList] = useState([]);
   const [form] = Form.useForm();
-  const [editingKey, setEditingKey] = useState('');
   const [currentId, setCurrentId] = useState('');
-  const [currentItem, setCurrentItem] = useState({});
   const [paginations, setPaginations] = useState([])
   const [visitContols, setVisitControls] = useState([]);
   const [isHistory, setIsHistory] = useState(false);
   const [historyData, setHistoryData] = useState([])
-  const isEditing = (record) => record._id === editingKey;
+  const [reportData, setReportData] = useState([]);
   const editItem = (item) => {
-
     if (item) {
       const { customer, store } = item
       const filteredData = visitContols.filter(({ customer: customer1, store: store1, visit_date }) =>
@@ -73,19 +82,8 @@ const VisitControl = () => {
         new Date(visit_date).getFullYear() === currentYear
         && new Date(visit_date).getMonth() === (currentMonth - 1)
       )
-
-      console.log(item, filteredData, 'globalData');
-      // setTimeout(() => {
       filteredData.sort((a, b) => { return new Date(a.visit_date) - new Date(b.visit_date) })
       setHistoryData(filteredData)
-      //   const { employees, _id, removed, enabled, created, periods, ...otherValues } = item;
-      //   if (formRef.current) formRef.current.setFieldsValue({ ...otherValues, periods: periods ? [moment(periods[0]), moment(periods[1])] : null });
-      //   setEmployeeList(JSON.parse(employees))
-
-      // }, 200);
-      // console.log(item, '33334343');
-      // setCurrentItem(item);
-
       setCurrentId(item._id);
       setIsHistory(true);
     }
@@ -97,18 +95,13 @@ const VisitControl = () => {
       dataIndex: ['customer', 'name'],
       width: '15%',
       render: (text, { store, ...otherObj }) => {
-        return (<label style={{ cursor: 'pointer' }} onClick={() => editItem({ store, ...otherObj })}>{text}(${store.store})</label>)
+        return (<label style={{ cursor: 'pointer' }} onClick={() => editItem({ store, ...otherObj })}>{text}({store.store})</label>)
       }
     },
     {
       title: 'T',
       dataIndex: 'store_visit_value',
       width: '15%',
-      // render: (_, record) => {
-      //   const { store } = record;
-      //   const { visit_value } = store;
-      //   return visit_value
-      // }
     },
     {
       title: 'R',
@@ -134,47 +127,32 @@ const VisitControl = () => {
       }
 
     },
-    // {
-    //   title: 'Actions',
-    //   dataIndex: 'operation',
-    //   width: "10%",
-    //   align: 'center',
-    //   render: (_, record) => {
-    //     return (
-
-    //       <>
-    //         <Typography.Link onClick={() => editItem(record)}>
-    //           <EditOutlined style={{ fontSize: "20px" }} />
-    //         </Typography.Link>
-
-    //         <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-    //           <DeleteOutlined style={{ fontSize: "20px" }} />
-    //         </Popconfirm>
-    //       </>
-    //     )
-
-    //   },
-    // },
-
   ];
 
-  const mergedColumns = columns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-    return {
-      ...col,
-      onCell: (record) => ({
-        record,
-        inputType: col.dataIndex === 'age' ? 'number' : 'text',
-        dataIndex: col.dataIndex,
-        title: col.title,
-        editing: isEditing(record),
-      }),
-    };
-  });
-  const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
-  const { pagination, items } = listResult;
+  const topColumn = [
+    {
+      title: "........................................",
+      width: "40%",
+      dataIndex: "report_title"
+    },
+    {
+      title: "....",
+      width: "15%",
+      dataIndex: 'report_value'
+    },
+    {
+      title: "..."
+    },
+    {
+      title: "..."
+    },
+    {
+      title: "..%...",
+      width: "20"
+    },
+
+  ]
+
   const onFinish = async (values) => {
 
 
@@ -265,7 +243,9 @@ const VisitControl = () => {
         currentDate = currentDate.add(1, 'days');
       };
       setChangedMonth(daysColumns)
-      const { result: visitDatas } = await request.list({ entity: "visitControl" });
+
+
+      const { result: visitDatas } = await request.listById({ entity: "visitControl", jsonData: { by: currentUserId } });
       setVisitControls(visitDatas);
       const { result: customerStores } = await request.list({ entity: "customerStores" });
       setCustomerStores(customerStores)
@@ -301,12 +281,62 @@ const VisitControl = () => {
           }
         })
       })
+
       setFilterData(storeData)
       setGlobalData(storeData)
 
+      // fillteredData.map(item => {
+
+      // })
+      console.log(fillteredData, 'fillteredDatafillteredData');
+
       setPaginations({ current: 1, pageSize: 10, total: storeData.length })
+
+
+      const initReportData = [
+        {
+          key: 0,
+          report_title: "Business days",
+          report_value: getBusinessDays(currentYear, currentMonth),
+        },
+        {
+          key: 1,
+          report_title: "Inspections carried out"
+        },
+        {
+          key: 2,
+          report_title: "Projection to date"
+        },
+        {
+          key: 3,
+          report_title: "month projection"
+        },
+
+        {
+          key: 4,
+          report_title: "Supplies delivered"
+        },
+        {
+          key: 5,
+          report_title: "Projection to date"
+        },
+        {
+          key: 6,
+          report_title: "month projection"
+        },
+        {
+          key: 7,
+          report_title: "Visits made"
+        },
+        {
+          key: 8,
+          report_title: "Delivered projects"
+        },
+      ]
+      setReportData(initReportData);
     }
     init();
+
   }, [
     currentMonth, currentYear, changeStatus
   ])
@@ -567,8 +597,21 @@ const VisitControl = () => {
             <Table
               style={{ overflow: 'auto' }}
               bordered
+              dataSource={reportData}
+              columns={[...topColumn, ...changedMonth]}
+              rowClassName="editable-row"
+              pagination={paginations}
+              onChange={handelDataTableLoad}
+              footer={Footer}
+            />
+          </Form>
+
+          <Form form={form} component={false}>
+            <Table
+              style={{ overflow: 'auto' }}
+              bordered
               dataSource={filterData}
-              columns={[...mergedColumns, ...changedMonth]}
+              columns={[...columns, ...changedMonth]}
               rowClassName="editable-row"
               pagination={paginations}
               onChange={handelDataTableLoad}
