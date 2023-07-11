@@ -14,17 +14,17 @@ import SelectAsync from '@/components/SelectAsync';
 import { useContext } from 'react';
 const EditableContext = React.createContext(null);
 
-const statusLabel = ["", "Active", "Canceled", "Finished"]
+const statusLabel = ["", "Pending", "Progress", "Completed"]
 const statusArr = [
   { value: 0, label: "all" },
-  { value: 1, label: "Active" },
-  { value: 2, label: "Canceled" },
-  { value: 3, label: "Finished" },
+  { value: 1, label: "Pending" },
+  { value: 2, label: "Progress" },
+  { value: 3, label: "Completed" },
 ];
 const statusArr1 = [
-  { value: 1, label: "Active" },
-  { value: 2, label: "Canceled" },
-  { value: 3, label: "Finished" },
+  { value: 1, label: "Pending" },
+  { value: 2, label: "Progress" },
+  { value: 3, label: "Completed" },
 ];
 const searchFields = "project_id"
 const EditableRow = ({ index, ...props }) => {
@@ -44,6 +44,7 @@ const EditableCell = ({
   dataIndex,
   record,
   handleSave,
+  handleSave_,
   ...restProps
 }) => {
   const [editing, setEditing] = useState(false);
@@ -65,10 +66,19 @@ const EditableCell = ({
       const values = await form.validateFields();
 
       toggleEdit();
-      handleSave({
-        ...record,
-        ...values,
-      }, values);
+      if (handleSave_) {
+        handleSave_({
+          ...record,
+          ...values,
+        }, values);
+      } else {
+        handleSave({
+          ...record,
+          ...values,
+        }, values);
+      }
+
+
     } catch (errInfo) {
       console.log('Save failed:', errInfo);
     }
@@ -112,11 +122,13 @@ const Projects = () => {
 
   const [isUpdate, setIsUpdate] = useState(false);
   const [rangeDate, setRangeDate] = useState();
+  const [billingCost, setBillingCost] = useState();
   const showModal = () => {
 
     setCurrentId(new Date().valueOf())
     setIsModalVisible(true);
     setIsUpdate(false);
+    setEmployeeList([])
     if (formRef.current) formRef.current.resetFields();
 
   };
@@ -146,6 +158,8 @@ const Projects = () => {
   const [endDate, setEndDate] = useState();
   const [status, setStatus] = useState();
   const [summatoryCost, setSummatoryCost] = useState();
+  const [periodsDate, setPeriodsDate] = useState();
+  const [currentPeriods, setCurrentPeriods] = useState();
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
 
@@ -160,7 +174,8 @@ const Projects = () => {
       }, 200);
       console.log(item, '33334343');
       setCurrentItem(item);
-
+      setPeriodsDate(item.periods);
+      setBillingCost(item.billing)
       setCurrentId(item._id);
       setIsModalVisible(true);
       setIsUpdate(true);
@@ -201,12 +216,9 @@ const Projects = () => {
       width: '15%',
     },
     {
-      title: 'Type',
-      dataIndex: 'type',
+      title: 'Invoice ID',
+      dataIndex: 'invoice_id',
       width: '15%',
-      render: (text) => {
-        return (typeArr[text]);
-      }
     },
     {
       title: 'Reference',
@@ -322,48 +334,7 @@ const Projects = () => {
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
-  const getObjectDiff = (obj1, obj2) => {
-    const diff = [];
 
-    // Check for changed properties and values
-    for (let i = 0; i < obj1.length; i++) {
-      const obj1Props = Object.keys(obj1[i]);
-      const obj2Props = Object.keys(obj2[i]);
-      const changedProps = [];
-
-      for (let prop of obj1Props) {
-        if (obj2[i].hasOwnProperty(prop) && obj1[i][prop] !== obj2[i][prop]) {
-          changedProps.push({ [prop]: obj2[i][prop] });
-        }
-      }
-
-      if (changedProps.length > 0) {
-        diff.push({ index: i, changes: changedProps });
-      }
-    }
-
-    // Check for added properties and values
-    for (let i = 0; i < obj2.length; i++) {
-      const obj2Props = Object.keys(obj2[i]);
-
-      for (let prop of obj2Props) {
-        let found = false;
-
-        for (let j = 0; j < obj1.length; j++) {
-          if (obj1[j].hasOwnProperty(prop)) {
-            found = true;
-            break;
-          }
-        }
-
-        if (!found) {
-          diff.push({ index: i, added: { [prop]: obj2[i][prop] } });
-        }
-      }
-    }
-
-    return diff;
-  }
   const ExtraWeek = () => {
     const start_ = endDate.date();
     const end_ = start_ + 7;
@@ -378,6 +349,51 @@ const Projects = () => {
     setInitEmployeeColumns([...initEmployeeColumns, ...dates]);
   }
 
+  useEffect(() => {
+    if (periodsDate) {
+      const start = moment(periodsDate[0]);
+      const end = periodsDate[1];
+      const Columns = [
+        {
+          title: "Employee",
+          dataIndex: "employee",
+          render: (_, record) => {
+            return (
+              <SelectAsync entity={"employee"} displayLabels={["name"]} onChange={(e) => changeEmployee(e, record)} value={_} />
+            );
+          }
+        },
+        {
+          title: "Total",
+          dataIndex: "total",
+          render: (_, record) => {
+            return (totalHours(record) || 0);
+          }
+        },
+      ]
+      if (start && end) {
+
+        setCurrentPeriods(periodsDate);
+        // setEmployeeList([])
+        const _columns = [];
+        while (start.isSameOrBefore(end)) {
+          _columns.push({
+            title: start.format("MMMM/DD"),
+            dataIndex: `day_${start.format("YYYY-MM-DD")}`,
+            editable: true
+          })
+          start.add(1, 'day')
+        }
+
+        setInitEmployeeColumns([...Columns, ..._columns])
+        console.log(_columns, '_columns');
+      }
+    } else {
+      return true
+    }
+  }, [
+    periodsDate
+  ])
   const addEmployee = () => {
     const defaultObj = {};
     for (var i = 0; i < initEmployeeColumns.length; i++) {
@@ -388,74 +404,7 @@ const Projects = () => {
     }
     setEmployeeList([...employeeList, { key: new Date().valueOf(), ...defaultObj }])
   }
-  useEffect(() => {
 
-    const Columns = [
-      {
-        title: "Employee",
-        dataIndex: "employee",
-        render: (_, record) => {
-          return (
-            <SelectAsync entity={"employee"} displayLabels={["name"]} onChange={(e) => changeEmployee(e, record)} value={_} />
-          );
-        }
-      },
-      {
-        title: "Total",
-        dataIndex: "total",
-        render: (_, record) => {
-          return (totalHours(record) || 0);
-        }
-      },
-    ]
-    let currentDate = moment(new Date());
-    let dates = []; // Array to store the next 7 days
-    if (employeeList && employeeList.length) {
-      let totalCost = 0;
-      employeeList.map(item => {
-        Object.keys(item).map(key => {
-          if (key.includes('day_')) {
-
-            totalCost += parseFloat(item[key]);
-
-            console.log(totalCost);
-          }
-        })
-      });
-      formRef.current.setFieldsValue({ cost: totalCost })
-
-      setSummatoryCost(totalCost);
-
-
-
-      const item = employeeList[0];
-      Object.keys(item).map((key, index) => {
-        if (key.includes('day_')) {
-          dates.push({
-            title: key.split('day_')[1],
-            dataIndex: key,
-            editable: true,
-          })
-          const end = moment(key.split('day_')[1]);
-          end.add(1, 'day')
-          setEndDate(end)
-        }
-      })
-    } else {
-      for (let i = 0; i < 7; i++) {
-        dates.push({
-          title: currentDate.format('YYYY-MM-DD'),
-          dataIndex: `day_${currentDate.format('YYYY-MM-DD')}`,
-          editable: true,
-        }); // Add the formatted date to the array
-        currentDate = currentDate.add(1, 'day'); // Increment the current date by 1 day
-
-        setEndDate(currentDate);
-      }
-    }
-
-    setInitEmployeeColumns([...Columns, ...dates]);
-  }, [employeeList]);
 
   useEffect(() => {
     dispatch(crud.resetState());
@@ -478,6 +427,7 @@ const Projects = () => {
   const handleSave = (row, values) => {
 
     console.log(values, row, '33333');
+    row["total"] = totalHours(row);
     const newData = [...employeeList];
     const index = newData.findIndex((item) => row.key === item.key);
     const item = newData[index];
@@ -485,12 +435,24 @@ const Projects = () => {
       ...item,
       ...row,
     });
-    setEmployeeList(prev => {
-      const newValue = [...newData];
-      return newValue
+    setEmployeeList(newData);
+  };
+  const handleSave_ = (row, values) => {
+
+    console.log(values, row, '33333');
+    row["total"] = totalHours(row);
+    const newData = [...costList];
+    const index = newData.findIndex((item) => row.key === item.key);
+    const item = newData[index];
+    newData.splice(index, 1, {
+      ...item,
+      ...row,
     });
+    setCostList(newData);
   };
   useEffect(() => {
+
+    console.log(initEmployeeColumns, employeeList, 'initEmployeeColumns');
     const newData = [...employeeList];
     newData.map(obj => [
       initEmployeeColumns.map(columns => {
@@ -500,16 +462,29 @@ const Projects = () => {
         }
       })
     ])
+    setEmployeeList(newData)
   }, [initEmployeeColumns])
 
   const totalHours = (record) => {
-    var total = 0;
-    for (var key in record) {
-      if (key.includes('day_')) {
-        total += parseFloat(record[key]);
+
+    const _periods = formRef.current.getFieldValue("periods")
+
+    if (_periods) {
+      const start = moment(_periods[0]);
+      const end = moment(_periods[1]);
+      var total = 0;
+      while (start.isSameOrBefore(end)) {
+        total += parseFloat(record[`day_${start.format("YYYY-MM-DD")}`] || 0);
+        start.add(1, 'day')
       }
+      console.log(total, 'totaltotal');
+      // for (var key in record) {
+      //   if (key.includes('day_')) {
+      //     total += parseFloat(record[key]);
+      //   }
+      // }
+      return total;
     }
-    return total;
   }
 
   const changeEmployee = (value, record) => {
@@ -559,11 +534,49 @@ const Projects = () => {
       </>
     );
   }
+  const addCost = () => {
+    setCostList([...costList, { cost: 0, comment: "..", key: new Date().valueOf() }])
+  }
+  const costColumn = [
+    {
+      title: "Cost",
+      dataIndex: "cost",
+      editable: true,
+    },
+    {
+      title: "Comment",
+      dataIndex: "comment",
+      editable: true,
+    }
+  ]
+  const [costList, setCostList] = useState([]);
+  useEffect(() => {
+
+    let totalCost = 0;
+    employeeList.map(item => {
+      totalCost += parseFloat(item.total) || 0
+    })
+
+    costList.map(obj => {
+      totalCost += parseFloat(obj.cost) || 0
+    })
+    setSummatoryCost(totalCost)
+    if (formRef.current) formRef.current.setFieldsValue({ cost: totalCost })
+  }, [
+    employeeList, costList
+  ])
+
+  useEffect(() => {
+
+    if (formRef.current) formRef.current.setFieldsValue({ profitability: (billingCost - summatoryCost) })
+  }, [
+    summatoryCost, billingCost
+  ])
   return (
 
     <DashboardLayout>
       <Layout style={{ minHeight: '100vh' }}>
-        <Modal title="Create Form" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null} width={1000}>
+        <Modal title="Create Form" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null} width={1500}>
           <>
             <Form
               ref={formRef}
@@ -601,7 +614,7 @@ const Projects = () => {
                       required: true,
                     },
                   ]}>
-                    <DatePicker.RangePicker />
+                    <DatePicker.RangePicker onCalendarChange={(e) => setPeriodsDate(e)} />
                   </Form.Item>
                   <Form.Item
                     name="billing"
@@ -612,7 +625,7 @@ const Projects = () => {
                       },
                     ]}
                   >
-                    <Input type='number' />
+                    <Input type='number' onChange={(e) => setBillingCost(e)} />
                   </Form.Item>
                   <Form.Item
                     name="status"
@@ -630,21 +643,15 @@ const Projects = () => {
                 </Col>
                 <Col span={12}>
                   <Form.Item
-                    name="type"
-                    label="Type"
+                    name="invoice_id"
+                    label="Invoice ID"
                     rules={[
                       {
                         required: true,
                       },
                     ]}
                   >
-                    <Radio.Group options={[{
-                      label: "Residential",
-                      value: 1
-                    }, {
-                      label: "Commercial",
-                      value: 2
-                    }]} />
+                    <Input />
                   </Form.Item>
                   <Form.Item
                     name="ref"
@@ -667,6 +674,17 @@ const Projects = () => {
                   <Form.Item
                     name="cost"
                     label="Cost"
+                  // rules={[
+                  //   {
+                  //     required: true,
+                  //   },
+                  // ]}
+                  >
+                    <Input type='number' readOnly style={{ background: 'lightgrey' }} value={summatoryCost} />
+                  </Form.Item>
+                  <Form.Item
+                    name="profitability"
+                    label="Profitability"
                   // rules={[
                   //   {
                   //     required: true,
@@ -702,30 +720,61 @@ const Projects = () => {
 
               <hr />
             </Form>
-            <Button onClick={addEmployee}>Add Employee</Button>
-            <Button onClick={ExtraWeek}>Extra Week</Button>
-            <Table
-              dataSource={employeeList || []}
-              columns={initEmployeeColumns.map((col) => {
-                if (!col.editable) {
-                  return col;
-                }
-                return {
-                  ...col,
-                  onCell: (record) => ({
-                    record,
-                    editable: col.editable,
-                    dataIndex: col.dataIndex,
-                    title: col.title,
-                    handleSave,
+            <Row gutter={24}>
 
-                  }),
-                };
-              })}
-              style={{ overflow: "scroll" }}
-              components={components}
+              <Col span={16}>
+                <Button onClick={addEmployee}>Add Employee</Button>
+                <Table
+                  dataSource={employeeList || []}
+                  columns={initEmployeeColumns.map((col) => {
+                    if (!col.editable) {
+                      return col;
+                    }
+                    return {
+                      ...col,
+                      onCell: (record) => ({
+                        record,
+                        editable: col.editable,
+                        dataIndex: col.dataIndex,
+                        title: col.title,
+                        handleSave,
 
-            />
+                      }),
+                    };
+                  })}
+                  style={{ overflow: "scroll" }}
+                  components={components}
+
+                />
+              </Col>
+              <Col span={8}>
+                <Button onClick={addCost}>Add Cost</Button>
+                <Table
+                  dataSource={costList || []}
+                  columns={costColumn.map((col) => {
+                    if (!col.editable) {
+                      return col;
+                    }
+                    return {
+                      ...col,
+                      onCell: (record) => ({
+                        record,
+                        editable: col.editable,
+                        dataIndex: col.dataIndex,
+                        title: col.title,
+                        handleSave_,
+
+                      }),
+                    };
+                  })}
+                  style={{ overflow: "scroll" }}
+                  components={components}
+
+                />
+              </Col>
+
+
+            </Row>
           </>
         </Modal>
         <Layout>

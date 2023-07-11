@@ -33,7 +33,10 @@ const projectSchema = new mongoose.Schema({
   ref: {
     type: mongoose.Schema.ObjectId, ref: 'Reference', autopopulate: true
   },
-  type: {
+  invoice_id: {
+    type: String,
+  },
+  profitability: {
     type: Number,
   },
   status: {
