@@ -167,9 +167,10 @@ const Projects = () => {
 
       setTimeout(() => {
 
-        const { employees, _id, removed, enabled, created, periods, ...otherValues } = item;
+        const { employees, costs, _id, removed, enabled, created, periods, ...otherValues } = item;
         if (formRef.current) formRef.current.setFieldsValue({ ...otherValues, periods: periods ? [moment(periods[0]), moment(periods[1])] : null });
-        setEmployeeList(JSON.parse(employees))
+        setEmployeeList(JSON.parse(employees || "[]"))
+        setCostList(JSON.parse(costs || "[]"))
 
       }, 200);
       console.log(item, '33334343');
@@ -198,26 +199,8 @@ const Projects = () => {
   const typeArr = ["", "Residential", "Commercial"]
   const columns = [
     {
-      title: 'Date',
-      dataIndex: 'periods',
-      width: '15%',
-      render: (text) => {
-        return (getDateLabel(text))
-      }
-    },
-    {
-      title: 'Project Id',
-      dataIndex: 'project_id',
-      width: '15%',
-    },
-    {
       title: 'Customer',
       dataIndex: ['customer', 'name'],
-      width: '15%',
-    },
-    {
-      title: 'Invoice ID',
-      dataIndex: 'invoice_id',
       width: '15%',
     },
     {
@@ -226,13 +209,14 @@ const Projects = () => {
       width: '15%',
     },
     {
-      title: 'Billing',
-      dataIndex: 'billing',
+      title: "Billing ID"
+    },
+    {
+      title: 'Date',
+      dataIndex: 'periods',
       width: '15%',
       render: (text) => {
-        return (
-          `$${text}`
-        );
+        return (getDateLabel(text))
       }
     },
     {
@@ -246,8 +230,8 @@ const Projects = () => {
       }
     },
     {
-      title: 'Cost',
-      dataIndex: 'cost',
+      title: 'Billing',
+      dataIndex: 'billing',
       width: '15%',
       render: (text) => {
         return (
@@ -255,6 +239,58 @@ const Projects = () => {
         );
       }
     },
+
+    {
+      title: 'E.Costs',
+      dataIndex: 'e_cost',
+      width: '15%',
+      render: (text) => {
+        return (
+          `$${text || 0}`
+        );
+      }
+    },
+    {
+      title: 'O.Costs',
+      dataIndex: 'o_cost',
+      width: '15%',
+      render: (text) => {
+        return (
+          `$${text || 0}`
+        );
+      }
+    },
+    {
+      title: 'Profitability',
+      dataIndex: 'profitability',
+      width: '15%',
+      render: (text) => {
+        return (
+          `$${text || 0}`
+        );
+      }
+    },
+    // {
+    //   title: 'Project Id',
+    //   dataIndex: 'project_id',
+    //   width: '15%',
+    // },
+    // {
+    //   title: 'Invoice ID',
+    //   dataIndex: 'invoice_id',
+    //   width: '15%',
+    // },
+
+    // {
+    //   title: 'Cost',
+    //   dataIndex: 'cost',
+    //   width: '15%',
+    //   render: (text) => {
+    //     return (
+    //       `$${text}`
+    //     );
+    //   }
+    // },
     {
       title: 'Status',
       dataIndex: 'status',
@@ -312,6 +348,7 @@ const Projects = () => {
   const onFinish = async (values) => {
 
     values['employees'] = JSON.stringify(employeeList);
+    values['costs'] = JSON.stringify(costList);
     // const obj1 = JSON.parse(currentItem.employees);
     // const obj2 = employeeList;
     // const result = getObjectDiff(obj1, obj2);
@@ -421,6 +458,13 @@ const Projects = () => {
     init();
   }, []);
   useEffect(() => {
+
+    items.map(item => {
+      const { costs, cost } = item;
+      const o_cost = JSON.parse(costs || "[]").reduce((total, _item) => total + parseFloat(_item.cost), 0)
+      item["o_cost"] = o_cost || 0
+      item["e_cost"] = cost - (o_cost || 0)
+    })
     setFilterData(items);
     setPaginations(pagination)
   }, [items, pagination])

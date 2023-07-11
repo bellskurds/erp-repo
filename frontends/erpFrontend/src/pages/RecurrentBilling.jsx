@@ -178,7 +178,9 @@ const RecurrentBilling = (props) => {
     }, [Stores])
     useEffect(() => {
         const recurrentOptions = Recurrents.items || [];
-
+        recurrentOptions.map((obj, index) => {
+            obj['key'] = index
+        })
         if (recurrentOptions) {
             setRecurrents(recurrentOptions);
         } else {

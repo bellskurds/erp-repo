@@ -30,6 +30,9 @@ const projectSchema = new mongoose.Schema({
   employees: {
     type: Object,
   },
+  costs: {
+    type: Object,
+  },
   ref: {
     type: mongoose.Schema.ObjectId, ref: 'Reference', autopopulate: true
   },
