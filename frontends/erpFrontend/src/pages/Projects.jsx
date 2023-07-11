@@ -160,6 +160,10 @@ const Projects = () => {
   const [summatoryCost, setSummatoryCost] = useState();
   const [periodsDate, setPeriodsDate] = useState();
   const [currentPeriods, setCurrentPeriods] = useState();
+  const [allBilling, setAllBilling] = useState(0);
+  const [allECost, setAllECost] = useState(0);
+  const [allOCost, setAllOCost] = useState(0);
+  const [allProfitability, setAllProfitability] = useState(0);
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
 
@@ -566,6 +570,12 @@ const Projects = () => {
     setPaginations(pagination)
     return true;
   }, [filterData, searchText]);
+
+
+  useEffect(() => {
+    console.log(filterData, 'filterData');
+
+  }, [filterData])
   const Footer = () => {
     const pages = paginations
     const { current, count, total, page } = pages
@@ -823,6 +833,24 @@ const Projects = () => {
         </Modal>
         <Layout>
           <Row gutter={24} style={{ textAlign: 'right' }}>
+            <Col span={8}></Col>
+            <Col span={4}>
+              <h3 >Billing:{allBilling}</h3>
+            </Col>
+            <Col span={4}>
+
+              <h3>E.Costs:{allECost}</h3>
+            </Col>
+            <Col span={4}>
+
+              <h3>O.Costs:{allOCost}</h3>
+            </Col>
+            <Col span={4}>
+
+              <h3>Profitability:{allProfitability}</h3>
+            </Col>
+          </Row>
+          <Row gutter={24} style={{ textAlign: 'right' }}>
             <Col span={6}>
               <Input
                 placeholder='Search'
@@ -864,7 +892,7 @@ const Projects = () => {
 
         </Layout>
       </Layout>
-    </DashboardLayout>
+    </DashboardLayout >
   );
 };
 export default Projects;
