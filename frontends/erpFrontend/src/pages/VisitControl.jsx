@@ -302,7 +302,7 @@ const VisitControl = () => {
           })
         }
       })
-      console.log(inspectionDataByuser, 'fillteredDatafillteredData');
+      const totalInspection = getTotalInspection(inspectionDataByuser)
 
       // -------------------------------end----------------------------------------
 
@@ -319,8 +319,8 @@ const VisitControl = () => {
         {
           key: 1,
           report_title: "Inspections carried out",
-          ...inspectionDataByuser
-
+          ...inspectionDataByuser,
+          report_value: totalInspection
         },
         {
           key: 2,
@@ -359,6 +359,14 @@ const VisitControl = () => {
   }, [
     currentMonth, currentYear, changeStatus
   ])
+
+  const getTotalInspection = (record) => {
+    let total = 0;
+    for (var key in record) {
+      total += parseInt(record[key]) || 0;
+    }
+    return total;
+  }
   const getDate = (value) => {
     return moment(value).format("YYYY-MM-DD")
   }
@@ -619,9 +627,6 @@ const VisitControl = () => {
               dataSource={reportData}
               columns={[...topColumn, ...changedMonth]}
               rowClassName="editable-row"
-              pagination={paginations}
-              onChange={handelDataTableLoad}
-              footer={Footer}
             />
           </Form>
 
