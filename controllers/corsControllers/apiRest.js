@@ -354,7 +354,7 @@ exports.getByParentId = async (Model, req, res) => {
     //  Query the database for a list of all results
     const resultsPromise = Model.find({ ...queryObj, removed: false })
       .skip(skip)
-      .limit(limit)
+      // .limit(limit)
       .sort({ created: 'desc' })
       .populate();
     // Counting the total documents

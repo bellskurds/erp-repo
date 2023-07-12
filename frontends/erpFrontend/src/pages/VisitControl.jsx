@@ -231,6 +231,9 @@ const VisitControl = () => {
       let currentDate = moment(start_date);
       const end = moment(end_date);
       const daysColumns = [];
+
+      let inspectionDataByuser = {};
+
       while (currentDate.isSameOrBefore(end)) {
         const monthLable = currentDate.format("MMMM");
         const day = currentDate.format("DD")
@@ -240,12 +243,13 @@ const VisitControl = () => {
           title: `${day}-${monthLable}`,
           dataIndex: `day_${year}-${month}-${day}`,
         })
+        inspectionDataByuser[`day_${year}-${month}-${day}`] = 0;
         currentDate = currentDate.add(1, 'days');
       };
       setChangedMonth(daysColumns)
 
 
-      const { result: visitDatas } = await request.listById({ entity: "visitControl", jsonData: { by: currentUserId } });
+      const { result: visitDatas } = await request.listById({ entity: "visitControl" });
       setVisitControls(visitDatas);
       const { result: customerStores } = await request.list({ entity: "customerStores" });
       setCustomerStores(customerStores)
@@ -285,10 +289,23 @@ const VisitControl = () => {
       setFilterData(storeData)
       setGlobalData(storeData)
 
-      // fillteredData.map(item => {
+      // I would like to display inspection data by user per day... ------start-----
 
-      // })
-      console.log(fillteredData, 'fillteredDatafillteredData');
+
+      fillteredData.map(item => {
+        const { type, visit_date, status } = item
+        if (status && type === 3) {
+          Object.keys(inspectionDataByuser).map(key => {
+            if (key === `day_${getDate(visit_date)}`) {
+              inspectionDataByuser[`day_${getDate(visit_date)}`]++
+            }
+          })
+        }
+      })
+      console.log(inspectionDataByuser, 'fillteredDatafillteredData');
+
+      // -------------------------------end----------------------------------------
+
 
       setPaginations({ current: 1, pageSize: 10, total: storeData.length })
 
@@ -301,7 +318,9 @@ const VisitControl = () => {
         },
         {
           key: 1,
-          report_title: "Inspections carried out"
+          report_title: "Inspections carried out",
+          ...inspectionDataByuser
+
         },
         {
           key: 2,
