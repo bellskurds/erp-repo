@@ -1,15 +1,12 @@
-import { DashboardLayout, DefaultLayout } from '@/layout';
-import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
-import { Button, Col, DatePicker, Form, Input, InputNumber, Layout, Modal, Popconfirm, Radio, Row, Select, Space, Table, Tag, Typography } from 'antd';
-import Search from 'antd/lib/transfer/search';
+import { DashboardLayout, } from '@/layout';
+import { DeleteOutlined, EditOutlined, } from '@ant-design/icons';
+import { Button, Col, Form, Input, Layout, Modal, Popconfirm, Row, Table, Typography } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
-import CustomModal from 'modules/CustomModal'
 import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
-import { Link } from 'react-router-dom/cjs/react-router-dom';
-import SelectAsync from '@/components/SelectAsync';
 
+const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
 
 const Projects = () => {
@@ -85,16 +82,16 @@ const Projects = () => {
       align: 'center',
       render: (_, record) => {
         return (
+          role === 0 ?
+            <>
+              <Typography.Link onClick={() => editItem(record)}>
+                <EditOutlined style={{ fontSize: "20px" }} />
+              </Typography.Link>
 
-          <>
-            <Typography.Link onClick={() => editItem(record)}>
-              <EditOutlined style={{ fontSize: "20px" }} />
-            </Typography.Link>
-
-            <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-              <DeleteOutlined style={{ fontSize: "20px" }} />
-            </Popconfirm>
-          </>
+              <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+                <DeleteOutlined style={{ fontSize: "20px" }} />
+              </Popconfirm>
+            </> : ''
         )
 
       },

@@ -1,16 +1,14 @@
-import { DashboardLayout, DefaultLayout } from '@/layout';
+import { DashboardLayout, } from '@/layout';
 import { DeleteOutlined, EditOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, Form, Input, InputNumber, Layout, Modal, Popconfirm, Row, Space, Table, Tag, Typography, message } from 'antd';
-import Search from 'antd/lib/transfer/search';
+import { Button, Col, Form, Input, Layout, Modal, Popconfirm, Row, Space, Table, Tag, Typography, message } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import CustomModal from 'modules/CustomModal'
 import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
 import { Link } from 'react-router-dom/cjs/react-router-dom';
 import { request } from '@/request';
-import { selectSearchedItems } from '@/redux/crud/selectors';
 
+const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
 
 
@@ -68,7 +66,6 @@ const Customers = () => {
   }, [searchText]);
 
   const [form] = Form.useForm();
-  const [data, setData] = useState([]);
   const [editingKey, setEditingKey] = useState('');
   const [currentId, setCurrentId] = useState('');
   const [currentItem, setCurrentItem] = useState({});
@@ -128,22 +125,31 @@ const Customers = () => {
       align: 'center',
       render: (_, record) => {
         return (
+          role === 0 ?
+            <>
+              <Typography.Link onClick={() => editItem(record)}>
+                <EditOutlined style={{ fontSize: "20px" }} />
+              </Typography.Link>
 
-          <>
-            <Typography.Link onClick={() => editItem(record)}>
-              <EditOutlined style={{ fontSize: "20px" }} />
-            </Typography.Link>
+              <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+                <DeleteOutlined style={{ fontSize: "20px" }} />
+              </Popconfirm>
+              <Typography.Text>
+                <Link to={`/customer/details/${record._id}`}>
+                  <EyeOutlined style={{ fontSize: "20px" }} />
+                </Link>
+              </Typography.Text>
 
-            <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-              <DeleteOutlined style={{ fontSize: "20px" }} />
-            </Popconfirm>
-            <Typography.Text>
-              <Link to={`/customer/details/${record._id}`}>
-                <EyeOutlined style={{ fontSize: "20px" }} />
-              </Link>
-            </Typography.Text>
+            </> :
+            <>
 
-          </>
+              <Typography.Text>
+                <Link to={`/customer/details/${record._id}`}>
+                  <EyeOutlined style={{ fontSize: "20px" }} />
+                </Link>
+              </Typography.Text>
+
+            </>
         )
 
       },

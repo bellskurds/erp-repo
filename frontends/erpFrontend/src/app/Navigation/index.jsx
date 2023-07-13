@@ -18,6 +18,8 @@ import {
   FundProjectionScreenOutlined,
   ControlOutlined,
 } from '@ant-design/icons';
+import { useSelector } from 'react-redux';
+import { selectAuth } from '@/redux/auth/selectors';
 
 const { Sider } = Layout;
 const { SubMenu } = Menu;
@@ -27,6 +29,7 @@ export default function Navigation() {
   const { isNavMenuClose } = stateApp;
   const { navMenu } = appContextAction;
   const [showLogoApp, setLogoApp] = useState(isNavMenuClose);
+  const { current } = useSelector(selectAuth);
 
   useEffect(() => {
     if (isNavMenuClose) {
@@ -42,7 +45,7 @@ export default function Navigation() {
   const onCollapse = () => {
     navMenu.collapse();
   };
-
+  const { role } = JSON.parse(window.localStorage.auth);
   return (
     <>
       <Sider collapsible collapsed={isNavMenuClose} onCollapse={onCollapse} className="navigation">
@@ -62,74 +65,67 @@ export default function Navigation() {
             <Link to={'/'} />
             Dashboard
           </Menu.Item>
-          <Menu.Item key={'Employee'} icon={<UserOutlined />}>
-            <Link to={'/employee'} />
-            Employee
-          </Menu.Item>
 
-          {/* <Menu.Item key={'Invoice'} icon={<FileTextOutlined />}>
-            <Link to={'/invoice'} />
-            Invoice
-          </Menu.Item> */}
-          {/* <Menu.Item key={'details'} icon={<ProfileOutlined />}>
-            <Link to={'/details'} />
-            Employee Details
-          </Menu.Item> */}
-          <Menu.Item key={'Customer'} icon={<CustomerServiceOutlined />}>
-            <Link to={'/customer'} />
-            Customer
-          </Menu.Item>
-          <Menu.Item key={'PayrollManagement'} icon={<MoneyCollectOutlined />}>
-            <Link to={'/payroll_management'} />
-            Payroll Management
-          </Menu.Item>
 
-          <Menu.Item key={'Projects'} icon={<ProjectOutlined />}>
-            <Link to={'/projects'} />
-            Projects
-          </Menu.Item>
+          {role !== 3
+            &&
+            <>
+              <Menu.Item key={'Employee'} icon={<UserOutlined />}>
+                <Link to={'/employee'} />
+                Employee
+              </Menu.Item>
 
-          <Menu.Item key={'ProjectPayrollManagement'} icon={<FundProjectionScreenOutlined />}>
-            <Link to={'/project_payment_management'} />
-            Project Payment Management
-          </Menu.Item>
+              <Menu.Item key={'Customer'} icon={<CustomerServiceOutlined />}>
+                <Link to={'/customer'} />
+                Customer
+              </Menu.Item>
+              <Menu.Item key={'PayrollManagement'} icon={<MoneyCollectOutlined />}>
+                <Link to={'/payroll_management'} />
+                Payroll Management
+              </Menu.Item>
+
+              <Menu.Item key={'Projects'} icon={<ProjectOutlined />}>
+                <Link to={'/projects'} />
+                Projects
+              </Menu.Item>
+
+              <Menu.Item key={'ProjectPayrollManagement'} icon={<FundProjectionScreenOutlined />}>
+                <Link to={'/project_payment_management'} />
+                Project Payment Management
+              </Menu.Item>
+            </>
+          }
 
           <Menu.Item key={'VisitControl'} icon={<ControlOutlined />}>
             <Link to={'/visit_control'} />
             Visit Control
           </Menu.Item>
+          {
+            role !== 3 &&
 
-          <Menu.Item key={'StoreList'} icon={<ControlOutlined />}>
-            <Link to={'/store'} />
-            Store
-          </Menu.Item>
-          {/* <Menu.Item key={'Quote'} icon={<FileSyncOutlined />}>
-            <Link to={'/quote'} />
-            Quote
-          </Menu.Item>
-          <Menu.Item key={'PaymentInvoice'} icon={<CreditCardOutlined />}>
-            <Link to={'/payment/invoice'} />
-            Payment Invoice
-          </Menu.Item> */}
+            <Menu.Item key={'StoreList'} icon={<ControlOutlined />}>
+              <Link to={'/store'} />
+              Store
+            </Menu.Item>
+          }
+          {
+            role === 0 &&
 
-          {/* <Menu.Item key={'Admin'} icon={<TeamOutlined />}>
-            <Link to={'/admin'} />
-            Admin
-          </Menu.Item> */}
-          <SubMenu key={'Settings'} icon={<SettingOutlined />} title={'Settings'}>
-            <Menu.Item key={'PaymentMode'}>
-              <Link to={'/payment/mode'} />
-              Payment Mode
+            <Menu.Item key={'Admin'} icon={<TeamOutlined />}>
+              <Link to={'/admin'} />
+              Admin
             </Menu.Item>
-            <Menu.Item key={'Role'}>
-              <Link to={'/role'} />
-              Role
-            </Menu.Item>
-            <Menu.Item key={'Ref'}>
-              <Link to={'/ref'} />
-              Reference
-            </Menu.Item>
-          </SubMenu>
+          }
+          {
+            role !== 3 &&
+
+            <SubMenu key={'Settings'} icon={<SettingOutlined />} title={'Settings'}>
+              <Menu.Item key={'Ref'}>
+                <Link to={'/ref'} />
+                Reference
+              </Menu.Item>
+            </SubMenu>
+          }
         </Menu>
       </Sider>
     </>

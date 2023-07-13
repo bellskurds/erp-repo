@@ -1,10 +1,10 @@
 import { crud } from "@/redux/crud/actions";
-import { selectFilteredItemsByParent, selectListItems, selectListsByCustomerContact, selectListsBylistByCustomerContact, selectReadItem } from "@/redux/crud/selectors";
-import { DeleteOutlined, EditOutlined, EyeOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Input, Modal, Popconfirm, Row, Table, Tag, Typography } from "antd";
+import { selectListsByCustomerContact, } from "@/redux/crud/selectors";
+import { DeleteOutlined, EditOutlined, StarFilled, } from "@ant-design/icons";
+import { Button, Col, Form, Input, Modal, Popconfirm, Row, Table, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom/cjs/react-router-dom.min";
+const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
 
 const CustomerContacts = (props) => {
@@ -46,21 +46,21 @@ const CustomerContacts = (props) => {
             align: 'center',
             render: (_, record) => {
                 return (
-
-                    <>
-                        <Typography.Link onClick={() => editItem(record)}>
-                            <EditOutlined style={{ fontSize: "20px" }} />
-                        </Typography.Link>
-
-                        <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-                            <DeleteOutlined style={{ fontSize: "20px" }} />
-                        </Popconfirm>
-                        {!record.primary &&
-                            <Typography.Link onClick={() => setPrimary(record)}>
-                                <StarFilled style={{ fontSize: "20px" }} />
+                    role === 0 ?
+                        <>
+                            <Typography.Link onClick={() => editItem(record)}>
+                                <EditOutlined style={{ fontSize: "20px" }} />
                             </Typography.Link>
-                        }
-                    </>
+
+                            <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+                                <DeleteOutlined style={{ fontSize: "20px" }} />
+                            </Popconfirm>
+                            {!record.primary &&
+                                <Typography.Link onClick={() => setPrimary(record)}>
+                                    <StarFilled style={{ fontSize: "20px" }} />
+                                </Typography.Link>
+                            }
+                        </> : ""
                 )
 
             },

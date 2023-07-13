@@ -27,7 +27,6 @@ function App() {
   // }
 
   const { isLoggedIn } = useSelector(selectAuth);
-
   if (!isLoggedIn) return <Router />;
   else {
     return (

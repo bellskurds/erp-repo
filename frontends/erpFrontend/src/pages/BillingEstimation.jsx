@@ -55,6 +55,11 @@ const BillingEsmitaion = (props) => {
                     }
                 })
             })
+
+            estimations.map((obj, index) => {
+                obj['key'] = index
+            })
+
             setInvoices(estimations)
 
         }
@@ -68,8 +73,6 @@ const BillingEsmitaion = (props) => {
             </Row>
             <Table
                 bordered
-                rowKey={(item) => item._id}
-                key={(item) => item._id}
                 dataSource={invoices || []}
                 columns={Columns}
                 rowClassName="editable-row"

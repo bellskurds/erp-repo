@@ -9,6 +9,7 @@ import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
 import { Link } from 'react-router-dom/cjs/react-router-dom';
 import { request } from '@/request';
+const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
 const customerColumns = [
   {
@@ -156,21 +157,32 @@ const Employees = () => {
       render: (_, record) => {
         return (
 
-          <>
-            <Typography.Link onClick={() => editItem(record)}>
-              <EditOutlined style={{ fontSize: "20px" }} />
-            </Typography.Link>
 
-            <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-              <DeleteOutlined style={{ fontSize: "20px" }} />
-            </Popconfirm>
-            <Typography.Text>
-              <Link to={`/employee/details/${record._id}`}>
-                <EyeOutlined style={{ fontSize: "20px" }} />
-              </Link>
-            </Typography.Text>
+          role !== 0 ?
 
-          </>
+            <>
+              <Typography.Text>
+                <Link to={`/employee/details/${record._id}`}>
+                  <EyeOutlined style={{ fontSize: "20px" }} />
+                </Link>
+              </Typography.Text>
+
+            </>
+            : <>
+              <Typography.Link onClick={() => editItem(record)}>
+                <EditOutlined style={{ fontSize: "20px" }} />
+              </Typography.Link>
+
+              <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+                <DeleteOutlined style={{ fontSize: "20px" }} />
+              </Popconfirm>
+              <Typography.Text>
+                <Link to={`/employee/details/${record._id}`}>
+                  <EyeOutlined style={{ fontSize: "20px" }} />
+                </Link>
+              </Typography.Text>
+
+            </>
         )
 
       },

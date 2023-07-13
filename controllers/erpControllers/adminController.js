@@ -16,7 +16,6 @@ exports.list = async (req, res) => {
     //  Query the database for a list of all results
     const resultsPromise = Admin.find({ removed: false })
       .skip(skip)
-      .limit(limit)
       .sort({ created: 'desc' })
       .populate();
     // Counting the total documents
@@ -127,11 +126,12 @@ exports.photo = async (req, res) => {
         message: 'we found this document by this id: ' + req.params.id,
       });
     }
-  } catch {
+  } catch (err) {
     // Server Error
     return res.status(500).json({
       success: false,
       result: null,
+      err: err,
       message: 'Oops there is an Error',
     });
   }
@@ -237,8 +237,8 @@ exports.create = async (req, res) => {
       },
       message: 'Admin document save correctly',
     });
-  } catch {
-    return res.status(500).json({ success: false, message: 'there is error' });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: 'there is error', err: err });
   }
 };
 

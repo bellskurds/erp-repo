@@ -5,8 +5,8 @@ import { Button, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, R
 import moment from "moment";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom/cjs/react-router-dom.min";
 
+const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
 const Contract = (props) => {
     const entity = 'workContract';
@@ -61,20 +61,20 @@ const Contract = (props) => {
             align: 'center',
             render: (_, record) => {
                 return (
+                    role === 0 ?
+                        <>
+                            <Typography.Link onClick={() => editItem(record)}>
+                                <EditOutlined style={{ fontSize: "20px" }} />
+                            </Typography.Link>
 
-                    <>
-                        <Typography.Link onClick={() => editItem(record)}>
-                            <EditOutlined style={{ fontSize: "20px" }} />
-                        </Typography.Link>
+                            <Popconfirm title="Sure to cancel?" onConfirm={() => updateStatus('canceled', record._id)}>
+                                <CloseCircleOutlined style={{ fontSize: "20px" }} />
+                            </Popconfirm>
+                            <Popconfirm title="Sure to end?" onConfirm={() => updateStatus('terminated', record._id)}>
+                                <CheckOutlined style={{ fontSize: "20px" }} />
+                            </Popconfirm>
 
-                        <Popconfirm title="Sure to cancel?" onConfirm={() => updateStatus('canceled', record._id)}>
-                            <CloseCircleOutlined style={{ fontSize: "20px" }} />
-                        </Popconfirm>
-                        <Popconfirm title="Sure to end?" onConfirm={() => updateStatus('terminated', record._id)}>
-                            <CheckOutlined style={{ fontSize: "20px" }} />
-                        </Popconfirm>
-
-                    </>
+                        </> : ''
                 )
 
             },

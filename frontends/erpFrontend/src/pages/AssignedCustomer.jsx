@@ -167,7 +167,8 @@ const AssignedCustomer = (props) => {
         dispatch(crud.list({ entity }));
     }, []);
     useEffect(() => {
-        const items = Items.items.map(obj => {
+        const items = Items.items.map((obj, index) => {
+            obj['key'] = index
             if (obj.employee && obj.employee._id === currentEmployeeId) {
                 return obj;
             } else {
@@ -232,8 +233,6 @@ const AssignedCustomer = (props) => {
             </Row>
             <Table
                 bordered
-                rowKey={(item) => item._id}
-                key={(item) => item._id}
                 dataSource={items || []}
                 columns={bankColumns}
                 rowClassName="editable-row"

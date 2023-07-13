@@ -33,7 +33,10 @@ const adminSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  role: { type: mongoose.Schema.ObjectId, ref: 'Role', autopopulate: true },
+  role: {
+    type: Number,
+  },
+
   hasCustomPermissions: {
     type: Boolean,
     default: false,

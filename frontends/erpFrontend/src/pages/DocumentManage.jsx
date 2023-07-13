@@ -1,13 +1,12 @@
-import * as XLSX from 'xlsx';
 import { crud } from "@/redux/crud/actions";
-import { selectListsByCustomerStores, selectListsByDocument, selectListsByInvoice, selectListsByRecurrent, } from "@/redux/crud/selectors";
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Typography, Upload, message } from "antd";
+import { selectListsByDocument, } from "@/redux/crud/selectors";
+import { DeleteOutlined } from "@ant-design/icons";
+import { Button, Col, Form, Input, Modal, Popconfirm, Row, Table, } from "antd";
 
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import moment from "moment";
 
+const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
 const DocumentManage = (props) => {
     const entity = 'documentManage';
@@ -49,20 +48,19 @@ const DocumentManage = (props) => {
             align: 'center',
             render: (_, record) => {
                 return (
+                    role === 0 ?
+                        <>
 
-                    <>
-
-                        <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-                            <DeleteOutlined style={{ fontSize: "20px" }} />
-                        </Popconfirm>
-                    </>
+                            <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+                                <DeleteOutlined style={{ fontSize: "20px" }} />
+                            </Popconfirm>
+                        </> : ''
                 )
 
             },
         },
     ];
 
-    const [currentId, setCurrentId] = useState('');
     const [isUpdate, setIsUpdate] = useState(false);
 
     const editModal = () => {
@@ -74,27 +72,6 @@ const DocumentManage = (props) => {
         return new Date(date).toLocaleDateString()
     }
 
-    const editItem = (item) => {
-        if (item) {
-            setIsModal(true);
-            setIsUpdate(true);
-
-            setTaxesStatus(true)
-            setTimeout(() => {
-                setUnlimited(item.unlimited)
-                if (RecurrentRef.current) {
-                    RecurrentRef.current.resetFields();
-                    RecurrentRef.current.setFieldsValue({
-                        amount: item.amount,
-                        details: item.details
-                    });
-                    setTaxesStatus(item.taxes_flag)
-                    setCurrentId(item._id);
-                }
-            }, 200);
-
-        }
-    }
     const deleteItem = (item) => {
         const id = item._id;
         if (id) {
@@ -132,7 +109,6 @@ const DocumentManage = (props) => {
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
     };
-    const [stores, setStores] = useState([]);
     const [documents, setDocuments] = useState([]);
     const { result: Documents } = useSelector(selectListsByDocument);
 
@@ -142,8 +118,6 @@ const DocumentManage = (props) => {
         const jsonData = { parent_id: id }
         dispatch(crud.listByDocument({ entity, jsonData }));
     }, []);
-    const [unlimited, setUnlimited] = useState(false);
-    const [taxesStatus, setTaxesStatus] = useState(false);
     useEffect(() => {
 
         if (Documents.items) {
@@ -152,12 +126,6 @@ const DocumentManage = (props) => {
 
         }
     }, [Documents])
-    const UnlimitedStatus = (e) => {
-        setUnlimited(e.target.checked)
-    }
-    const isTaxes = (e) => {
-        setTaxesStatus(e.target.value)
-    }
 
 
     const handleUpload = (e) => {
@@ -165,24 +133,7 @@ const DocumentManage = (props) => {
 
         const file = e.target.files[0];
         setCurrentFile(file);
-
-        // const id = currentEmployeeId;
-
-        // const formData = new FormData();
-        // formData.append('avatar', file);
-        // // formData.append('id', parent_id);
-        // dispatch(crud.upload({ entity, jsonData: formData }));
-        // message.info(`Uploading ${file.name}...`);
-        // setTimeout(() => {
-        //     dispatch(crud.read({ entity, id }));
-        // }, 500)
     };
-    const uploadButton = (
-        <div>
-            <PlusOutlined />
-            <div style={{ marginTop: 8 }}>Upload</div>
-        </div>
-    );
     return (
         <div className="whiteBox shadow">
             <Modal title="File" visible={isModal} onCancel={handleModal} footer={null} width={800}>

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
 
+const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
 const BankAccount = (props) => {
     const entity = 'bankAccount';
@@ -43,17 +44,18 @@ const BankAccount = (props) => {
             align: 'center',
             render: (_, record) => {
                 return (
+                    role === 0 ?
 
-                    <>
-                        <Typography.Link onClick={() => editItem(record)}>
-                            <EditOutlined style={{ fontSize: "20px" }} />
-                        </Typography.Link>
+                        <>
+                            <Typography.Link onClick={() => editItem(record)}>
+                                <EditOutlined style={{ fontSize: "20px" }} />
+                            </Typography.Link>
 
-                        <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-                            <DeleteOutlined style={{ fontSize: "20px" }} />
-                        </Popconfirm>
+                            <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+                                <DeleteOutlined style={{ fontSize: "20px" }} />
+                            </Popconfirm>
 
-                    </>
+                        </> : ""
                 )
 
             },

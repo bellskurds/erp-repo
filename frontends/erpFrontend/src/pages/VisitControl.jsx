@@ -45,7 +45,7 @@ const VisitControl = () => {
     'Products',
     'Inspection',
   ]
-  const { id: currentUserId } = JSON.parse(localStorage.auth)
+  const { id: currentUserId, role } = JSON.parse(localStorage.auth)
   const formattedDateFunc = (date) => {
     return moment(date).format("MM/DD/YYYY")
   }
@@ -440,6 +440,7 @@ const VisitControl = () => {
       dataIndex: ['by', 'name']
     }
     ,
+
     {
       title: "Action",
       dataIndex: 'operation',
@@ -451,14 +452,16 @@ const VisitControl = () => {
           status === 0 ?
             'Canceled'
             :
-            <>
-              <Typography.Text>
-                <Popconfirm title="Sure to cancel?" onConfirm={() => updateHistory(record)} >
-                  <StopOutlined style={{ fontSize: "20px" }} />
-                </Popconfirm>
-              </Typography.Text>
+            role === 0 ?
+              <>
+                <Typography.Text>
+                  <Popconfirm title="Sure to cancel?" onConfirm={() => updateHistory(record)} >
+                    <StopOutlined style={{ fontSize: "20px" }} />
+                  </Popconfirm>
+                </Typography.Text>
 
-            </>
+              </>
+              : ""
         )
 
       },

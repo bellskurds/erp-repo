@@ -30,8 +30,9 @@ import React from 'react';
 //   const IconTag = components[name || "Default"] || SettingOutlined;
 //   return <IconTag />;
 // };
-
-export const routesConfig = [
+const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
+console.log(role, 33333333333333333333333333333);
+var routes = [
   {
     path: '/',
     component: 'Dashboard',
@@ -112,4 +113,8 @@ export const routesConfig = [
     path: '/ref',
     component: 'Reference',
   },
-];
+]
+
+
+
+export const routesConfig = routes

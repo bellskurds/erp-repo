@@ -5,6 +5,7 @@ import PrivateRoute from './PrivateRoute';
 import PublicRoute from './PublicRoute';
 import PageLoader from '@/components/PageLoader';
 import { routesConfig } from './RoutesConfig';
+import history from '@/utils/history';
 
 const Logout = lazy(() => import(/*webpackChunkName:'LogoutPage'*/ '@/pages/Logout'));
 const NotFound = lazy(() => import(/*webpackChunkName:'NotFoundPage'*/ '@/pages/NotFound'));
@@ -28,6 +29,11 @@ const SubMenuRouter = ({ subMenuRouter }) => {
 
 export default function AppRouter() {
   const location = useLocation();
+  const { isLoggedIn } = window.localStorage.getItem("auth") ? JSON.parse(window.localStorage.getItem("auth")) : { isLoggedIn: false };
+  console.log(isLoggedIn, 'isLoginisLoginisLogin');
+  if (!isLoggedIn) {
+    window.location.href = window.location.origin
+  }
   return (
     <Suspense fallback={<PageLoader />}>
       <AnimatePresence exitBeforeEnter initial={false}>

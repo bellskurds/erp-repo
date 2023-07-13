@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import SelectAsync from "@/components/SelectAsync";
 import moment from "moment";
 
+const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
 const AssignedEmployee = (props) => {
     const entity = 'assignedEmployee';
@@ -69,16 +70,16 @@ const AssignedEmployee = (props) => {
             align: 'center',
             render: (_, record) => {
                 return (
+                    role === 0 ?
+                        <>
+                            <Typography.Link onClick={() => editItem(record)}>
+                                <EditOutlined style={{ fontSize: "20px" }} />
+                            </Typography.Link>
 
-                    <>
-                        <Typography.Link onClick={() => editItem(record)}>
-                            <EditOutlined style={{ fontSize: "20px" }} />
-                        </Typography.Link>
-
-                        <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-                            <DeleteOutlined style={{ fontSize: "20px" }} />
-                        </Popconfirm>
-                    </>
+                            <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+                                <DeleteOutlined style={{ fontSize: "20px" }} />
+                            </Popconfirm>
+                        </> : ''
                 )
 
             },

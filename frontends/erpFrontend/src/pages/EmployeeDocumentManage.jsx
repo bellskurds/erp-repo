@@ -1,16 +1,14 @@
-import * as XLSX from 'xlsx';
 import { crud } from "@/redux/crud/actions";
-import { selectListsByCustomerStores, selectListsByDocument, selectListsByEDocument, selectListsByInvoice, selectListsByRecurrent, } from "@/redux/crud/selectors";
+import { selectListsByEDocument, } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { Avatar, Button, Checkbox, Col, DatePicker, Form, Image, Input, InputNumber, Modal, Popconfirm, Radio, Row, Select, Table, Typography, Upload, message } from "antd";
+import { Avatar, Button, Col, Form, Image, Input, Modal, Popconfirm, Row, Table, Typography, } from "antd";
 
 
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import moment from "moment";
 import { Avatar_url } from '@/config/serverApiConfig';
-import { request } from '@/request';
 
+const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
 const EmployeeDocumentManage = (props) => {
     const entity = 'employeeDocument';
@@ -57,15 +55,15 @@ const EmployeeDocumentManage = (props) => {
             align: 'center',
             render: (_, record) => {
                 return (
-
-                    <>
-                        <Typography.Link onClick={() => editItem(record)}>
-                            <EditOutlined style={{ fontSize: "20px" }} />
-                        </Typography.Link>
-                        <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-                            <DeleteOutlined style={{ fontSize: "20px" }} />
-                        </Popconfirm>
-                    </>
+                    role === 0 ?
+                        <>
+                            <Typography.Link onClick={() => editItem(record)}>
+                                <EditOutlined style={{ fontSize: "20px" }} />
+                            </Typography.Link>
+                            <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+                                <DeleteOutlined style={{ fontSize: "20px" }} />
+                            </Popconfirm>
+                        </> : ''
                 )
 
             },

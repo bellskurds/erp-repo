@@ -31,89 +31,11 @@ import InvoiceHistory from './InvoiceHistory';
 import BillingEsmitaion from './BillingEstimation';
 import { Avatar_url } from '@/config/serverApiConfig';
 import DocumentManage from './DocumentManage';
+const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
 
 export default function Details() {
 
-
-  const customerColumns = [
-    {
-      title: 'Customer',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Store',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Hours',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Hr/Week',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Sal/Hr',
-      dataIndex: ['client', 'company'],
-    },
-    {
-      title: 'Type',
-      dataIndex: ['client', 'company'],
-    },
-  ];
-  const scheduleColumns = [
-    {
-      title: 'Hours',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Monday',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Tuesday',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Wednesday',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Tursday',
-      dataIndex: ['client', 'company'],
-    },
-    {
-      title: 'Friday',
-      dataIndex: ['client', 'company'],
-    },
-    {
-      title: 'Saturday',
-      dataIndex: ['client', 'company'],
-    },
-    {
-      title: 'Sunday',
-      dataIndex: ['client', 'company'],
-    },
-  ];
-  const paymentColumns = [
-    {
-      title: 'Date',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Fortnight',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Total Amount',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Net Amount',
-      dataIndex: 'number',
-    },
-  ];
   const genderOptions = [
     {
       label: "Men", value: 1,
@@ -156,25 +78,6 @@ export default function Details() {
   const currentCustomerId = useParams().id;
 
   const entity = "client";
-  const onFinish = (values) => {
-    setName(values.name);
-    setEmail(values.email);
-    setPhone(values.phone);
-    setAvatar(values.avatar);
-    message.success('Profile updated successfully!');
-  };
-  const beforeUpload = (file) => {
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-    if (!isJpgOrPng) {
-      message.error('You can only upload JPG/PNG file!');
-    }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error('Image must be smaller than 2MB!');
-    }
-
-    return isJpgOrPng && isLt2M;
-  };
 
 
 
@@ -262,36 +165,15 @@ export default function Details() {
     dispatch(crud.read({ entity, id }));
   }, [entity, id]);
 
-  const [previewVisible, setPreviewVisible] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
   const [fileList, setFileList] = useState([]);
 
-  const handlePreview = async file => {
-    if (!file.url && !file.preview) {
-      file.preview = await getBase64(file.originFileObj);
-    }
-
-    setPreviewImage(file.url || file.preview);
-    setPreviewVisible(true);
-  };
-  const handleChange = ({ fileList }) => setFileList(fileList);
   const uploadButton = (
     <div>
       <PlusOutlined />
       <div style={{ marginTop: 8 }}>Upload</div>
     </div>
   );
-  function getBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
-    });
-  }
-  const handlePreviewImageCancel = () => {
-    setPreviewVisible(false);
-  }
+
   const handleUpload = (file) => {
 
     const formData = new FormData();
@@ -472,11 +354,15 @@ export default function Details() {
         <Tabs.TabPane tab="Documents" key="2">
           <DocumentManage parentId={currentCustomerId} />
         </Tabs.TabPane>
-        <Tabs.TabPane tab="Billing" key="3">
-          <RecurrentBilling parentId={currentCustomerId} />
-          <InvoiceHistory parentId={currentCustomerId} />
-          <BillingEsmitaion parentId={currentCustomerId} />
-        </Tabs.TabPane>
+
+        {role !== 2 &&
+
+          <Tabs.TabPane tab="Billing" key="3">
+            <RecurrentBilling parentId={currentCustomerId} />
+            <InvoiceHistory parentId={currentCustomerId} />
+            <BillingEsmitaion parentId={currentCustomerId} />
+          </Tabs.TabPane>
+        }
 
       </Tabs>
 

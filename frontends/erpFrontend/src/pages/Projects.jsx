@@ -1,18 +1,17 @@
-import { DashboardLayout, DefaultLayout } from '@/layout';
-import { DeleteOutlined, EditOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, DatePicker, Form, Input, InputNumber, Layout, Modal, Popconfirm, Radio, Row, Select, Space, Table, Tag, Typography } from 'antd';
-import Search from 'antd/lib/transfer/search';
+import { DashboardLayout, } from '@/layout';
+import { DeleteOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Col, DatePicker, Form, Input, Layout, Modal, Popconfirm, Row, Select, Table, Typography } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
-import { Link } from 'react-router-dom/cjs/react-router-dom';
 import { request } from '@/request';
 import moment from 'moment';
 import SelectAsync from '@/components/SelectAsync';
 import { useContext } from 'react';
 const EditableContext = React.createContext(null);
+const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
 const statusLabel = ["", "Pending", "Progress", "Completed"]
 const statusArr = [
@@ -26,7 +25,6 @@ const statusArr1 = [
   { value: 2, label: "Progress" },
   { value: 3, label: "Completed" },
 ];
-const searchFields = "project_id"
 const EditableRow = ({ index, ...props }) => {
   const [form] = Form.useForm();
   return (
@@ -274,27 +272,6 @@ const Projects = () => {
         );
       }
     },
-    // {
-    //   title: 'Project Id',
-    //   dataIndex: 'project_id',
-    //   width: '15%',
-    // },
-    // {
-    //   title: 'Invoice ID',
-    //   dataIndex: 'invoice_id',
-    //   width: '15%',
-    // },
-
-    // {
-    //   title: 'Cost',
-    //   dataIndex: 'cost',
-    //   width: '15%',
-    //   render: (text) => {
-    //     return (
-    //       `$${text}`
-    //     );
-    //   }
-    // },
     {
       title: 'Status',
       dataIndex: 'status',
@@ -310,16 +287,16 @@ const Projects = () => {
       align: 'center',
       render: (_, record) => {
         return (
+          role === 0 ?
+            <>
+              <Typography.Link onClick={() => editItem(record)}>
+                <EditOutlined style={{ fontSize: "20px" }} />
+              </Typography.Link>
 
-          <>
-            <Typography.Link onClick={() => editItem(record)}>
-              <EditOutlined style={{ fontSize: "20px" }} />
-            </Typography.Link>
-
-            <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-              <DeleteOutlined style={{ fontSize: "20px" }} />
-            </Popconfirm>
-          </>
+              <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+                <DeleteOutlined style={{ fontSize: "20px" }} />
+              </Popconfirm>
+            </> : ''
         )
 
       },
