@@ -22,6 +22,19 @@ const getBusinessDays = (year, month) => {
 
   return businessDays;
 }
+const getWorkDays = (year, month, days) => {
+  const startDate = 1;
+  const endDate = new Date(year, month, days).getDate();
+  let businessDays = 0;
+  for (let date = startDate; date <= endDate; date++) {
+    if (new Date(year, month - 1, date).getDay() !== 0) {
+      businessDays++;
+    }
+  }
+  console.log(year, 'year,month', month, businessDays);
+
+  return businessDays;
+}
 
 
 const VisitControl = () => {
@@ -233,6 +246,7 @@ const VisitControl = () => {
       const daysColumns = [];
 
       let inspectionDataByuser = {};
+      let visitsDataByuser = {};
 
       while (currentDate.isSameOrBefore(end)) {
         const monthLable = currentDate.format("MMMM");
@@ -244,23 +258,29 @@ const VisitControl = () => {
           dataIndex: `day_${year}-${month}-${day}`,
         })
         inspectionDataByuser[`day_${year}-${month}-${day}`] = 0;
+        visitsDataByuser[`day_${year}-${month}-${day}`] = 0;
         currentDate = currentDate.add(1, 'days');
       };
       setChangedMonth(daysColumns)
 
-
+      var totalInspectionOnStores = 0;
+      var totalMonthlyDeliver = 0;
       const { result: visitDatas } = await request.listById({ entity: "visitControl" });
       setVisitControls(visitDatas);
       const { result: customerStores } = await request.list({ entity: "customerStores" });
       setCustomerStores(customerStores)
       const storeData = customerStores.map(obj => {
+
+        if (obj.insumos) {
+          totalMonthlyDeliver += parseInt(obj.deliver) || 0
+        }
+        totalInspectionOnStores += parseInt(obj.inspection) || 0
         const { parent_id, ...otherObj } = obj;
         return {
           store: otherObj,
           customer: parent_id
         }
       })
-
       // console.log(storeData, 'customerStores');
 
       const fillteredData = visitDatas.filter(({ visit_date }) =>
@@ -291,7 +311,7 @@ const VisitControl = () => {
 
       // I would like to display inspection data by user per day... ------start-----
 
-
+      const today = new Date().getDate()
       fillteredData.map(item => {
         const { type, visit_date, status } = item
         if (status && type === 3) {
@@ -300,10 +320,20 @@ const VisitControl = () => {
               inspectionDataByuser[`day_${getDate(visit_date)}`]++
             }
           })
+        } else if (status && type === 1) {
+          Object.keys(visitsDataByuser).map(key => {
+            if (key === `day_${getDate(visit_date)}`) {
+              visitsDataByuser[`day_${getDate(visit_date)}`]++
+            }
+          })
         }
       })
       const totalInspection = getTotalInspection(inspectionDataByuser)
+      const totalVisits = getTotalInspection(visitsDataByuser)
+      const businessDays = getBusinessDays(currentYear, currentMonth)
+      const workDays = getWorkDays(currentYear, currentMonth, today)
 
+      console.log(storeData, 'workDays');
       // -------------------------------end----------------------------------------
 
 
@@ -313,43 +343,49 @@ const VisitControl = () => {
       const initReportData = [
         {
           key: 0,
-          report_title: "Business days",
-          report_value: getBusinessDays(currentYear, currentMonth),
+          report_title: "Días hábiles",
+          report_value: businessDays
         },
         {
           key: 1,
-          report_title: "Inspections carried out",
+          report_title: "INSPECCIONES REALIZADAS",
           ...inspectionDataByuser,
           report_value: totalInspection
         },
         {
           key: 2,
-          report_title: "Projection to date"
+          report_title: "Proyección a la Fecha",
+          report_value: parseInt(totalInspection / businessDays * workDays)
         },
         {
           key: 3,
-          report_title: "month projection"
+          report_title: "Proyección del Mes",
+          report_value: totalInspectionOnStores
         },
 
         {
           key: 4,
-          report_title: "Supplies delivered"
+          report_title: "INSUMOS ENTREGADOS"
         },
         {
           key: 5,
-          report_title: "Projection to date"
+          report_title: "Proyección a la Fecha",
+          report_value: parseInt(totalMonthlyDeliver / businessDays * workDays)
         },
         {
           key: 6,
-          report_title: "month projection"
+          report_title: "Proyección del Mes",
+          report_value: parseInt(totalMonthlyDeliver)
         },
         {
           key: 7,
-          report_title: "Visits made"
+          report_title: "Visitas Realizadas",
+          ...visitsDataByuser,
+          report_value: parseInt(totalVisits)
         },
         {
           key: 8,
-          report_title: "Delivered projects"
+          report_title: "Proyectos Entregados"
         },
       ]
       setReportData(initReportData);
