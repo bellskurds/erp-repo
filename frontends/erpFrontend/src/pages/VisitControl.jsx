@@ -281,7 +281,6 @@ const VisitControl = () => {
           customer: parent_id
         }
       })
-      // console.log(storeData, 'customerStores');
 
       const fillteredData = visitDatas.filter(({ visit_date }) =>
       (
@@ -333,7 +332,6 @@ const VisitControl = () => {
       const businessDays = getBusinessDays(currentYear, currentMonth)
       const workDays = getWorkDays(currentYear, currentMonth, today)
 
-      console.log(storeData, 'workDays');
       // -------------------------------end----------------------------------------
 
 
