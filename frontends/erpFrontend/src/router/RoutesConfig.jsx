@@ -32,6 +32,8 @@ import React from 'react';
 // };
 const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 console.log(role, 33333333333333333333333333333);
+
+
 var routes = [
   {
     path: '/',
@@ -118,3 +120,4 @@ var routes = [
 
 
 export const routesConfig = routes
+export const Role = role;

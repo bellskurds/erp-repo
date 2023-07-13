@@ -12,7 +12,7 @@ import SelectAsync from '@/components/SelectAsync';
 import { useContext } from 'react';
 const EditableContext = React.createContext(null);
 const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
-
+console.log(role, '343434');
 const statusLabel = ["", "Pending", "Progress", "Completed"]
 const statusArr = [
   { value: 0, label: "all" },

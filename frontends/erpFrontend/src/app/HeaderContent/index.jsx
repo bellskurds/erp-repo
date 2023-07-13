@@ -27,7 +27,7 @@ export default function HeaderContent() {
         </div>
       </div>
       <div className="line"></div>
-      <div>
+      {/* <div>
         <Menu>
           <SubMenu key="sub1" icon={<MailOutlined />} title="Navigation One">
             <Menu.ItemGroup key="g1" title="Item 1">
@@ -54,7 +54,7 @@ export default function HeaderContent() {
             <Menu.Item key="12">Option 12</Menu.Item>
           </SubMenu>
         </Menu>
-      </div>
+      </div> */}
       <div className="line"></div>
       <div>
         <Menu>
