@@ -54,6 +54,7 @@ const Admin = () => {
   const dispatch = useDispatch();
   const formRef = useRef(null);
   const { onFetch, result, isLoading, isSuccess } = useOnFetch();
+  const [paginations, setPaginations] = useState([])
 
   const entity = 'admin'
   const dataTableColumns = [
@@ -131,6 +132,7 @@ const Admin = () => {
   }
   const { result: listResult } = useSelector(selectListItems);
 
+  const { pagination, items } = listResult;
 
   const updatePassword = (item) => {
     const password = prompt("please enter new password");
@@ -153,23 +155,39 @@ const Admin = () => {
       dispatch(crud.list({ entity }));
     }, 1000)
   }
-  const { items } = listResult;
   useEffect(() => {
     const result = items.map((obj, index) => (
       { ...obj, key: index }
     ))
 
-    setFilterData(result)
-    setUserData(result)
+
+    if (result.length) {
+      setFilterData(result)
+      setUserData(result)
+      setPaginations(pagination)
+    }
+
   }, [
-    items
+    items, pagination
   ])
 
   useEffect(() => {
     dispatch(crud.resetState());
     dispatch(crud.list({ entity }));
   }, [])
+  useEffect(() => {
+    const filteredData = userData.filter((record) => {
 
+      return (
+        (!searchText || record['name'].toString().toLowerCase().includes(searchText.toLowerCase()) ||
+          record['surname'].toString().toLowerCase().includes(searchText.toLowerCase()) ||
+          record['email'].toString().toLowerCase().includes(searchText.toLowerCase()))
+      );
+
+    })
+    setFilterData(filteredData);
+    setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
+  }, [searchText])
   const onFinishFailed = () => { }
   return (
     <DashboardLayout>
@@ -308,6 +326,8 @@ const Admin = () => {
           dataSource={filterData || []}
           columns={dataTableColumns}
           rowClassName="editable-row"
+          pagination={paginations}
+
         />
       </Layout>
     </DashboardLayout>

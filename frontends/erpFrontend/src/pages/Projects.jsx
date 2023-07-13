@@ -198,7 +198,6 @@ const Projects = () => {
     const end = moment(date[1]);
     return `${start.format("MMMM")}${start.date()}(${start.year()}) - ${end.format("MMMM")}${end.date()}(${end.year()})`
   }
-  const typeArr = ["", "Residential", "Commercial"]
   const columns = [
     {
       title: 'Customer',

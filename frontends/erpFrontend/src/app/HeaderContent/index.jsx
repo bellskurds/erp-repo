@@ -4,8 +4,6 @@ import { Avatar, Menu, Dropdown } from 'antd';
 
 import {
   AppstoreOutlined,
-  SettingOutlined,
-  MailOutlined,
   LogoutOutlined,
   BellOutlined,
 } from '@ant-design/icons';
