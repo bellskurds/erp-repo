@@ -245,9 +245,12 @@ const VisitControl = () => {
       const end = moment(end_date);
       const daysColumns = [];
 
-      let inspectionDataByuser = {};
-      let visitsDataByuser = {};
-
+      let inspectionPerDate = {};
+      let inspectionPerDate_ = {};
+      let visitPerDate = {};
+      let visitPerDate_ = {};
+      var productPerDate = {};
+      var productPerDate_ = {};
       while (currentDate.isSameOrBefore(end)) {
         const monthLable = currentDate.format("MMMM");
         const day = currentDate.format("DD")
@@ -257,8 +260,12 @@ const VisitControl = () => {
           title: `${day}-${monthLable}`,
           dataIndex: `day_${year}-${month}-${day}`,
         })
-        inspectionDataByuser[`day_${year}-${month}-${day}`] = 0;
-        visitsDataByuser[`day_${year}-${month}-${day}`] = 0;
+        inspectionPerDate[`day_${year}-${month}-${day}`] = 0;
+        inspectionPerDate_[`day_${year}-${month}-${day}`] = 0;
+        visitPerDate[`day_${year}-${month}-${day}`] = 0;
+        visitPerDate_[`day_${year}-${month}-${day}`] = 0;
+        productPerDate[`day_${year}-${month}-${day}`] = 0;
+        productPerDate_[`day_${year}-${month}-${day}`] = 0;
         currentDate = currentDate.add(1, 'days');
       };
       setChangedMonth(daysColumns)
@@ -314,24 +321,40 @@ const VisitControl = () => {
       fillteredData.map(item => {
         const { type, visit_date, status } = item
         if (status && type === 3) {
-          Object.keys(inspectionDataByuser).map(key => {
+          Object.keys(inspectionPerDate).map(key => {
             if (key === `day_${getDate(visit_date)}`) {
-              inspectionDataByuser[`day_${getDate(visit_date)}`]++
+              inspectionPerDate[`day_${getDate(visit_date)}`]++
             }
           })
         } else if (status && type === 1) {
-          Object.keys(visitsDataByuser).map(key => {
+          Object.keys(visitPerDate).map(key => {
             if (key === `day_${getDate(visit_date)}`) {
-              visitsDataByuser[`day_${getDate(visit_date)}`]++
+              visitPerDate[`day_${getDate(visit_date)}`]++
+            }
+          })
+        }
+        else if (status && type === 2) {
+          Object.keys(productPerDate).map(key => {
+            if (key === `day_${getDate(visit_date)}`) {
+              productPerDate[`day_${getDate(visit_date)}`]++
             }
           })
         }
       })
-      const totalInspection = getTotalInspection(inspectionDataByuser)
-      const totalVisits = getTotalInspection(visitsDataByuser)
+      const totalInspection = getTotalInspection(inspectionPerDate)
+      const totalVisits = getTotalInspection(visitPerDate)
+      const totalProducts = getTotalInspection(productPerDate)
       const businessDays = getBusinessDays(currentYear, currentMonth)
       const workDays = getWorkDays(currentYear, currentMonth, today)
-
+      for (var key in inspectionPerDate_) {
+        inspectionPerDate_[key] = parseInt(totalInspection / businessDays)
+      }
+      for (var key in productPerDate_) {
+        productPerDate_[key] = parseInt(totalProducts / businessDays)
+      }
+      for (var key in visitPerDate_) {
+        visitPerDate_[key] = parseInt(totalVisits / businessDays)
+      }
       // -------------------------------end----------------------------------------
 
 
@@ -347,13 +370,14 @@ const VisitControl = () => {
         {
           key: 1,
           report_title: "INSPECCIONES REALIZADAS",
-          ...inspectionDataByuser,
+          ...inspectionPerDate,
           report_value: totalInspection
         },
         {
           key: 2,
           report_title: "Proyección a la Fecha",
-          report_value: parseInt(totalInspection / businessDays * workDays)
+          report_value: parseInt(totalInspection / businessDays * workDays),
+          ...inspectionPerDate_
         },
         {
           key: 3,
@@ -363,12 +387,15 @@ const VisitControl = () => {
 
         {
           key: 4,
-          report_title: "INSUMOS ENTREGADOS"
+          report_title: "INSUMOS ENTREGADOS",
+          report_value: totalProducts,
+          ...productPerDate
         },
         {
           key: 5,
           report_title: "Proyección a la Fecha",
-          report_value: parseInt(totalMonthlyDeliver / businessDays * workDays)
+          report_value: parseInt(totalMonthlyDeliver / businessDays * workDays),
+          ...productPerDate_
         },
         {
           key: 6,
@@ -378,7 +405,7 @@ const VisitControl = () => {
         {
           key: 7,
           report_title: "Visitas Realizadas",
-          ...visitsDataByuser,
+          ...visitPerDate,
           report_value: parseInt(totalVisits)
         },
         {
