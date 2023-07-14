@@ -830,7 +830,7 @@ const VisitControl = () => {
                       pagination={[{ pageSize: 20 }]}
                       columns={[
                         {
-                          title: "Item Label",
+                          title: "Item-Label",
                           dataIndex: "item_label",
                           key: "item_label"
                         },
