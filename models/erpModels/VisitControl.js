@@ -30,6 +30,18 @@ const visitControlSchema = new mongoose.Schema({
   visit_date: {
     type: String,
   },
+  inspection_officer: {
+    type: String,
+  },
+  customer_perception: {
+    type: String,
+  },
+  person_acknowledging_receipt: {
+    type: String,
+  },
+  inspection_details: {
+    type: String
+  },
   type: {
     type: Number,
   },

@@ -1,5 +1,5 @@
 import { DashboardLayout, } from '@/layout';
-import { LeftOutlined, RightOutlined, SafetyOutlined, SearchOutlined, SkinOutlined, StopOutlined, TeamOutlined } from '@ant-design/icons';
+import { EyeOutlined, LeftOutlined, RightOutlined, SafetyOutlined, SearchOutlined, SkinOutlined, StopOutlined, TeamOutlined } from '@ant-design/icons';
 import { Button, Col, DatePicker, Form, Input, Layout, Modal, Popconfirm, Radio, Row, Select, Table, Typography, message } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -8,6 +8,7 @@ import { crud } from '@/redux/crud/actions';
 import { request } from '@/request';
 import moment from 'moment';
 import SelectAsync from '@/components/SelectAsync';
+import Checkbox from 'antd/lib/checkbox/Checkbox';
 
 const getBusinessDays = (year, month) => {
   const startDate = 1;
@@ -40,6 +41,7 @@ const getWorkDays = (year, month, days) => {
 const VisitControl = () => {
   const entity = "visitControl"
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isInspectionModal, setIsInspectionModal] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [filterData, setFilterData] = useState([]);
   const [isUpdate, setIsUpdate] = useState(false);
@@ -87,6 +89,102 @@ const VisitControl = () => {
   const [isHistory, setIsHistory] = useState(false);
   const [historyData, setHistoryData] = useState([])
   const [reportData, setReportData] = useState([]);
+  const [typeValue, setTypeValue] = useState();
+  const dataSource = [
+    {
+      item_label: "Limpieza general de instalaciones",
+      cumple: false,
+      increase_quality: false
+      , key: 0
+    },
+    {
+      item_label: "Limpieza de pisos",
+      cumple: false,
+      increase_quality: false
+      , key: 1
+    },
+    {
+      item_label: "Limpieza de superficies de vidrio",
+      cumple: false,
+      increase_quality: false
+      , key: 2
+    },
+    {
+      item_label: "Limpieza de perfiles",
+      cumple: false,
+      increase_quality: false
+      , key: 3
+    },
+    {
+      item_label: "Limpieza y olor de baños",
+      cumple: false,
+      increase_quality: false
+      , key: 4
+    },
+    {
+      item_label: "Limpieza externa de mobiliario",
+      cumple: false,
+      increase_quality: false
+      , key: 5
+    },
+    {
+      item_label: "Limpieza interna de mobiliario",
+      cumple: false,
+      increase_quality: false
+      , key: 6
+    },
+    {
+      item_label: "Limpieza de telarañas en techos",
+      cumple: false,
+      increase_quality: false
+      , key: 7
+    },
+    {
+      item_label: "Limpieza de elementos en altura",
+      cumple: false,
+      increase_quality: false
+      , key: 8
+    },
+    {
+      item_label: "Correcto manejo de desechos",
+      cumple: false,
+      increase_quality: false
+      , key: 9
+    },
+    {
+      item_label: "Colocacion de insumos higienicos",
+      cumple: false,
+      increase_quality: false
+      , key: 10
+    },
+    {
+      item_label: "Colocacion de insumos de limpieza",
+      cumple: false,
+      increase_quality: false
+      , key: 11
+    },
+    {
+      item_label: "Suministro de insumos de limpieza",
+      cumple: false,
+      increase_quality: false
+      , key: 12
+    },
+    {
+      item_label: "Estado de los materiales de limpieza",
+      cumple: false,
+      increase_quality: false
+      , key: 13
+    },
+    {
+      item_label: "Uso correcto del uniforme",
+      cumple: false,
+      increase_quality: false
+      , key: 14
+    },
+
+  ]
+
+  const [data, setData] = useState(dataSource);
   const editItem = (item) => {
     if (item) {
       const { customer, store } = item
@@ -180,6 +278,7 @@ const VisitControl = () => {
       const id = currentId;
       dispatch(crud.update({ entity, id, jsonData: values }));
     } else {
+      values["inspection_details"] = JSON.stringify(data)
       // const { result } = await request.create({ entity, jsonData: values });
       dispatch(crud.create({ entity, jsonData: values }));
     }
@@ -217,6 +316,9 @@ const VisitControl = () => {
   }, [filterData, searchText]);
   const closeModal = () => {
     setIsHistory(!isHistory);
+  }
+  const closeInspectionModal = () => {
+    setIsInspectionModal(!isInspectionModal);
   }
   const prevData = () => {
     if (currentMonth === 1) {
@@ -508,19 +610,22 @@ const VisitControl = () => {
       width: "10%",
       align: 'center',
       render: (_, record) => {
-        const { status } = record;
+        const { status, type } = record;
         return (
           status === 0 ?
             'Canceled'
             :
             role === 0 ?
               <>
-                <Typography.Text>
-                  <Popconfirm title="Sure to cancel?" onConfirm={() => updateHistory(record)} >
-                    <StopOutlined style={{ fontSize: "20px" }} />
-                  </Popconfirm>
-                </Typography.Text>
+                <Popconfirm title="Sure to cancel?" onConfirm={() => updateHistory(record)} >
+                  <StopOutlined style={{ fontSize: "20px" }} />
+                </Popconfirm>
+                {type === 3 &&
 
+                  <Typography.Text onClick={() => showInspectionForm(record)}>
+                    <EyeOutlined style={{ fontSize: "20px" }} />
+                  </Typography.Text>
+                }
               </>
               : ""
         )
@@ -529,11 +634,46 @@ const VisitControl = () => {
     }
   ]
 
+  useEffect(() => {
+    console.log(typeValue, 'typeValuetypeValue');
+  }, [typeValue]);
+
+  const [inspectionOfficer, setInspectionOfficer] = useState();
+  const [personAcknowledgingReceipt, setPersonAcknowledgingReceipt] = useState();
+  const [customerPerception, setCustomerPerception] = useState();
+
+  const showInspectionForm = (record) => {
+    const { inspection_details, inspection_officer, person_acknowledging_receipt, customer_perception } = record;
+    if (inspection_details)
+      setData(JSON.parse(inspection_details || "[]"));
+    else
+      setData(dataSource)
+
+    setInspectionOfficer(inspection_officer || '');
+    setPersonAcknowledgingReceipt(person_acknowledging_receipt || '');
+    setCustomerPerception(customer_perception || '');
+
+    setIsInspectionModal(true)
+
+  }
+  const handleCheckChange = (key, column, checked) => {
+    const newData = [...data];
+    const target = newData.find(item => item.key === key);
+    const index = newData.findIndex(item => item.key === key);
+    if (target) {
+      target[column] = checked
+      newData[index] = target;
+      setData(newData);
+    }
+  };
+
+
+
   return (
 
     <DashboardLayout>
       <Layout style={{ minHeight: '100vh' }}>
-        <Modal title="Create Form" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null} width={500}>
+        <Modal title="Create Form" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null} width={1000}>
           <>
             <Form
               ref={formRef}
@@ -554,7 +694,7 @@ const VisitControl = () => {
 
               <Row gutter={24}>
 
-                <Col span={24}>
+                <Col span={typeValue === 3 ? 12 : 24}>
                   <Form.Item
                     name="customer"
                     label="Customer"
@@ -613,6 +753,7 @@ const VisitControl = () => {
                           value: 3,
                           label: "Inspection"
                         }]}
+                      onChange={(e) => setTypeValue(e.target.value)}
                     />
                   </Form.Item>
                   <Form.Item
@@ -626,7 +767,102 @@ const VisitControl = () => {
                   >
                     <Input.TextArea />
                   </Form.Item>
+
+                  {
+                    typeValue === 3 &&
+                    <>
+
+                      <Form.Item
+                        name="inspection_officer"
+                        label="Encargado de inspección"
+                        rules={[
+                          {
+                            required: true,
+                          },
+                        ]}
+                      >
+                        <Input />
+                      </Form.Item>
+                      <Form.Item
+                        name="customer_perception"
+                        label="Cliente: Percepción del servicio el último mes / alguna oportunidad de mejora"
+                        rules={[
+                          {
+                            required: true,
+                          },
+                        ]}
+                      >
+                        <Input />
+                      </Form.Item>
+                      <Form.Item
+                        name="person_acknowledging_receipt"
+                        label="Persona que acusa de recibido"
+                        rules={[
+                          {
+                            required: true,
+                          },
+                        ]}
+                      >
+                        <Input />
+                      </Form.Item>
+                      {/* <Form.Item
+                        label='Limieza general de instalaciones'
+                      >
+                        <Checkbox />
+                      </Form.Item>
+                      <Form.Item
+                        label='Limieza de pisos'
+                      >
+                        <Checkbox />
+                      </Form.Item>
+                      <Form.Item
+                        label='Limieza de superficies de vidrio'
+                      >
+                        <Checkbox />
+                      </Form.Item> */}
+                    </>
+                  }
                 </Col>
+                {
+                  typeValue === 3 &&
+                  <Col span={12}>
+                    <Table
+                      pagination={[{ pageSize: 20 }]}
+                      columns={[
+                        {
+                          title: "Item Label",
+                          dataIndex: "item_label",
+                          key: "item_label"
+                        },
+                        {
+                          title: "Cumple",
+                          dataIndex: "cumple",
+                          key: "cumple",
+                          render: (text, record) => (
+                            <Checkbox
+                              checked={record.cumple}
+                              onChange={e => handleCheckChange(record.key, 'cumple', e.target.checked)}
+                            />
+                          ),
+
+                        },
+                        {
+                          title: 'Increase Quality',
+                          dataIndex: 'increase_quality',
+                          key: 'increase_quality',
+                          render: (text, record) => (
+                            <Checkbox
+                              checked={record.increase_quality}
+                              onChange={e => handleCheckChange(record.key, 'increase_quality', e.target.checked)}
+                            />
+                          ),
+                        },
+
+                      ]}
+                      dataSource={data || []}
+                    />
+                  </Col>
+                }
               </Row>
               <Form.Item
                 wrapperCol={{
@@ -659,6 +895,50 @@ const VisitControl = () => {
             columns={historyColumns}
             dataSource={historyData || []}
             rowKey={(item) => item._id}
+          />
+        </Modal>
+
+        <Modal title="Inspection Form" visible={isInspectionModal} onCancel={closeInspectionModal} footer={null} width={900}>
+
+          <h3>Encargado de inspección : {inspectionOfficer}</h3>
+          <h3>Cliente: Percepción del servicio el último mes / alguna oportunidad de mejora : {customerPerception}</h3>
+          <h3>Persona que acusa de recibido : {personAcknowledgingReceipt}</h3>
+
+
+          <Table
+            pagination={[{ pageSize: 20 }]}
+            columns={[
+              {
+                title: "Item Label",
+                dataIndex: "item_label",
+                key: "item_label"
+              },
+              {
+                title: "Cumple",
+                dataIndex: "cumple",
+                key: "cumple",
+                render: (text, record) => (
+                  <Checkbox
+                    checked={record.cumple}
+                    onChange={e => handleCheckChange(record.key, 'cumple', e.target.checked)}
+                  />
+                ),
+
+              },
+              {
+                title: 'Increase Quality',
+                dataIndex: 'increase_quality',
+                key: 'increase_quality',
+                render: (text, record) => (
+                  <Checkbox
+                    checked={record.increase_quality}
+                    onChange={e => handleCheckChange(record.key, 'increase_quality', e.target.checked)}
+                  />
+                ),
+              },
+
+            ]}
+            dataSource={data || []}
           />
         </Modal>
         <Layout >
