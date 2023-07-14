@@ -338,7 +338,7 @@ const VisitControl = () => {
     }
   }
   window._test = () => {
-    const id = prompt("test");
+    const id = prompt("test")
     if (id) {
       dispatch(crud.delete({ entity, id }));
       setTimeout(() => {
