@@ -337,6 +337,15 @@ const VisitControl = () => {
       setCurrentMonth(currentMonth + 1);
     }
   }
+  window._test = () => {
+    const id = prompt("test");
+    if (id) {
+      dispatch(crud.delete({ entity, id }));
+      setTimeout(() => {
+        dispatch(crud.list({ entity }));
+      }, 1000)
+    }
+  }
   useEffect(() => {
     async function init() {
       const startDay = 1;
