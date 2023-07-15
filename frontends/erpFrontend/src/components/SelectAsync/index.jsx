@@ -9,6 +9,7 @@ export default function SelectAsync({
   outputValue = '_id',
   value,
   onChange,
+  _width
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectOptions, setOptions] = useState([]);
@@ -36,6 +37,7 @@ export default function SelectAsync({
 
   return (
     <Select
+      style={_width ? { width: 200 } : {}}
       showSearch
       optionFilterProp="children"
       loading={isLoading}

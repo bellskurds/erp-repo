@@ -1,21 +1,26 @@
 import { DashboardLayout, } from '@/layout';
 import { DeleteOutlined, EditOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, Form, Input, Layout, Modal, Popconfirm, Row, Space, Table, Tag, Typography, message } from 'antd';
+import { Button, Col, Form, Input, Layout, Modal, Popconfirm, Row, Select, Space, Table, Tag, Typography, message } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
 import { Link } from 'react-router-dom/cjs/react-router-dom';
 import { request } from '@/request';
+import useFetch from '@/hooks/useFetch';
 
 const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
-
+const statusArr = [
+  { value: 0, label: "All Customer" },
+  { value: true, label: "Active Customers" },
+];
 
 const Customers = () => {
   const entity = "client"
   const searchFields = 'name,email';
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [status, setStatus] = useState();
 
   const [isUpdate, setIsUpdate] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -70,6 +75,7 @@ const Customers = () => {
   const [currentId, setCurrentId] = useState('');
   const [currentItem, setCurrentItem] = useState({});
   const [filterData, setFilterData] = useState([]);
+  const [dataSource, setDataSource] = useState([]);
 
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
@@ -85,8 +91,7 @@ const Customers = () => {
   }
 
   const deleteItem = async (item) => {
-    const { result } = await request.listById({ entity: 'recurrentInvoice', jsonData: { parent_id: item._id } })
-    if (!result.length) {
+    if (!item.recurrent) {
       const id = item._id;
       dispatch(crud.delete({ entity, id }))
       setTimeout(() => {
@@ -197,32 +202,40 @@ const Customers = () => {
     dispatch(crud.resetState());
     dispatch(crud.list({ entity }));
   }, []);
+  const asyncList = () => {
+    return request.list({ entity: "recurrentInvoice" });
+  };
+  const { result: recurrentInvoices } = useFetch(asyncList);
+
   useEffect(() => {
+    if (items && recurrentInvoices)
+      items.map(item => {
+        const { _id } = item;
+        recurrentInvoices.map(recurrent => {
+          const { parent_id } = recurrent;
+          if (parent_id._id === _id) {
+            item.recurrent = true;
+          } else {
+
+            item.recurrent = false;
+          }
+        })
+      })
     setFilterData(items)
-  }, [items])
+    setDataSource(items);
+  }, [items, recurrentInvoices])
   useEffect(() => {
-    async function fetchData() {
-
-      if (!searchText) {
-        // setFilterData(pagination)
-        setFilterData(items)
-      } else {
-        const options = {
-          q: searchText,
-          fields: searchFields,
-        };
-        const entity = 'client'
-        const { result, paginations } = await request.search({ entity, options })
-        setFilterData(result)
-        setPaginations(paginations)
-      }
-
-    }
-    fetchData();
-
-
-
-  }, [searchText])
+    const filteredData = dataSource.filter((record) => {
+      const { email, name, customer_id, recurrent } = record;
+      return (
+        (!searchText || email.toString().toLowerCase().includes(searchText.toLowerCase()) ||
+          name.toString().toLowerCase().includes(searchText.toLowerCase()) ||
+          customer_id.toString().toLowerCase().includes(searchText.toLowerCase())) &&
+        (!status || recurrent === status)
+      );
+    })
+    setFilterData(filteredData)
+  }, [searchText, status])
 
   const Footer = () => {
     const pages = searchText ? paginations : pagination
@@ -342,7 +355,14 @@ const Customers = () => {
                 onChange={(e) => setSearchText(e.target.value)}
               />
             </Col>
+
             <Col span={18}>
+              <Select
+                style={{ width: 200, textAlign: 'center' }}
+                placeholder="Status Filter"
+                optionFilterProp="children"
+                onChange={(e) => { setStatus(e) }}
+                options={statusArr} />
               <Button onClick={showModal} type="primary">Create Customer</Button>
             </Col>
 

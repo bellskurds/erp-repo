@@ -45,6 +45,7 @@ const EditableCell = ({
   handleSave_,
   ...restProps
 }) => {
+
   const [editing, setEditing] = useState(false);
   const inputRef = useRef(null);
   const form = useContext(EditableContext);
@@ -81,6 +82,48 @@ const EditableCell = ({
       console.log('Save failed:', errInfo);
     }
   };
+  const handleKeyDown = e => {
+
+    if (e.key === "Tab") {
+      e.preventDefault();
+
+      const currentCell = e.target.closest("td");
+      const parentElement = currentCell.parentNode;
+
+      var nextCell = null, prevCell = null;
+      if (!currentCell.nextElementSibling) {
+        nextCell = parentElement.nextElementSibling ? parentElement.nextElementSibling.children[parentElement.nextElementSibling.childElementCount === 2 ? 0 : 2] : currentCell
+      } else {
+        nextCell = currentCell.nextElementSibling
+      }
+      if (!currentCell.previousSibling) {
+        prevCell = parentElement.previousSibling ? parentElement.previousSibling.children[parentElement.previousSibling.childElementCount === 2 ? 1 : 2] : currentCell
+      }
+      else if (currentCell.previousSibling && !currentCell.previousSibling.querySelector(".editable-cell-value-wrap")) {
+        prevCell = parentElement.previousSibling ? parentElement.previousSibling.children[parentElement.previousSibling.childElementCount - 1] : currentCell
+      }
+      else {
+        prevCell = currentCell.previousSibling
+      }
+
+      const Cell = e.shiftKey
+        ? prevCell
+        : nextCell;
+      if (Cell) {
+        const input = Cell.querySelector("input");
+        if (input) {
+          input.focus();
+        } else {
+          const editableCell = Cell.querySelector(".editable-cell-value-wrap");
+          if (editableCell) {
+            editableCell.click(); // Call toggleEdit function of nextCell
+          }
+        }
+      }
+
+    }
+  };
+
   let childNode = children;
   if (editable) {
     childNode = editing ? (
@@ -96,7 +139,7 @@ const EditableCell = ({
           },
         ]}
       >
-        <Input ref={inputRef} onPressEnter={save} onBlur={save} />
+        <Input ref={inputRef} onKeyDown={handleKeyDown} onPressEnter={save} onBlur={save} />
       </Form.Item>
     ) : (
       <div
@@ -162,7 +205,9 @@ const Projects = () => {
   const [allECost, setAllECost] = useState(0);
   const [allOCost, setAllOCost] = useState(0);
   const [allProfitability, setAllProfitability] = useState(0);
-  const isEditing = (record) => record._id === editingKey;
+  const isEditing = (record) => record.key === editingKey;
+
+
   const editItem = (item) => {
 
     if (item) {
@@ -319,7 +364,7 @@ const Projects = () => {
         inputType: col.dataIndex === 'age' ? 'number' : 'text',
         dataIndex: col.dataIndex,
         title: col.title,
-        editing: isEditing(record),
+        editing: isEditing(record).toString(),
       }),
     };
   });
@@ -363,7 +408,7 @@ const Projects = () => {
           dataIndex: "employee",
           render: (_, record) => {
             return (
-              <SelectAsync entity={"employee"} displayLabels={["name"]} onChange={(e) => changeEmployee(e, record)} value={_} />
+              <SelectAsync _width={true} entity={"employee"} displayLabels={["name"]} onChange={(e) => changeEmployee(e, record)} value={_} />
             );
           }
         },
@@ -390,7 +435,6 @@ const Projects = () => {
         }
 
         setInitEmployeeColumns([...Columns, ..._columns])
-        console.log(_columns, '_columns');
       }
     } else {
       return true
@@ -436,8 +480,6 @@ const Projects = () => {
     setPaginations(pagination)
   }, [items, pagination])
   const handleSave = (row, values) => {
-
-    console.log(values, row, '33333');
     row["total"] = totalHours(row);
     const newData = [...employeeList];
     const index = newData.findIndex((item) => row.key === item.key);
@@ -449,8 +491,6 @@ const Projects = () => {
     setEmployeeList(newData);
   };
   const handleSave_ = (row, values) => {
-
-    console.log(values, row, '33333');
     row["total"] = totalHours(row);
     const newData = [...costList];
     const index = newData.findIndex((item) => row.key === item.key);
@@ -488,7 +528,6 @@ const Projects = () => {
         total += parseFloat(record[`day_${start.format("YYYY-MM-DD")}`] || 0);
         start.add(1, 'day')
       }
-      console.log(total, 'totaltotal');
       // for (var key in record) {
       //   if (key.includes('day_')) {
       //     total += parseFloat(record[key]);
@@ -605,9 +644,23 @@ const Projects = () => {
   }, [
     summatoryCost, billingCost
   ]);
-  const handleKeyDown = (e, record) => {
-    console.log(e, record, 'handleKeyDown');
-  }
+  const _columns = initEmployeeColumns.map((col) => {
+    if (!col.editable) {
+      return col;
+    }
+    return {
+      ...col,
+      onCell: (record) => ({
+        record,
+        editable: col.editable,
+        dataIndex: col.dataIndex,
+        title: col.title,
+        handleSave,
+        editing: isEditing(record).toString(),
+
+      }),
+    };
+  })
   return (
 
     <DashboardLayout>
@@ -762,22 +815,7 @@ const Projects = () => {
                 <Button onClick={addEmployee}>Add Employee</Button>
                 <Table
                   dataSource={employeeList || []}
-                  columns={initEmployeeColumns.map((col) => {
-                    if (!col.editable) {
-                      return col;
-                    }
-                    return {
-                      ...col,
-                      onCell: (record) => ({
-                        record,
-                        editable: col.editable,
-                        dataIndex: col.dataIndex,
-                        title: col.title,
-                        handleSave,
-
-                      }),
-                    };
-                  })}
+                  columns={_columns}
                   style={{ overflow: "scroll" }}
                   components={components}
 
@@ -799,8 +837,7 @@ const Projects = () => {
                         dataIndex: col.dataIndex,
                         title: col.title,
                         handleSave_,
-                        onKeyDown: (e) => handleKeyDown(e, record),
-
+                        editing: isEditing(record).toString(),
                       }),
                     };
                   })}
