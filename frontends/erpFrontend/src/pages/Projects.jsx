@@ -600,11 +600,14 @@ const Projects = () => {
   ])
 
   useEffect(() => {
-
+    console.log(billingCost, 'summatoryCost, billingCost');
     if (formRef.current) formRef.current.setFieldsValue({ profitability: (billingCost - summatoryCost) })
   }, [
     summatoryCost, billingCost
-  ])
+  ]);
+  const handleKeyDown = (e, record) => {
+    console.log(e, record, 'handleKeyDown');
+  }
   return (
 
     <DashboardLayout>
@@ -658,7 +661,7 @@ const Projects = () => {
                       },
                     ]}
                   >
-                    <Input type='number' onChange={(e) => setBillingCost(e)} />
+                    <Input type='number' onChange={(e) => setBillingCost(e.target.value)} />
                   </Form.Item>
                   <Form.Item
                     name="status"
@@ -796,6 +799,7 @@ const Projects = () => {
                         dataIndex: col.dataIndex,
                         title: col.title,
                         handleSave_,
+                        onKeyDown: (e) => handleKeyDown(e, record),
 
                       }),
                     };
