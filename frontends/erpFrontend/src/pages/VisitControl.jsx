@@ -1,6 +1,6 @@
 import { DashboardLayout, } from '@/layout';
 import { EyeOutlined, LeftOutlined, RightOutlined, SafetyOutlined, SearchOutlined, SkinOutlined, StopOutlined, TeamOutlined } from '@ant-design/icons';
-import { Button, Col, DatePicker, Form, Input, Layout, Modal, Popconfirm, Radio, Row, Select, Table, Typography, message } from 'antd';
+import { Button, Col, DatePicker, Form, Input, Layout, Modal, Popconfirm, Popover, Radio, Row, Select, Table, Typography, message } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
@@ -184,6 +184,108 @@ const VisitControl = () => {
 
   ]
 
+  const monthData = [
+    {
+      key: 1,
+      text: "Jan"
+    },
+
+    {
+      key: 1,
+      text: "Jan"
+    },
+    {
+      key: 2,
+      text: "Feb"
+    },
+    {
+      key: 3,
+      text: "Mar"
+    },
+    {
+      key: 4,
+      text: "Apr"
+    },
+    {
+      key: 5,
+      text: "May"
+    },
+    {
+      key: 6,
+      text: "Jun"
+    },
+    {
+      key: 7,
+      text: "Jul"
+    },
+    {
+      key: 8,
+      text: "Aug"
+    },
+    {
+      key: 9,
+      text: "Sep"
+    },
+    {
+      key: 10,
+      text: "Oct"
+    },
+    {
+      key: 11,
+      text: "Nov"
+    },
+    {
+      key: 12,
+      text: "Dec"
+    },
+
+  ]
+  const content = (
+    <table style={{
+      tableLayout: 'fixed',
+      width: '200px',
+      textAlign: 'center',
+      borderCollapse: 'collapse',
+      cursor: 'pointer'
+    }}
+      className='_months'
+    >
+      <thead></thead>
+      <tbody>
+        <tr>
+          <td onClick={(e) => { selectMonthAndActive(e, 1) }}>Jan</td>
+          <td onClick={(e) => { selectMonthAndActive(e, 2) }}>Feb</td>
+          <td onClick={(e) => { selectMonthAndActive(e, 3) }}>Mar</td>
+        </tr>
+        <tr>
+          <td onClick={(e) => { selectMonthAndActive(e, 4) }}>Apr</td>
+          <td onClick={(e) => { selectMonthAndActive(e, 5) }}>May</td>
+          <td onClick={(e) => { selectMonthAndActive(e, 6) }}>Jun</td>
+        </tr>
+        <tr>
+          <td onClick={(e) => { selectMonthAndActive(e, 7) }}>Jul</td>
+          <td onClick={(e) => { selectMonthAndActive(e, 8) }}>Aug</td>
+          <td onClick={(e) => { selectMonthAndActive(e, 9) }}>Sep</td>
+        </tr>
+        <tr>
+          <td onClick={(e) => { selectMonthAndActive(e, 10) }}>Oct</td>
+          <td onClick={(e) => { selectMonthAndActive(e, 11) }}>Nov</td>
+          <td onClick={(e) => { selectMonthAndActive(e, 12) }}>Dec</td>
+        </tr>
+      </tbody>
+    </table>
+  );
+  const selectMonthAndActive = (e, value) => {
+    setCurrentMonth(value);
+    const selectedElement = e.target;
+    const activeTd = selectedElement.parentElement.parentElement.querySelector(".active-td");
+    if (activeTd) {
+      activeTd.style.background = ''
+      activeTd.className = ''
+    }
+    selectedElement.className = 'active-td'
+    selectedElement.style.background = '#3fe1fd'
+  }
   const [data, setData] = useState(dataSource);
   const editItem = (item) => {
     if (item) {
@@ -347,7 +449,10 @@ const VisitControl = () => {
     }
   }
   useEffect(() => {
+
     async function init() {
+
+
       const startDay = 1;
       const endDay = new Date(currentYear, currentMonth, 0).getDate();
       const start_date = new Date(currentYear, currentMonth - 1, startDay);
@@ -956,7 +1061,10 @@ const VisitControl = () => {
 
               <h3 style={{ textAlign: 'center' }}>
                 <LeftOutlined onClick={prevData} />
-                <label>{moment(new Date(currentYear, currentMonth - 1, 1)).format("MMMM")} {currentYear}</label>
+                <Popover content={content} title="" trigger="click">
+                  {moment(new Date(currentYear, currentMonth - 1, 1)).format("MMMM")}
+                </Popover>
+                <label> {currentYear}</label>
                 <RightOutlined onClick={nextData} />
               </h3>
             </Col>

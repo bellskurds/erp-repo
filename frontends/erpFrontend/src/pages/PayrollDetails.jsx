@@ -265,8 +265,6 @@ const PayrollDetails = () => {
   }
   useEffect(() => {
     setCurrentPeriod(getPeriods(currentMonth, currentYear, currentQ))
-
-
   }, [currentMonth, currentQ, currentYear])
   const AdminId = useSelector(selectCurrentAdmin);
   const Auth = JSON.parse(localStorage.getItem('auth'));
@@ -589,7 +587,9 @@ const PayrollDetails = () => {
     return hours;
   }
   useEffect(() => {
-  }, [biWeek])
+  }, [biWeek]);
+
+
   return (
 
     <Layout style={{ padding: '100px', overflow: 'auto' }}>
