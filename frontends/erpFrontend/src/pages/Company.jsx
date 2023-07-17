@@ -11,11 +11,11 @@ import useFetch from '@/hooks/useFetch';
 import moment from 'moment';
 
 const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
-
-const statusArr = [
-  { value: 0, label: "All Customer" },
-  { value: true, label: "Active Customers" },
-];
+const statusLabel = [
+  "",
+  "Active",
+  "Inactive"
+]
 const formattedDateFunc = (date) => {
   return new Date(date).toLocaleDateString()
 }
@@ -150,6 +150,9 @@ const Company = () => {
       title: 'Status',
       dataIndex: 'status',
       width: '15%',
+      render: (status) => {
+        return statusLabel[status]
+      }
     },
     {
       title: 'Actions',
@@ -212,15 +215,14 @@ const Company = () => {
 
   const onFinish = (values) => {
     const item = dataSource.filter(data => data.email === values.email || data.db_name === values.db_name)
-    if (item.length) {
-      return message.error("can't save same db or same email")
-    }
-
-
     if (isUpdate && currentId) {
       const id = currentId;
       dispatch(crud.update({ entity, id, jsonData: values }));
     } else {
+      if (item.length) {
+        return message.error("can't save same db or same email")
+      }
+
       dispatch(crud.create({ entity, jsonData: values }));
     }
     formRef.current.resetFields();
@@ -260,16 +262,14 @@ const Company = () => {
   }, [items, recurrentInvoices])
   useEffect(() => {
     const filteredData = dataSource.filter((record) => {
-      const { email, name, customer_id, recurrent } = record;
+      const { email, name } = record;
       return (
         (!searchText || email.toString().toLowerCase().includes(searchText.toLowerCase()) ||
-          name.toString().toLowerCase().includes(searchText.toLowerCase()) ||
-          customer_id.toString().toLowerCase().includes(searchText.toLowerCase())) &&
-        (!status || recurrent === status)
+          name.toString().toLowerCase().includes(searchText.toLowerCase()))
       );
     })
     setFilterData(filteredData)
-  }, [searchText, status])
+  }, [searchText, dataSource])
 
   const Footer = () => {
     const pages = searchText ? paginations : pagination
