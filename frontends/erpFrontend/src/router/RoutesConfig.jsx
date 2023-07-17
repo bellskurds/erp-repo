@@ -104,6 +104,10 @@ var routes = [
     component: 'Admin',
   },
   {
+    path: '/company',
+    component: 'Company',
+  },
+  {
     path: '/payment/mode',
     component: 'PaymentMode',
   },

@@ -1,7 +1,10 @@
+const employeeSchema = require('@/models/erpModels/Employee');
 const apiRest = require('./apiRest');
 const mongoose = require('mongoose');
 
+
 exports.createCRUDController = (modelName, filter = []) => {
+
   const Model = mongoose.model(modelName);
   let crudMethods = {};
 

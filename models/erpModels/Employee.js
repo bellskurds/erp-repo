@@ -101,5 +101,6 @@ employeeSchema.index({
   birthday: 'text',
   status: 'text',
 });
+mongoose.model('Employee', employeeSchema)
+module.exports = employeeSchema
 
-module.exports = mongoose.model('Employee', employeeSchema);

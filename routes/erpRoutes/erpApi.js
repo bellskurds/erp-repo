@@ -43,6 +43,7 @@ const ProjectController = require('@/controllers/erpControllers/ProjectControlle
 const referenceController = require('@/controllers/erpControllers/referenceController');
 const payrollController = require('@/controllers/erpControllers/payrollController');
 const visitControlController = require('@/controllers/erpControllers/visitControlController');
+const companyController = require('@/controllers/erpControllers/companyController');
 
 const baseFilePath = 'public/uploads/admin/'
 // //_______________________________ Admin management_______________________________
@@ -195,6 +196,16 @@ router.route('/assignedEmployee/search').get(catchErrors(assignedEmployeeControl
 router.route('/assignedEmployee/list').get(catchErrors(assignedEmployeeController.list));
 router.route('/assignedEmployee/filter').get(catchErrors(assignedEmployeeController.filter));
 router.route('/assignedEmployee/byParentId').post(catchErrors(assignedEmployeeController.getByParentId));
+
+// //_____________________________________ API for Assigned Employeed __________________________________________________
+router.route('/company/create').post(catchErrors(companyController.create));
+router.route('/company/read/:id').get(catchErrors(companyController.read));
+router.route('/company/update/:id').patch(catchErrors(companyController.update));
+router.route('/company/delete/:id').delete(catchErrors(companyController.delete));
+router.route('/company/search').get(catchErrors(companyController.search));
+router.route('/company/list').get(catchErrors(companyController.list));
+router.route('/company/filter').get(catchErrors(companyController.filter));
+router.route('/company/byParentId').post(catchErrors(companyController.getByParentId));
 
 
 

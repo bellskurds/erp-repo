@@ -1,64 +1,40 @@
-import { DashboardLayout, DefaultLayout } from '@/layout';
+import { DashboardLayout, } from '@/layout';
 import { DeleteOutlined, EditOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, Form, Input, InputNumber, Layout, Modal, Popconfirm, Row, Space, Table, Tag, Typography } from 'antd';
-import Search from 'antd/lib/transfer/search';
+import { Button, Col, DatePicker, Form, Input, Layout, Modal, Popconfirm, Row, Select, Space, Table, Tag, Typography, message } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import CustomModal from 'modules/CustomModal'
 import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
 import { Link } from 'react-router-dom/cjs/react-router-dom';
 import { request } from '@/request';
+import useFetch from '@/hooks/useFetch';
+import moment from 'moment';
+
 const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
-const customerColumns = [
-  {
-    title: "Customer Name",
-    dataIndex: "name"
-  },
-  {
-    title: "Hours",
-    dataIndex: "hours"
-  },
-  {
-    title: "Location",
-    dataIndex: "location"
-  },
-  {
-    title: "Insumos",
-    dataIndex: "insumos"
-
-  },
-]
-const getFormattedHours = (days) => {
-  const dayLabels = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
-  const hours = [];
-
-  for (let i = 0; i < days.length; i++) {
-    if (!days[i]) continue
-    const [start, end] = days[i];
-
-    if (start === end) {
-      hours.push(dayLabels[i] + ' ' + new Date(start).getHours());
-    } else if (i === 0 || start !== days[i - 1][0] || end !== days[i - 1][1]) {
-      hours.push(dayLabels[i] + '( ' + new Date(start).getHours() + '-' + new Date(end).getHours() + ')');
-    }
-  }
-  return hours.join(', ');
+const statusArr = [
+  { value: 0, label: "All Customer" },
+  { value: true, label: "Active Customers" },
+];
+const formattedDateFunc = (date) => {
+  return new Date(date).toLocaleDateString()
 }
-const Employees = () => {
-  const entity = "employee"
-  const searchFields = 'name,personal_id';
+const Company = () => {
+  const entity = "company"
+  const searchFields = 'name,email';
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isModal, setIsModal] = useState(false);
-  const [customerData, setCustomerData] = useState([]);
+  const [status, setStatus] = useState();
 
-  const [searchText, setSearchText] = useState('');
   const [isUpdate, setIsUpdate] = useState(false);
+  const [searchText, setSearchText] = useState('');
+
   const showModal = () => {
+
+    setCurrentId(new Date().valueOf())
     setIsModalVisible(true);
     setIsUpdate(false);
     if (formRef.current) formRef.current.resetFields();
+
   };
   const dispatch = useDispatch();
 
@@ -70,16 +46,48 @@ const Employees = () => {
   const handleCancel = () => {
     setIsModalVisible(false);
   };
+  const generateCustomerId = () => {
+    return new Date().valueOf();
+  }
+  const [customerId, setCustomerId] = useState(generateCustomerId());
+  const handelDataTableLoad = useCallback((pagination) => {
+
+    if (!searchText) {
+      const options = { page: pagination.current || 1 };
+      dispatch(crud.list({ entity, options }));
+    } else {
+
+      async function fetchData() {
+        const options = {
+          q: searchText,
+          fields: searchFields,
+          page: pagination.current || 1
+        };
+        const { result, paginations } = await request.search({ entity, options })
+        console.log(result, paginations, 'result, paginations');
+        setFilterData(result)
+        setPaginations(paginations)
+      }
+      fetchData();
+    }
+
+  }, [searchText]);
 
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState('');
   const [currentId, setCurrentId] = useState('');
   const [currentItem, setCurrentItem] = useState({});
   const [filterData, setFilterData] = useState([]);
+  const [dataSource, setDataSource] = useState([]);
+
   const isEditing = (record) => record._id === editingKey;
   const editItem = (item) => {
     if (item) {
       setTimeout(() => {
+        if (item.periods)
+          item.periods = [moment(item.periods[0]), moment(item.periods[1])]
+
+        console.log(item, '333333')
         if (formRef.current) formRef.current.setFieldsValue(item);
       }, 400);
       setCurrentId(item._id);
@@ -88,65 +96,59 @@ const Employees = () => {
       setIsUpdate(true);
     }
   }
-  const deleteItem = (item) => {
-    const id = item._id;
-    dispatch(crud.delete({ entity, id }))
-    setTimeout(() => {
-      dispatch(crud.list({ entity }));
-    }, 1000)
-  }
-  const showCustomers = (data) => {
-    setIsModal(true)
-    const lists = []
-    data.map((item, index) => {
-      const { store, parent_id: customer, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = item;
-      const obj = {
-        key: index,
-        name: customer.name,
-        hours: getFormattedHours(
-          [
-            monday ? [monday[0], monday[1]] : "",
-            tuesday ? [tuesday[0], tuesday[1]] : "",
-            wednesday ? [wednesday[0], wednesday[1]] : "",
-            thursday ? [thursday[0], thursday[1]] : "",
-            friday ? [friday[0], friday[1]] : "",
-            saturday ? [saturday[0], saturday[1]] : "",
-            sunday ? [sunday[0], sunday[1]] : "",
-          ]
-        ),
-        location: store.location,
-        insumos: store.insumos ? "yes" : "no"
-      }
-      lists.push(obj);
-    })
-    setCustomerData(lists)
 
-    console.log(data);
+  const deleteItem = async (item) => {
+    if (!item.recurrent) {
+      const id = item._id;
+      dispatch(crud.delete({ entity, id }))
+      setTimeout(() => {
+        dispatch(crud.resetState());
+        dispatch(crud.list({ entity }));
+      }, 1000)
+    } else {
+      message.error("can't remove with invoices")
+    }
   }
-
   const columns = [
-    {
-      title: 'Personal Id',
-      dataIndex: 'personal_id',
-      width: '15%',
-    },
     {
       title: 'Name',
       dataIndex: 'name',
       width: '15%',
     },
     {
-      title: 'Customers',
-      dataIndex: 'customers',
+      title: 'Company Name',
+      dataIndex: 'company_name',
       width: '15%',
-      render: (_, record) => {
-        const { customers_ } = record
-        return <label onClick={() => showCustomers(customers_)}>{_}</label>
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      width: '15%',
+    },
+    {
+      title: 'Users',
+      dataIndex: 'users',
+      width: '15%',
+    },
+    {
+      title: 'Start',
+      dataIndex: 'periods',
+      width: '15%',
+      render: (text) => {
+        return formattedDateFunc(text[0] || null)
       }
     },
     {
-      title: 'Phone',
-      dataIndex: 'phone',
+      title: 'End',
+      dataIndex: 'periods',
+      width: '15%',
+      render: (text) => {
+        return formattedDateFunc(text[1] || null)
+      }
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
       width: '15%',
     },
     {
@@ -156,19 +158,8 @@ const Employees = () => {
       align: 'center',
       render: (_, record) => {
         return (
-
-
-          role !== 0 ?
-
+          role === 0 ?
             <>
-              <Typography.Text>
-                <Link to={`/employee/details/${record._id}`}>
-                  <EyeOutlined style={{ fontSize: "20px" }} />
-                </Link>
-              </Typography.Text>
-
-            </>
-            : <>
               <Typography.Link onClick={() => editItem(record)}>
                 <EditOutlined style={{ fontSize: "20px" }} />
               </Typography.Link>
@@ -176,8 +167,17 @@ const Employees = () => {
               <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
                 <DeleteOutlined style={{ fontSize: "20px" }} />
               </Popconfirm>
+              {/* <Typography.Text>
+                <Link to={`/customer/details/${record._id}`}>
+                  <EyeOutlined style={{ fontSize: "20px" }} />
+                </Link>
+              </Typography.Text> */}
+
+            </> :
+            <>
+
               <Typography.Text>
-                <Link to={`/employee/details/${record._id}`}>
+                <Link to={`/customer/details/${record._id}`}>
                   <EyeOutlined style={{ fontSize: "20px" }} />
                 </Link>
               </Typography.Text>
@@ -208,28 +208,15 @@ const Employees = () => {
 
   const { pagination, items } = listResult;
   const [paginations, setPaginations] = useState(pagination)
-  useEffect(() => {
-    async function init() {
-      const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" });
-      items.map(item => {
-        const { _id: employee_id } = item
-        item['customers_'] = [];
-        assignedEmployees.map(obj => {
-          const { employee } = obj
-          const { _id: employee_id1 } = employee;
-          if (employee_id === employee_id1) {
-            item['customers_'].push(obj)
-          }
-        })
-        item['customers'] = item['customers_'].length
-      })
-      console.log(items, 'itemsitemsitemsitems');
 
-      setFilterData(items)
-    }
-    init();
-  }, [items])
+
   const onFinish = (values) => {
+    const item = dataSource.filter(data => data.email === values.email || data.db_name === values.db_name)
+    if (item.length) {
+      return message.error("can't save same db or same email")
+    }
+
+
     if (isUpdate && currentId) {
       const id = currentId;
       dispatch(crud.update({ entity, id, jsonData: values }));
@@ -237,6 +224,7 @@ const Employees = () => {
       dispatch(crud.create({ entity, jsonData: values }));
     }
     formRef.current.resetFields();
+    dispatch(crud.resetState());
     dispatch(crud.list({ entity }));
     handleCancel()
   };
@@ -245,55 +233,44 @@ const Employees = () => {
     console.log('Failed:', errorInfo);
   };
   useEffect(() => {
-    dispatch(crud.resetState())
+    dispatch(crud.resetState());
     dispatch(crud.list({ entity }));
   }, []);
-
-  const handelDataTableLoad = useCallback((pagination) => {
-
-    if (!searchText) {
-      const options = { page: pagination.current || 1 };
-      dispatch(crud.list({ entity, options }));
-    } else {
-
-      async function fetchData() {
-        const options = {
-          q: searchText,
-          fields: searchFields,
-          page: pagination.current || 1
-        };
-        const { result, paginations } = await request.search({ entity, options })
-        console.log(result, paginations, 'result, paginations');
-        setFilterData(result)
-        setPaginations(paginations)
-      }
-      fetchData();
-    }
-
-  }, [searchText]);
+  const asyncList = () => {
+    return request.list({ entity: "recurrentInvoice" });
+  };
+  const { result: recurrentInvoices } = useFetch(asyncList);
 
   useEffect(() => {
-    async function fetchData() {
+    if (items && recurrentInvoices)
+      items.map(item => {
+        const { _id } = item;
+        recurrentInvoices.map(recurrent => {
+          const { parent_id } = recurrent;
+          if (parent_id._id === _id) {
+            item.recurrent = true;
+          } else {
 
-      if (!searchText) {
-        // setFilterData(pagination)
-        setFilterData(items)
-      } else {
-        const options = {
-          q: searchText,
-          fields: searchFields,
-        };
-        const { result, paginations } = await request.search({ entity, options })
-        setFilterData(result)
-        setPaginations(paginations)
-      }
+            item.recurrent = false;
+          }
+        })
+      })
+    setFilterData(items)
+    setDataSource(items);
+  }, [items, recurrentInvoices])
+  useEffect(() => {
+    const filteredData = dataSource.filter((record) => {
+      const { email, name, customer_id, recurrent } = record;
+      return (
+        (!searchText || email.toString().toLowerCase().includes(searchText.toLowerCase()) ||
+          name.toString().toLowerCase().includes(searchText.toLowerCase()) ||
+          customer_id.toString().toLowerCase().includes(searchText.toLowerCase())) &&
+        (!status || recurrent === status)
+      );
+    })
+    setFilterData(filteredData)
+  }, [searchText, status])
 
-    }
-    fetchData();
-
-
-
-  }, [searchText])
   const Footer = () => {
     const pages = searchText ? paginations : pagination
     const { current, count, total, page } = pages
@@ -305,9 +282,6 @@ const Employees = () => {
         Mostrando registros del {filterData.length ? ((currentPage - 1) * 10 + 1) : 0} al {currentPage * 10 > (totalSize) ? (totalSize) : currentPage * 10} de un total de {totalSize} registros
       </>
     );
-  }
-  const cancelModal = () => {
-    setIsModal(false)
   }
   return (
 
@@ -332,39 +306,92 @@ const Employees = () => {
               autoComplete="off"
             >
               <Form.Item
-                name="personal_id"
-                label="Personal ID"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
                 name="name"
-                label="name"
+                label="Name"
                 rules={[
                   {
                     required: true,
-                    message: 'Please input your name!',
+                  },
+                ]}
+              >
+                <Input value={customerId} />
+              </Form.Item>
+              <Form.Item
+                name="company_name"
+                label="Company Name"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please input company name!',
                   },
                 ]}
               >
                 <Input />
               </Form.Item>
               <Form.Item
-                name="phone"
-                label="Phone Number"
+                name="email"
+                label="E-mail"
+                rules={[
+                  {
+                    type: 'email',
+                    message: 'The input is not valid E-mail!',
+                  },
+                  {
+                    required: true,
+                    message: 'Please input your E-mail!',
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="users"
+                label="Users"
                 rules={[
                   {
                     required: true,
-                    message: 'Please input your phone!',
                   },
                 ]}
               >
                 <Input type='number' />
+              </Form.Item>
+              <Form.Item
+                name="periods"
+                label="Periods"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <DatePicker.RangePicker />
+              </Form.Item>
+              <Form.Item
+                name="status"
+                label="Status"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Select
+                  options={[
+                    { value: 1, label: "Active" },
+                    { value: 2, label: "Inactive" }
+                  ]}
+                />
+              </Form.Item>
+              <Form.Item
+                name="db_name"
+                label="DB/Sub url"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Input />
               </Form.Item>
               <Form.Item
                 wrapperCol={{
@@ -389,14 +416,6 @@ const Employees = () => {
             </Form>
           </>
         </Modal>
-
-        <Modal title="Customers" visible={isModal} onCancel={cancelModal} footer={null} width={1000}>
-          <Table
-            columns={customerColumns}
-            dataSource={customerData || []}
-
-          />
-        </Modal>
         <Layout>
           <Row gutter={24} style={{ textAlign: 'right' }}>
             <Col span={6}>
@@ -407,14 +426,17 @@ const Employees = () => {
                 onChange={(e) => setSearchText(e.target.value)}
               />
             </Col>
+
             <Col span={18}>
-              <Button onClick={showModal} type="primary">Create Employee</Button>
+              <Button onClick={showModal} type="primary">Add Company</Button>
             </Col>
 
           </Row>
 
           <Form form={form} component={false}>
+
             <Table
+
               bordered
               rowKey={(item) => item._id}
               key={(item) => item._id}
@@ -422,10 +444,8 @@ const Employees = () => {
               columns={mergedColumns}
               rowClassName="editable-row"
               pagination={searchText ? paginations : pagination}
-
               onChange={handelDataTableLoad}
               footer={Footer}
-
             />
           </Form>
 
@@ -435,4 +455,4 @@ const Employees = () => {
     </DashboardLayout>
   );
 };
-export default Employees;
+export default Company;

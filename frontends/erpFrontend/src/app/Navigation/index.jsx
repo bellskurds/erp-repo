@@ -110,11 +110,16 @@ export default function Navigation() {
           }
           {
             role === 0 &&
-
-            <Menu.Item key={'Admin'} icon={<TeamOutlined />}>
-              <Link to={'/admin'} />
-              Admin
-            </Menu.Item>
+            <>
+              <Menu.Item key={'Company'} icon={<TeamOutlined />}>
+                <Link to={'/company'} />
+                Company
+              </Menu.Item>
+              <Menu.Item key={'Admin'} icon={<TeamOutlined />}>
+                <Link to={'/admin'} />
+                Admin
+              </Menu.Item>
+            </>
           }
           {
             role !== 3 &&

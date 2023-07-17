@@ -4,8 +4,13 @@
  *  @returns {Document} Single Document
  */
 
+const employeeSchema = require('@/models/erpModels/Employee');
 const moment = require('moment');
-
+const { default: mongoose } = require('mongoose');
+const employeeConnection = mongoose.createConnection('mongodb://localhost:27017/employeeDB', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 exports.read = async (Model, req, res) => {
   try {
     // Find document by id
@@ -44,6 +49,11 @@ exports.read = async (Model, req, res) => {
 
 exports.create = async (Model, req, res) => {
   try {
+    if (req.url.includes('employee')) {
+      Model = employeeConnection.model('Employee', employeeSchema);
+
+    }
+
     // Creating a new document in the collection
     if (req.body.length) {
       const _Model = new Model();
@@ -100,7 +110,6 @@ exports.create = async (Model, req, res) => {
     }
   }
 };
-
 /**
  *  Updates a Single document
  *  @param {object, string} (req.body, req.params.id)
@@ -295,6 +304,12 @@ exports.delete = async (Model, req, res) => {
  */
 
 exports.list = async (Model, req, res) => {
+
+  // if (req.url.includes('employee')) {
+  //   Model = employeeConnection.model('Employee', employeeSchema);
+
+  // }
+
   const page = req.query.page || 1;
   const limit = parseInt(req.query.items) || 10;
   const skip = page * limit - limit;
