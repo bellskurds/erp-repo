@@ -1,6 +1,6 @@
 import { DashboardLayout, } from '@/layout';
 import { DeleteOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, DatePicker, Form, Input, Layout, Modal, Popconfirm, Row, Select, Table, Typography } from 'antd';
+import { Button, Col, DatePicker, Form, Input, Layout, Modal, Popconfirm, Row, Select, Table, Typography, message } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -460,6 +460,9 @@ const Projects = () => {
     periodsDate
   ])
   const addEmployee = () => {
+    if (formRef.current && !formRef.current.getFieldValue("periods")) {
+      return message.info("you have to select periods")
+    }
     const defaultObj = {};
     for (var i = 0; i < initEmployeeColumns.length; i++) {
       var { dataIndex } = initEmployeeColumns[i];
