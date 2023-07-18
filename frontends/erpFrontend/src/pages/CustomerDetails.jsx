@@ -1,28 +1,19 @@
 import React, { useRef, useState } from 'react';
-import { Form, Input, Row, Col, Tabs, Upload, Avatar, Button, message, Select, Modal, Radio, Table, Typography, Popconfirm } from 'antd';
+import { Form, Input, Row, Col, Tabs, Upload, Avatar, Button, message, Select, Modal, Radio, } from 'antd';
 
-import { Tag } from 'antd';
 
-import { UserOutlined, MailOutlined, PhoneOutlined, EditOutlined, DeleteOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import countryList from 'country-list'
 import { DashboardLayout } from '@/layout';
-import RecentTable from '@/components/RecentTable';
 import { Content } from 'antd/lib/layout/layout';
-import { Link, useParams } from 'react-router-dom/cjs/react-router-dom.min';
+import { useParams } from 'react-router-dom/cjs/react-router-dom.min';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
 import { selectReadItem } from '@/redux/crud/selectors';
-import { Option } from 'antd/lib/mentions';
-import Dropdown from '@/components/outsideClick.js';
+
 import { DatePicker } from '@/components/CustomAntd';
-import moment from 'moment';
-import { selectListItems } from '@/redux/crud/selectors';
-import BankAccount from './BankAccount';
-import RelatedPeople from './RelatedPeople';
-import EmergencyContact from './EmergencyContact';
-import MedicalDetail from './MedicalDetail';
-import Contract from './Contract';
+
 import CustomerContacts from './CustomerContacts';
 import CustomerStores from './CustomerStores';
 import AssignedEmployee from './AssignedEmployee';
@@ -70,11 +61,7 @@ export default function Details() {
       label: "reject", value: 3,
     }
   ]
-  const [form] = Form.useForm();
-  const [name, setName] = useState('John Doe');
-  const [email, setEmail] = useState('johndoe@example.com');
-  const [phone, setPhone] = useState('123-456-7890');
-  const [avatar, setAvatar] = useState('');
+
   const currentCustomerId = useParams().id;
 
   const entity = "client";
@@ -110,7 +97,7 @@ export default function Details() {
   const handleCancel = () => {
     setIsModalVisible(false);
   };
-  const editModal = () => {
+  const editCustomer = () => {
     if (formRef.current)
       console.log(formRef.current.getFieldValue(), 'formRef.current')
     //formRef.current.setFieldsValue(currentItem);
@@ -118,30 +105,10 @@ export default function Details() {
     setIsModalVisible(true)
     setTimeout(() => {
 
-      formRef.current.setFieldsValue({
-        gender: currentItem.gender,
-        address: currentItem.address,
-        birthplace: currentItem.birthplace,
-        civil_status: currentItem.civil_status,
-        school: currentItem.school,
-        // birthday:moment(new Date(currentItem.birthday),'mm/dd/yyyy')
-      })
+      formRef.current.setFieldsValue(currentItem)
     }, 600)
   }
-  const onChange = (value) => {
-    console.log(`selected ${value}`);
-  };
 
-  const onSearch = (value) => {
-    // const id = 
-
-    console.log('search:', value);
-  };
-
-  const countryLists = countryList.getData().map((item) => ({
-    value: item.code,
-    label: item.name
-  }))
   const formatDate = (date) => {
     date = date.$d;
     const day = date.getDate().toString().padStart(2, '0'); // padStart adds a zero if the length of the string is less than 2 characters
@@ -154,7 +121,7 @@ export default function Details() {
   }
   const saveDetails = (values) => {
     console.log(values, 'valuesvalues')
-    values['birthday'] = formatDate(values['birthday']);
+
     dispatch(crud.update({ entity, id, jsonData: values }));
     setTimeout(() => {
       dispatch(crud.read({ entity, id }));
@@ -192,6 +159,16 @@ export default function Details() {
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="Details" key="1">
           <Modal title="Create Form" visible={isModalVisible} onCancel={handleCancel} footer={null}>
+            <div className="profile-card">
+              <Upload
+                showUploadList={false}
+                name='avatar'
+                listType="picture-card"
+                beforeUpload={handleUpload}
+              >
+                {fileList.length >= 1 ? null : uploadButton}
+              </Upload>
+            </div>
             <Form
               ref={formRef}
               name="basic"
@@ -212,62 +189,38 @@ export default function Details() {
               }}
             >
               <Form.Item
-                name="gender"
-                label="Gender"
+                name="legal_name"
+                label="Legal Name"
                 rules={[
                   {
                     required: true,
                   },
                 ]}
-              >
-                <Radio.Group name="radiogroup" options={genderOptions} />
-              </Form.Item>
-              <Form.Item
-                name="birthplace"
-                label="Birthplace"
-              >
-                <Select
-                  showSearch
-                  placeholder="Select a person"
-                  optionFilterProp="children"
-                  onChange={onChange}
-                  onSearch={onSearch}
-                  filterOption={(input, option) =>
-                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                  }
-                  options={countryLists}
-                />
-              </Form.Item>
-              <Form.Item
-                name="birthday"
-                label="BirthDay"
-              >
-                <DatePicker style={{ width: '50%' }} format={"MM/DD/YYYY"} />
-              </Form.Item>
-
-              <Form.Item
-                name="civil_status"
-                label="Civil Status"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Radio.Group name="civil_status" options={civilOptions} />
-              </Form.Item>
-              <Form.Item
-                name="school"
-                label="School"
               >
                 <Input />
-
               </Form.Item>
               <Form.Item
-                name="address"
-                label="Address"
+                name="ruc"
+                label="RUC"
               >
-                <Input value={"addddr"} />
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="tax_residence"
+                label="Tax residence"
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="billing_details"
+                label="Billing details"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Input />
               </Form.Item>
               <Form.Item
                 wrapperCol={{
@@ -294,6 +247,7 @@ export default function Details() {
 
           <Content style={{ padding: '0 0px' }}>
             <Row gutter={[16, 16]}>
+
               <Col span={6}>
                 {
                   (currentItem && currentItem.avatar) ?
@@ -319,15 +273,16 @@ export default function Details() {
                 }
               </Col>
               <Col span={12}>
-                <p>Name : {currentItem ? currentItem.name : ""}</p>
-                <p>Customer ID : {currentItem ? currentItem.customer_id : ""}</p>
-                <p>Phone : {currentItem ? currentItem.phone : ""}</p>
-                <p>Email : {currentItem ? currentItem.email : ""}</p>
+                <p>Customer Name : {currentItem ? currentItem.name : ""}</p>
+                <p>Legal Name : {currentItem ? currentItem.legal_name : ""}</p>
+                <p>RUC : {currentItem ? currentItem.ruc : ""}</p>
+                <p>Billing Details : {currentItem ? currentItem.billing_details : ""}</p>
               </Col>
               <Col span={6}>
-                <Select style={{ width: 120 }} onChange={changeStatus} value={currentItem ? currentItem.status : 4} options={statusOptions} />
 
+                <Select style={{ width: 120 }} onChange={changeStatus} value={currentItem ? currentItem.status : 4} options={statusOptions} />
               </Col>
+              <Button type="primary" onClick={editCustomer} >Edit</Button>
             </Row>
             {/* <div className="profile-details">
               <Row>

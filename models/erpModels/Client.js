@@ -101,6 +101,18 @@ const clientSchema = new mongoose.Schema({
     type: Number,
     default: 1,
   },
+  legal_name: {
+    type: String,
+  },
+  ruc: {
+    type: String,
+  },
+  tax_residence: {
+    type: String,
+  },
+  billing_details: {
+    type: String,
+  },
   created: {
     type: Date,
     default: Date.now,
