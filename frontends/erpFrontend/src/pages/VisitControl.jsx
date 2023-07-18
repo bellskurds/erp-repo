@@ -1,6 +1,6 @@
 import { DashboardLayout, } from '@/layout';
 import { EyeOutlined, LeftOutlined, RightOutlined, SafetyOutlined, SearchOutlined, SkinOutlined, StopOutlined, TeamOutlined } from '@ant-design/icons';
-import { Button, Col, DatePicker, Form, Input, Layout, Modal, Popconfirm, Popover, Radio, Row, Select, Table, Typography, message } from 'antd';
+import { Button, Col, DatePicker, Form, Input, Layout, Modal, Popconfirm, Popover, Radio, Row, Select, Table, Tabs, Typography, message } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
@@ -90,6 +90,7 @@ const VisitControl = () => {
   const [historyData, setHistoryData] = useState([])
   const [reportData, setReportData] = useState([]);
   const [typeValue, setTypeValue] = useState();
+  const [tabsStatus, setTabStatus] = useState(1);
   const dataSource = [
     {
       item_label: "Limpieza general de instalaciones",
@@ -575,57 +576,110 @@ const VisitControl = () => {
 
 
       setPaginations({ current: 1, pageSize: 10, total: storeData.length })
+      const initReportData = [];
 
 
-      const initReportData = [
-        {
-          key: 1,
-          report_title: "INSPECCIONES REALIZADAS",
-          ...inspectionPerDate,
-          report_value: totalInspection
-        },
-        {
-          key: 2,
-          report_title: "Proyección a la Fecha",
-          report_value: parseInt(totalInspection / businessDays * workDays),
-          ...inspectionPerDate_
-        },
-        {
-          key: 3,
-          report_title: "Proyección del Mes",
-          report_value: totalInspectionOnStores
-        },
+      switch (parseInt(tabsStatus)) {
+        case 1:
+          initReportData.push({
+            key: 1,
+            report_title: "INSPECCIONES REALIZADAS",
+            ...inspectionPerDate,
+            report_value: totalInspection
+          },
+            {
+              key: 2,
+              report_title: "Proyección a la Fecha",
+              report_value: parseInt(totalInspection / businessDays * workDays),
+              ...inspectionPerDate_
+            },
+            {
+              key: 3,
+              report_title: "Proyección del Mes",
+              report_value: totalInspectionOnStores
+            },);
+          break;
+        case 2:
+          initReportData.push({
+            key: 4,
+            report_title: "INSUMOS ENTREGADOS",
+            report_value: totalProducts,
+            ...productPerDate
+          },
+            {
+              key: 5,
+              report_title: "Proyección a la Fecha",
+              report_value: parseInt(totalMonthlyDeliver / businessDays * workDays),
+              ...productPerDate_
+            },
+            {
+              key: 6,
+              report_title: "Proyección del Mes",
+              report_value: parseInt(totalMonthlyDeliver)
+            },);
+          break;
+        case 3:
+          initReportData.push(
+            {
+              key: 7,
+              report_title: "Visitas Realizadas",
+              ...visitPerDate,
+              report_value: parseInt(totalVisits)
+            }
+          )
+          break;
+        default:
+          break;
+      }
+      // const initReportData = [
+      //   {
+      //     key: 1,
+      //     report_title: "INSPECCIONES REALIZADAS",
+      //     ...inspectionPerDate,
+      //     report_value: totalInspection
+      //   },
+      //   {
+      //     key: 2,
+      //     report_title: "Proyección a la Fecha",
+      //     report_value: parseInt(totalInspection / businessDays * workDays),
+      //     ...inspectionPerDate_
+      //   },
+      //   {
+      //     key: 3,
+      //     report_title: "Proyección del Mes",
+      //     report_value: totalInspectionOnStores
+      //   },
 
-        {
-          key: 4,
-          report_title: "INSUMOS ENTREGADOS",
-          report_value: totalProducts,
-          ...productPerDate
-        },
-        {
-          key: 5,
-          report_title: "Proyección a la Fecha",
-          report_value: parseInt(totalMonthlyDeliver / businessDays * workDays),
-          ...productPerDate_
-        },
-        {
-          key: 6,
-          report_title: "Proyección del Mes",
-          report_value: parseInt(totalMonthlyDeliver)
-        },
-        {
-          key: 7,
-          report_title: "Visitas Realizadas",
-          ...visitPerDate,
-          report_value: parseInt(totalVisits)
-        },
-      ]
+      //   {
+      //     key: 4,
+      //     report_title: "INSUMOS ENTREGADOS",
+      //     report_value: totalProducts,
+      //     ...productPerDate
+      //   },
+      //   {
+      //     key: 5,
+      //     report_title: "Proyección a la Fecha",
+      //     report_value: parseInt(totalMonthlyDeliver / businessDays * workDays),
+      //     ...productPerDate_
+      //   },
+      //   {
+      //     key: 6,
+      //     report_title: "Proyección del Mes",
+      //     report_value: parseInt(totalMonthlyDeliver)
+      //   },
+      //   {
+      //     key: 7,
+      //     report_title: "Visitas Realizadas",
+      //     ...visitPerDate,
+      //     report_value: parseInt(totalVisits)
+      //   },
+      // ]
       setReportData(initReportData);
     }
     init();
 
   }, [
-    currentMonth, currentYear, changeStatus
+    currentMonth, currentYear, changeStatus, tabsStatus
   ])
 
   const getTotalInspection = (record) => {
@@ -771,8 +825,6 @@ const VisitControl = () => {
       setData(newData);
     }
   };
-
-
 
   return (
 
@@ -1047,6 +1099,18 @@ const VisitControl = () => {
           />
         </Modal>
         <Layout >
+
+          <Tabs defaultActiveKey='1' defaultChecked onChange={(e) => setTabStatus(e)}>
+            <Tabs.TabPane tab="Inspections" key={1}>
+              {/* Inspections */}
+            </Tabs.TabPane>
+            <Tabs.TabPane tab="Products" key={2}>
+              {/* Products */}
+            </Tabs.TabPane>
+            <Tabs.TabPane tab="Visits" key={3}>
+              {/* Visits */}
+            </Tabs.TabPane>
+          </Tabs>
           <Row gutter={24} style={{ textAlign: 'right' }}>
             <Col span={24}>
 
@@ -1071,7 +1135,6 @@ const VisitControl = () => {
               <Button onClick={showModal} type="primary">New Visit</Button>
             </Col>
           </Row>
-
           <Form form={form} component={false}>
             <Table
               style={{ overflow: 'auto' }}
@@ -1081,7 +1144,6 @@ const VisitControl = () => {
               rowClassName="editable-row"
             />
           </Form>
-
           <Form form={form} component={false}>
             <Table
               style={{ overflow: 'auto' }}
@@ -1092,15 +1154,11 @@ const VisitControl = () => {
               pagination={paginations}
               onChange={handelDataTableLoad}
               footer={Footer}
-
-
             />
           </Form>
-
-
         </Layout>
       </Layout>
-    </DashboardLayout>
+    </DashboardLayout >
   );
 };
 export default VisitControl;
