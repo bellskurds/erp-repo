@@ -22,6 +22,7 @@ import InvoiceHistory from './InvoiceHistory';
 import BillingEsmitaion from './BillingEstimation';
 import { Avatar_url } from '@/config/serverApiConfig';
 import DocumentManage from './DocumentManage';
+import ProjectBillingHistory from './ProjectBillingHistory';
 const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
 
@@ -315,6 +316,7 @@ export default function Details() {
           <Tabs.TabPane tab="Billing" key="3">
             <RecurrentBilling parentId={currentCustomerId} />
             <InvoiceHistory parentId={currentCustomerId} />
+            <ProjectBillingHistory parentId={currentCustomerId} />
             <BillingEsmitaion parentId={currentCustomerId} />
           </Tabs.TabPane>
         }

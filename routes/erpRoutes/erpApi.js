@@ -118,6 +118,7 @@ router.route('/project/search').get(catchErrors(ProjectController.search));
 router.route('/project/list').get(catchErrors(ProjectController.list));
 router.route('/project/filter').get(catchErrors(ProjectController.filter));
 router.route('/project/upload').post(adminPhotoUpload.single('avatar'), catchErrors(ProjectController.upload))
+router.route('/project/byParentId').post(catchErrors(ProjectController.getByParentId));
 
 
 
