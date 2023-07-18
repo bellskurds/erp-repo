@@ -42,6 +42,9 @@ const projectSchema = new mongoose.Schema({
   profitability: {
     type: Number,
   },
+  project_details: {
+    type: String,
+  },
   status: {
     type: Number,
   },

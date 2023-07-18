@@ -10,6 +10,7 @@ import { request } from '@/request';
 import moment from 'moment';
 import SelectAsync from '@/components/SelectAsync';
 import { useContext } from 'react';
+import { Link } from 'react-router-dom/cjs/react-router-dom.min';
 const EditableContext = React.createContext(null);
 const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 console.log(role, '343434');
@@ -183,10 +184,6 @@ const Projects = () => {
   const handleCancel = () => {
     setIsModalVisible(false);
   };
-  const generateCustomerId = () => {
-    return new Date().valueOf();
-  }
-  const [customerId, setCustomerId] = useState(generateCustomerId());
 
   const [employeeList, setEmployeeList] = useState([]);
   const [form] = Form.useForm();
@@ -207,11 +204,14 @@ const Projects = () => {
   const [allProfitability, setAllProfitability] = useState(0);
   const isEditing = (record) => record.key === editingKey;
 
-
+  const deleteEmployee = (record) => {
+    const filteredData = employeeList.filter(item => item.key !== record.key);
+    setEmployeeList(filteredData)
+  }
   const editItem = (item) => {
 
     if (item) {
-
+      if (formRef.current) formRef.current.resetFields();
       setTimeout(() => {
 
         const { employees, costs, _id, removed, enabled, created, periods, ...otherValues } = item;
@@ -403,6 +403,23 @@ const Projects = () => {
       const start = moment(periodsDate[0]);
       const end = periodsDate[1];
       const Columns = [
+        {
+          title: 'Actions',
+          dataIndex: 'operation',
+          width: "10%",
+          align: 'center',
+          render: (_, record) => {
+            return (
+              <>
+                <Popconfirm title="Sure to delete?" onConfirm={() => deleteEmployee(record)}>
+                  <DeleteOutlined style={{ fontSize: "20px" }} />
+                </Popconfirm>
+              </>
+            )
+
+          },
+        },
+
         {
           title: "Employee",
           dataIndex: "employee",
@@ -774,16 +791,20 @@ const Projects = () => {
                   <Form.Item
                     name="profitability"
                     label="Profitability"
-                  // rules={[
-                  //   {
-                  //     required: true,
-                  //   },
-                  // ]}
                   >
                     <Input type='number' readOnly style={{ background: 'lightgrey' }} value={summatoryCost} />
                   </Form.Item>
+                  <Form.Item
+
+                    name='project_details'
+                    label="Project details"
+
+                  >
+                    <Input.TextArea />
+                  </Form.Item>
                 </Col>
               </Row>
+
               <Form.Item
                 wrapperCol={{
                   offset: 8,
