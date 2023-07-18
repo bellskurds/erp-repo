@@ -130,13 +130,13 @@ const Store = () => {
   const isEditing = (record) => record._id === editingKey;
   const columns = [
     {
-      title: 'Customer',
-      dataIndex: ['parent_id', 'name'],
+      title: 'Store',
+      dataIndex: 'store',
       width: '15%',
     },
     {
-      title: 'Store',
-      dataIndex: 'store',
+      title: 'Customer',
+      dataIndex: ['parent_id', 'name'],
       width: '15%',
     },
     {
@@ -145,13 +145,17 @@ const Store = () => {
       width: '15%',
     },
     {
-      title: 'Waze',
-      dataIndex: 'waze_location',
+      title: 'Phone',
+      dataIndex: ['parent_id', 'phone'],
       width: '15%',
-      render: (_) => {
-        return <a target="_blank" rel='noreferrer' href={`https://waze.com/ul?ll=${_}&navigate=yes"`}>
-          <AliwangwangOutlined style={{ fontSize: "20px" }} />
-        </a>
+    },
+    {
+      title: 'Products',
+      dataIndex: 'products',
+      width: '15%',
+      render: (text, record) => {
+        const { products } = record
+        return text && <EyeOutlined onClick={() => setCurrentProducts(products)} style={{ fontSize: "20px" }} />
       }
     },
     {
@@ -164,20 +168,16 @@ const Store = () => {
       }
     },
     {
-      title: 'Products',
-      dataIndex: 'products',
+      title: 'Waze',
+      dataIndex: 'waze_location',
       width: '15%',
-      render: (text, record) => {
-        const { products } = record
-        return text && <EyeOutlined onClick={() => setCurrentProducts(products)} style={{ fontSize: "20px" }} />
+      render: (_) => {
+        return <a target="_blank" rel='noreferrer' href={`https://waze.com/ul?ll=${_}&navigate=yes"`}>
+          <AliwangwangOutlined style={{ fontSize: "20px" }} />
+        </a>
       }
     },
-    {
-      title: 'Specs',
-      dataIndex: 'spec',
-      width: '15%',
 
-    },
   ];
 
   const showEmployees = (data) => {
