@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Form, Button, Space, Layout, Col, Divider } from 'antd';
@@ -14,11 +14,15 @@ import logo1 from '@/style/images/logo1.png';
 import logo2 from '@/style/images/logo2.png';
 import logo3 from '@/style/images/logo3.png';
 import logo4 from '@/style/images/logo4.png';
+import { request } from '@/request';
+import SelectAsync from '@/components/SelectAsync';
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
 
 const SideContent = () => {
+
+
 
   return (
     <Content
@@ -121,8 +125,16 @@ const LoginPage = () => {
 
   const dispatch = useDispatch();
   const onFinish = (values) => {
+    // console.log(values, 'values')
     dispatch(login({ loginData: values }));
   };
+
+  const [isCompany, setIsCompany] = useState(false);
+  useEffect(() => {
+
+    console.log(isCompany, 'isCompany');
+  }, [isCompany])
+
   return (
     <>
       <AuthLayout sideContent={<SideContent />}>
@@ -156,11 +168,20 @@ const LoginPage = () => {
               }}
               onFinish={onFinish}
             >
-              <LoginForm />
-
-              <Form.Item>
-                {/* <SelectAsync entity={'company'} displayLabels={['company_name']} /> */}
-              </Form.Item>
+              <LoginForm onStateChange={setIsCompany} stateValue={isCompany} />
+              {
+                isCompany &&
+                <Form.Item
+                  name="company"
+                  label="Company"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}>
+                  <SelectAsync entity={'company'} displayLabels={['company_name']} />
+                </Form.Item>
+              }
               <Form.Item>
                 <Button
                   type="primary"

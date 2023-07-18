@@ -1,10 +1,13 @@
+const { createConnection } = require('@/db');
+const adminSchema = require('@/models/erpModels/Admin');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { stubFalse } = require('lodash');
 
 const mongoose = require('mongoose');
 
-const Admin = mongoose.model('Admin');
+let Admin = mongoose.model('Admin');
+const Company = mongoose.model('Company');
 const secretKey = 'mysecretkey';
 require('dotenv').config({ path: '.variables.env' });
 exports.generateResetToken = (email) => {
@@ -19,8 +22,14 @@ exports.verifyResetToken = (token) => {
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-
+    const { email, password, company: company_id } = req.body;
+    if (company_id) {
+      const { db_name } = await Company.findOne({ _id: company_id });
+      if (db_name) {
+        Admin = createConnection(db_name).model("Admin", adminSchema);
+      }
+    }
+    // console.log(req.body, db_name, 'companycompany')
     // validate
     if (!email || !password)
       return res.status(400).json({
@@ -102,7 +111,9 @@ exports.login = async (req, res) => {
 exports.isValidAdminToken = async (req, res, next) => {
   try {
     const token = req.cookies.token;
-
+    if (req.url.includes("company")) {
+      return next();
+    }
     if (!token)
       return res.status(401).json({
         success: false,
@@ -122,6 +133,7 @@ exports.isValidAdminToken = async (req, res, next) => {
       });
 
     const admin = await Admin.findOne({ _id: verified.id, removed: false });
+
     if (!admin)
       return res.status(401).json({
         success: false,

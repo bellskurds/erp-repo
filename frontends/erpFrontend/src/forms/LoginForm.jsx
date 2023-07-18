@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Input, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 
-export default function LoginForm() {
+export default function LoginForm({ onStateChange, stateValue }) {
+
+
   return (
     <>
       <Form.Item
@@ -39,9 +41,10 @@ export default function LoginForm() {
       <Form.Item>
         <Form.Item name="remember" valuePropName="checked" noStyle>
           <Checkbox>Remember me</Checkbox>
+          <Checkbox checked={stateValue} onChange={(e) => onStateChange(e.target.checked)}>To Company</Checkbox>
         </Form.Item>
 
-       
+
       </Form.Item>
     </>
   );

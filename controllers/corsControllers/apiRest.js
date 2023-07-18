@@ -9,10 +9,6 @@ const moment = require('moment');
 const { default: mongoose } = require('mongoose');
 const { generateResetToken, verifyResetToken } = require('../erpControllers/authJwtController ');
 const adminSchema = require('@/models/erpModels/Admin');
-const employeeConnection = mongoose.createConnection('mongodb://localhost:27017/employeeDB', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
 const createConnection = (db) => {
   return mongoose.createConnection(`mongodb://localhost/${db}`, {
     useNewUrlParser: true,

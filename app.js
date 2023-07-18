@@ -16,6 +16,7 @@ const erpAuthRouter = require('./routes/erpRoutes/erpAuth');
 const errorHandlers = require('./handlers/errorHandlers');
 
 const { isValidAdminToken } = require('./controllers/erpControllers/authJwtController ');
+const companyController = require('./controllers/erpControllers/companyController');
 
 // create our Express app
 const app = express();
@@ -44,8 +45,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 // pass variables to our templates + all requests
-
 app.use((req, res, next) => {
+
+  console.log(req.admin, 'req.admin')
   res.locals.h = helpers;
   res.locals.admin = req.admin || null;
   res.locals.currentPath = req.path;

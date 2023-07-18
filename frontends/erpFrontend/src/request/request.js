@@ -137,9 +137,6 @@ const request = {
   },
   listById: async ({ entity, jsonData }) => {
     try {
-      let query = '?';
-
-
       const response = await axios.post(entity + '/byParentId', jsonData);
 
       successHandler(response, {
@@ -148,6 +145,8 @@ const request = {
       });
       return response.data;
     } catch (error) {
+
+      console.log(error, '333333')
       return errorHandler(error);
     }
   },
