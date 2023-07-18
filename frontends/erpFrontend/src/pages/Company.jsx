@@ -121,6 +121,11 @@ const Company = () => {
       width: '15%',
     },
     {
+      title: 'Sub url',
+      dataIndex: 'db_name',
+      width: '15%',
+    },
+    {
       title: 'Email',
       dataIndex: 'email',
       width: '15%',
@@ -135,7 +140,7 @@ const Company = () => {
       dataIndex: 'periods',
       width: '15%',
       render: (text) => {
-        return formattedDateFunc(text[0] || null)
+        return text ? formattedDateFunc(text[0]) : ''
       }
     },
     {
@@ -143,7 +148,7 @@ const Company = () => {
       dataIndex: 'periods',
       width: '15%',
       render: (text) => {
-        return formattedDateFunc(text[1] || null)
+        return text ? formattedDateFunc(text[1]) : ''
       }
     },
     {
@@ -222,7 +227,7 @@ const Company = () => {
       if (item.length) {
         return message.error("can't save same db or same email")
       }
-
+      values['status'] = 1;
       dispatch(crud.create({ entity, jsonData: values }));
     }
     formRef.current.resetFields();
@@ -328,22 +333,26 @@ const Company = () => {
               >
                 <Input />
               </Form.Item>
-              <Form.Item
-                name="email"
-                label="E-mail"
-                rules={[
-                  {
-                    type: 'email',
-                    message: 'The input is not valid E-mail!',
-                  },
-                  {
-                    required: true,
-                    message: 'Please input your E-mail!',
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
+
+              {
+                !isUpdate &&
+                <Form.Item
+                  name="email"
+                  label="E-mail"
+                  rules={[
+                    {
+                      type: 'email',
+                      message: 'The input is not valid E-mail!',
+                    },
+                    {
+                      required: true,
+                      message: 'Please input your E-mail!',
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              }
               <Form.Item
                 name="users"
                 label="Users"
@@ -366,33 +375,43 @@ const Company = () => {
               >
                 <DatePicker.RangePicker />
               </Form.Item>
-              <Form.Item
-                name="status"
-                label="Status"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Select
-                  options={[
-                    { value: 1, label: "Active" },
-                    { value: 2, label: "Inactive" }
+              {
+                isUpdate &&
+                <Form.Item
+                  name="status"
+                  label="Status"
+                  rules={[
+                    {
+                      required: true,
+                    },
                   ]}
-                />
-              </Form.Item>
-              <Form.Item
-                name="db_name"
-                label="DB/Sub url"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
+                >
+                  <Select
+                    options={[
+                      { value: 1, label: "Active" },
+                      { value: 2, label: "Inactive" }
+                    ]}
+                  />
+                </Form.Item>
+              }
+
+              {
+                !isUpdate &&
+
+                <Form.Item
+                  name="db_name"
+                  label="DB/Sub url"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+
+
+              }
               <Form.Item
                 wrapperCol={{
                   offset: 8,

@@ -7,10 +7,19 @@
 const employeeSchema = require('@/models/erpModels/Employee');
 const moment = require('moment');
 const { default: mongoose } = require('mongoose');
+const { generateResetToken, verifyResetToken } = require('../erpControllers/authJwtController ');
+const adminSchema = require('@/models/erpModels/Admin');
 const employeeConnection = mongoose.createConnection('mongodb://localhost:27017/employeeDB', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+const createConnection = (db) => {
+  return mongoose.createConnection(`mongodb://localhost/${db}`, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+
+  })
+}
 exports.read = async (Model, req, res) => {
   try {
     // Find document by id
@@ -49,9 +58,19 @@ exports.read = async (Model, req, res) => {
 
 exports.create = async (Model, req, res) => {
   try {
-    if (req.url.includes('employee')) {
-      Model = employeeConnection.model('Employee', employeeSchema);
-
+    if (req.url.includes('company')) {
+      const { email, db_name, name } = req.body;
+      const resetToken = generateResetToken(email);
+      const resetPasswordUrl = `http://localhost:3000/reset-password/${resetToken}`;
+      const Admin = createConnection(db_name).model("admin", adminSchema);
+      const admin = new Admin();
+      const passwordHash = admin.generateHash('123');
+      new Admin({
+        email: email,
+        password: passwordHash,
+        surname: name,
+        name: name
+      }).save()
     }
 
     // Creating a new document in the collection

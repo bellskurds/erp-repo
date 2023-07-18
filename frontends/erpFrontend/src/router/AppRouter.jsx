@@ -42,7 +42,7 @@ export default function AppRouter() {
             return (
               <PrivateRoute
                 key={routeItem.component}
-                path={routeItem.path}
+                path={`${routeItem.path}`}
                 exact={routeItem.exact || true}
                 component={lazy(() =>
                   import(/* webpackChunkName: "[request]" */ `@/pages/${routeItem.component}`)

@@ -579,11 +579,6 @@ const VisitControl = () => {
 
       const initReportData = [
         {
-          key: 0,
-          report_title: "Días hábiles",
-          report_value: businessDays
-        },
-        {
           key: 1,
           report_title: "INSPECCIONES REALIZADAS",
           ...inspectionPerDate,
@@ -623,10 +618,6 @@ const VisitControl = () => {
           report_title: "Visitas Realizadas",
           ...visitPerDate,
           report_value: parseInt(totalVisits)
-        },
-        {
-          key: 8,
-          report_title: "Proyectos Entregados"
         },
       ]
       setReportData(initReportData);

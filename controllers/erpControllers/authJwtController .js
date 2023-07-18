@@ -7,6 +7,15 @@ const mongoose = require('mongoose');
 const Admin = mongoose.model('Admin');
 const secretKey = 'mysecretkey';
 require('dotenv').config({ path: '.variables.env' });
+exports.generateResetToken = (email) => {
+  // Generate a random token
+  const resetToken = jwt.sign({ email }, 'setPassword', { expiresIn: '1h' });
+  return resetToken;
+};
+exports.verifyResetToken = (token) => {
+  const decodedToken = jwt.verify(token, 'setPassword');
+  return decodedToken;
+}
 
 exports.login = async (req, res) => {
   try {

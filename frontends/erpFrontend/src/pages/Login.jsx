@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Form, Input, Button, Space, Layout, Row, Col, Divider } from 'antd';
+import { Form, Button, Space, Layout, Col, Divider } from 'antd';
 import { Typography } from 'antd';
 
 import { login } from '@/redux/auth/actions';
@@ -19,6 +19,7 @@ const { Content } = Layout;
 const { Title, Text } = Typography;
 
 const SideContent = () => {
+
   return (
     <Content
       style={{
@@ -156,6 +157,10 @@ const LoginPage = () => {
               onFinish={onFinish}
             >
               <LoginForm />
+
+              <Form.Item>
+                {/* <SelectAsync entity={'company'} displayLabels={['company_name']} /> */}
+              </Form.Item>
               <Form.Item>
                 <Button
                   type="primary"

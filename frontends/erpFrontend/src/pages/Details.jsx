@@ -447,7 +447,6 @@ export default function Details() {
                 <p>Name : {currentItem ? currentItem.name : ""}</p>
                 <p>Personal ID : {currentItem ? currentItem.personal_id : ""}</p>
                 <p>Phone : {currentItem ? currentItem.phone : ""}</p>
-                <p>Email : {currentItem ? currentItem.email : ""}</p>
               </Col>
               <Col span={6}>
                 <Select style={{ width: 120 }} onChange={changeStatus} value={currentItem ? currentItem.status : 4} options={statusOptions} />
@@ -464,62 +463,51 @@ export default function Details() {
                 </Col>
               </Row>
 
-              <Form form={form} onFinish={onFinish}>
-                <Row gutter={[20, 20]}>
+              <Row gutter={[20, 20]}>
 
-                  <Col span={10}>
-                    <Form.Item
-                      name="gender"
-                      label="Gender"
+                <Col span={10}>
 
-                    >
-                      {
-                        currentItem ? genderOptions.find((item) => { return item.value === currentItem.gender }).label : ""
-                      }
-                    </Form.Item>
-                    <Form.Item
-                      name="birth_place"
-                      label="Brith Place"
-                      initialValue={name}
-                    >
-                      {
-                        currentItem ? countryLists.find((item) => { return item.value === currentItem.birthplace }).label : ""
-                      }
-                    </Form.Item>
-                    <Form.Item
-                      name="birth_day"
-                      label="BrithDay"
-                      initialValue={name}
-                    >
-                      {currentItem ? currentItem.birthday : ""}
-                    </Form.Item>
+                  <p>
+                    Gender:
+                    {
+                      currentItem ? genderOptions.find((item) => { return item.value === currentItem.gender }).label : ""
+                    }
+                  </p>
 
-                  </Col>
-                  <Col span={10}>
-                    <Form.Item
-                      name="civil_status"
-                      label="Civil Status"
-                    >
-                      {
-                        currentItem ? civilOptions.find((item) => { return item.value === currentItem.civil_status }).label : ""
-                      }
-                    </Form.Item>
+                  <p>
+                    Brith Place:
+                    {
+                      currentItem ? countryLists.find((item) => { return item.value === currentItem.birthplace }).label : ""
+                    }
+                  </p>
 
-                    <Form.Item
-                      name="school"
-                      label="School"
-                    >
-                      {currentItem ? currentItem.school : ""}
-                    </Form.Item>
-                    <Form.Item
-                      name="address"
-                      label="Address"
-                    >
-                      {currentItem ? currentItem.address : ""}
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </Form>
+                  <p>
+                    BrithDay:
+                    {currentItem ? currentItem.birthday : ""}
+                  </p>
+
+
+                </Col>
+                <Col span={10}>
+                  <p>
+                    Civil Status:
+                    {
+                      currentItem ? civilOptions.find((item) => { return item.value === currentItem.civil_status }).label : ""
+                    }
+                  </p>
+
+                  <p>
+                    School:
+                    {currentItem ? currentItem.school : ""}
+                  </p>
+
+                  <p>
+                    Address:
+                    {currentItem ? currentItem.address : ""}
+                  </p>
+
+                </Col>
+              </Row>
             </div>
 
           </Content>

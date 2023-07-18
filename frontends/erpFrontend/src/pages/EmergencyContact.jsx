@@ -14,14 +14,14 @@ const EmergencyContact = (props) => {
     const [isBankModal, setIsBankModal] = useState(false);
     const formRef = useRef(null);
     const Columns = [
-        {
-            title: 'Name',
-            dataIndex: 'name',
-        },
-        {
-            title: 'Last Name',
-            dataIndex: 'lastname',
-        },
+        // {
+        //     title: 'Name',
+        //     dataIndex: 'name',
+        // },
+        // {
+        //     title: 'Last Name',
+        //     dataIndex: 'lastname',
+        // },
 
         {
             title: 'Phone',
@@ -147,7 +147,7 @@ const EmergencyContact = (props) => {
 
                     }}
                 >
-                    <Form.Item
+                    {/* <Form.Item
                         name="name"
                         label="Name"
                         rules={[
@@ -168,7 +168,7 @@ const EmergencyContact = (props) => {
                         ]}
                     >
                         <Input />
-                    </Form.Item>
+                    </Form.Item> */}
 
                     <Form.Item
                         name="phone"
