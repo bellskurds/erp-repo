@@ -330,17 +330,17 @@ const VisitControl = () => {
         return ((parseFloat(record.store_visit_value) || 0) - (parseFloat(record.visit_value) || 0));
       }
     },
-    {
-      title: 'INSU',
-      dataIndex: ['store', 'insumos'],
-      width: '15%',
-      render: (_, record) => {
-        const { store } = record;
-        const { insumos } = store;
-        return insumos ? "YES" : "NO"
-      }
+    // {
+    //   title: 'INSU',
+    //   dataIndex: ['store', 'insumos'],
+    //   width: '15%',
+    //   render: (_, record) => {
+    //     const { store } = record;
+    //     const { insumos } = store;
+    //     return insumos ? "YES" : "NO"
+    //   }
 
-    },
+    // },
   ];
 
   const topColumn = [
@@ -408,7 +408,7 @@ const VisitControl = () => {
     })
     setFilterData(filteredData);
     setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
-  }, [searchText, rangeDate])
+  }, [searchText, rangeDate, globalData])
 
   const handelDataTableLoad = useCallback((pagination) => {
     const { current, total } = pagination;
@@ -521,16 +521,16 @@ const VisitControl = () => {
         fillteredData.map(data => {
           const { store: store1, customer: customer1, visit_date, type, status } = data;
           if (store._id === store1._id && customer._id === customer1._id) {
-            if (status) {
+            if (status && type === parseInt(tabsStatus)) {
               obj[`day_${getDate(visit_date)}`] = visitType[type]
               obj['visit_value']++;
             }
           }
         })
       })
-
-      setFilterData(storeData)
-      setGlobalData(storeData)
+      const storeDataHasValue = storeData.filter(store => store.visit_value > 0)
+      setFilterData(storeDataHasValue)
+      setGlobalData(storeDataHasValue)
 
       // I would like to display inspection data by user per day... ------start-----
 
@@ -566,11 +566,11 @@ const VisitControl = () => {
       for (var key in inspectionPerDate_) {
         inspectionPerDate_[key] = parseInt(totalInspection / businessDays)
       }
-      for (var key in productPerDate_) {
-        productPerDate_[key] = parseInt(totalProducts / businessDays)
+      for (var key1 in productPerDate_) {
+        productPerDate_[key1] = parseInt(totalProducts / businessDays)
       }
-      for (var key in visitPerDate_) {
-        visitPerDate_[key] = parseInt(totalVisits / businessDays)
+      for (var key2 in visitPerDate_) {
+        visitPerDate_[key2] = parseInt(totalVisits / businessDays)
       }
       // -------------------------------end----------------------------------------
 
@@ -580,7 +580,7 @@ const VisitControl = () => {
 
 
       switch (parseInt(tabsStatus)) {
-        case 1:
+        case 3:
           initReportData.push({
             key: 1,
             report_title: "INSPECCIONES REALIZADAS",
@@ -618,7 +618,7 @@ const VisitControl = () => {
               report_value: parseInt(totalMonthlyDeliver)
             },);
           break;
-        case 3:
+        case 1:
           initReportData.push(
             {
               key: 7,
@@ -1101,13 +1101,13 @@ const VisitControl = () => {
         <Layout >
 
           <Tabs defaultActiveKey='1' defaultChecked onChange={(e) => setTabStatus(e)}>
-            <Tabs.TabPane tab="Inspections" key={1}>
+            <Tabs.TabPane tab="Inspections" key={3}>
               {/* Inspections */}
             </Tabs.TabPane>
             <Tabs.TabPane tab="Products" key={2}>
               {/* Products */}
             </Tabs.TabPane>
-            <Tabs.TabPane tab="Visits" key={3}>
+            <Tabs.TabPane tab="Visits" key={1}>
               {/* Visits */}
             </Tabs.TabPane>
           </Tabs>
