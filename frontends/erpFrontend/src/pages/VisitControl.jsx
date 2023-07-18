@@ -1100,7 +1100,7 @@ const VisitControl = () => {
         </Modal>
         <Layout >
 
-          <Tabs defaultActiveKey='1' defaultChecked onChange={(e) => setTabStatus(e)}>
+          <Tabs defaultActiveKey='3' onChange={(e) => setTabStatus(e)}>
             <Tabs.TabPane tab="Inspections" key={3}>
               {/* Inspections */}
             </Tabs.TabPane>
