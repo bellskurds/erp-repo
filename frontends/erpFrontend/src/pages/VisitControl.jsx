@@ -1,5 +1,5 @@
 import { DashboardLayout, } from '@/layout';
-import { EyeOutlined, LeftOutlined, RightOutlined, SafetyOutlined, SearchOutlined, SkinOutlined, StopOutlined, TeamOutlined } from '@ant-design/icons';
+import { AliwangwangOutlined, EyeOutlined, LeftOutlined, RightOutlined, SafetyOutlined, SearchOutlined, SkinOutlined, StopOutlined, TeamOutlined } from '@ant-design/icons';
 import { Button, Col, DatePicker, Form, Input, Layout, Modal, Popconfirm, Popover, Radio, Row, Select, Table, Tabs, Typography, message } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -91,6 +91,8 @@ const VisitControl = () => {
   const [reportData, setReportData] = useState([]);
   const [typeValue, setTypeValue] = useState();
   const [tabsStatus, setTabStatus] = useState(3);
+  const [isClientStore, setIsClientStore] = useState(false);
+  const [customerStore, setCustomerStore] = useState([]);
   const dataSource = [
     {
       item_label: "Limpieza general de instalaciones",
@@ -290,7 +292,19 @@ const VisitControl = () => {
   const [data, setData] = useState(dataSource);
   const editItem = (item) => {
     if (item) {
-      const { customer, store } = item
+      setIsClientStore(true)
+      const { customer, store } = item;
+      console.log(item)
+      const { location, waze_location, products, spec } = store;
+      setCustomerStore([{
+        location: location,
+        waze: <a target="_blank" rel='noreferrer' href={`https://waze.com/ul?ll=${waze_location || ''}&navigate=yes"`}>
+          <AliwangwangOutlined style={{ fontSize: "20px" }} />
+        </a>,
+        products: products,
+        spects: spec,
+        key: 0
+      }])
       const filteredData = visitContols.filter(({ customer: customer1, store: store1, visit_date }) =>
         customer._id === customer1._id && store._id === store1._id &&
         new Date(visit_date).getFullYear() === currentYear
@@ -299,7 +313,7 @@ const VisitControl = () => {
       filteredData.sort((a, b) => { return new Date(a.visit_date) - new Date(b.visit_date) })
       setHistoryData(filteredData)
       setCurrentId(item._id);
-      setIsHistory(true);
+      // setIsHistory(true);
     }
   }
 
@@ -1100,6 +1114,38 @@ const VisitControl = () => {
             ]}
             dataSource={data || []}
           /> */}
+        </Modal>
+        <Modal title="Form" visible={isClientStore} onCancel={() => setIsClientStore(false)} footer={null} width={800}>
+          <Button type='primary' onClick={() => setIsHistory(true)}>History</Button>
+          <Table
+            columns={[
+              {
+                title: "Location",
+                dataIndex: "location"
+              },
+              {
+                title: "Waze",
+                dataIndex: "waze"
+              },
+              {
+                title: "Contact name",
+                dataIndex: "contact_name"
+              },
+              {
+                title: "Employees",
+                dataIndex: "employees"
+              },
+              {
+                title: "Products",
+                dataIndex: "products"
+              },
+              {
+                title: "Spects",
+                dataIndex: "spects"
+              }
+            ]}
+            dataSource={customerStore || []}
+          />
         </Modal>
         <Layout >
 
