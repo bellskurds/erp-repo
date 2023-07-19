@@ -114,19 +114,20 @@ const ProjectDetails = () => {
       const { result: projects } = await request.list({ entity: "project" });
       const { result: employeeItems } = await request.list({ entity: "employee" });
       const projectListItems = projects.filter(({ periods, status }) =>
-        status === 1 &&
-        (
-          (
-            dateValue(periods[0]) <= dateValue(start_date) &&
-            dateValue(periods[1]) >= dateValue(end_date)
-          )
-          ||
-          (
-            dateValue(periods[0]) > dateValue(start_date) &&
-            dateValue(periods[0]) < dateValue(end_date) &&
-            dateValue(periods[1]) >= dateValue(end_date)
-          )
-        )
+        status === 1
+        // &&
+        // (
+        //   (
+        //     dateValue(periods[0]) <= dateValue(start_date) &&
+        //     dateValue(periods[1]) >= dateValue(end_date)
+        //   )
+        //   ||
+        //   (
+        //     dateValue(periods[0]) > dateValue(start_date) &&
+        //     dateValue(periods[0]) < dateValue(end_date) &&
+        //     dateValue(periods[1]) >= dateValue(end_date)
+        //   )
+        // )
       )
       const nestedItems = [];
       projectListItems.map(({ employees, ...obj }) => {

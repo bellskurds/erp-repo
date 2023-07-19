@@ -109,19 +109,20 @@ const ProjectPaymentManagement = () => {
     const start_date = new Date(year, startDay === 31 ? (month - 2) : (month - 1), startDay);
     const end_date = new Date(year, month - 1, endDay);
     const projectListItems = projects.filter(({ periods, status }) =>
-      status === 1 &&
-      (
-        (
-          dateValue(periods[0]) <= dateValue(start_date) &&
-          dateValue(periods[1]) >= dateValue(end_date)
-        )
-        ||
-        (
-          dateValue(periods[0]) > dateValue(start_date) &&
-          dateValue(periods[0]) < dateValue(end_date) &&
-          dateValue(periods[1]) >= dateValue(end_date)
-        )
-      )
+      status === 1
+      // &&
+      // (
+      //   (
+      //     dateValue(periods[0]) <= dateValue(start_date) &&
+      //     dateValue(periods[1]) >= dateValue(end_date)
+      //   )
+      //   ||
+      //   (
+      //     dateValue(periods[0]) > dateValue(start_date) &&
+      //     dateValue(periods[0]) < dateValue(end_date) &&
+      //     dateValue(periods[1]) >= dateValue(end_date)
+      //   )
+      // )
     )
 
     console.log(projects, projectListItems, month, periods, ' month, periods');
