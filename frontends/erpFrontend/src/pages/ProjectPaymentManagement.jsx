@@ -50,7 +50,7 @@ const ProjectPaymentManagement = () => {
     }
   }
   const getData = async () => {
-    const start_date = '2023/6/1';
+    const start_date = '2023/06/01';
     const end_date = new Date();
     let currentDate = moment(start_date);
 
