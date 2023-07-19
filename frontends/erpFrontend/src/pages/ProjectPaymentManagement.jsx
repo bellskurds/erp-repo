@@ -124,7 +124,7 @@ const ProjectPaymentManagement = () => {
       )
     )
 
-    console.log(projectListItems, month, periods, ' month, periods');
+    console.log(projects, projectListItems, month, periods, ' month, periods');
     const nestedItems = [];
     projectListItems.map(({ employees, ...obj }) => {
       const employeeLists = JSON.parse(employees);
