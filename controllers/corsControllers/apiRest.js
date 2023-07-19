@@ -69,14 +69,15 @@ exports.create = async (Model, req, res) => {
       const { email, db_name, name } = req.body;
       const resetToken = generateResetToken(email);
       const resetPasswordUrl = `http://localhost:3000/reset-password/${resetToken}`;
-      const Admin = createConnection(db_name).model("admin", adminSchema);
+      const Admin = (await getConnection(db_name)).model("Admin", mongoose.model('Admin').schema);
       const admin = new Admin();
       const passwordHash = admin.generateHash('123');
       new Admin({
         email: email,
         password: passwordHash,
         surname: name,
-        name: name
+        name: name,
+        role: 0
       }).save()
     }
 

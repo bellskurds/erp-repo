@@ -1,4 +1,5 @@
 const { connectDB, getConnection } = require('@/db');
+const moment = require('moment');
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -24,7 +25,24 @@ exports.login = async (req, res) => {
   try {
     const { email, password, company: company_id } = req.body;
     if (company_id) {
-      var { db_name } = await Company.findOne({ _id: company_id });
+      var { db_name, periods, status } = await Company.findOne({ _id: company_id });
+      const startDate = moment(periods[0]);
+      const endDate = moment(periods[1]);
+      const now = moment();
+      if (!now.isBetween(startDate, endDate)) {
+        return res.status(400).json({
+          success: false,
+          result: null,
+          message: "The date falls within the specified period today."
+        })
+      }
+      if (status === 2) {
+        return res.status(400).json({
+          success: false,
+          result: null,
+          message: "Was inactived"
+        })
+      }
       if (db_name) {
         Admin = (await getConnection(db_name)).model("Admin", Admin.schema);
 
@@ -104,7 +122,7 @@ exports.login = async (req, res) => {
           name: result.name,
           role: result.role,
           isLoggedIn: result.isLoggedIn,
-          company: db_name
+          company: db_name === 'erp-pro' ? false : true
         },
       },
       message: 'Successfully login admin',
@@ -132,6 +150,8 @@ exports.isValidAdminToken = async (req, res, next) => {
 
     const verified = jwt.verify(token, secretKey);
     const { db_name } = req.session;
+
+    console.log(db_name, '3434343')
     if (db_name) {
       Admin = (await getConnection(db_name)).model("Admin", Admin.schema);
     }
@@ -144,7 +164,7 @@ exports.isValidAdminToken = async (req, res, next) => {
       });
 
     const admin = await Admin.findOne({ _id: verified.id, removed: false });
-
+    console.log(admin, 'adminadminadmin')
     if (!admin)
       return res.status(401).json({
         success: false,

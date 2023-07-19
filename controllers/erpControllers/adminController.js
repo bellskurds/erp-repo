@@ -1,6 +1,7 @@
+const { getConnection } = require('@/db');
 const mongoose = require('mongoose');
 
-const Admin = mongoose.model('Admin');
+var Admin = mongoose.model('Admin');
 const getOne = require('../corsControllers/custom').getOne;
 
 /**
@@ -10,6 +11,13 @@ const getOne = require('../corsControllers/custom').getOne;
  */
 
 exports.list = async (req, res) => {
+  const { db_name } = req.session;
+  if (db_name) {
+    Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+  }
+
+
+
   const page = req.query.page || 1;
   const limit = parseInt(req.query.items) || 10;
   const skip = page * limit - limit;
@@ -53,6 +61,7 @@ exports.list = async (req, res) => {
   }
 };
 exports.profile = async (req, res) => {
+
   try {
     //  Query the database for a list of all results
     if (!req.admin) {
@@ -91,6 +100,11 @@ exports.profile = async (req, res) => {
 
 exports.photo = async (req, res) => {
   try {
+    const { db_name } = req.session;
+    if (db_name) {
+      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+    }
+
     // Find document by id
     const updates = {
       photo: req.body.photo,
@@ -139,6 +153,11 @@ exports.photo = async (req, res) => {
 };
 exports.read = async (req, res) => {
   try {
+    const { db_name } = req.session;
+    if (db_name) {
+      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+    }
+
     // Find document by id
     const tmpResult = await Admin.findOne({
       _id: req.params.id,
@@ -188,6 +207,11 @@ exports.read = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
+    const { db_name } = req.session;
+    if (db_name) {
+      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+    }
+
     let { email, password } = req.body;
     if (!email || !password)
       return res.status(400).json({
@@ -252,6 +276,11 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
+    const { db_name } = req.session;
+    if (db_name) {
+      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+    }
+
     let { email } = req.body;
 
     if (email) {
@@ -310,6 +339,11 @@ exports.update = async (req, res) => {
 
 exports.updatePassword = async (req, res) => {
   try {
+    const { db_name } = req.session;
+    if (db_name) {
+      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+    }
+
     let { password } = req.body;
 
     if (!password) return res.status(400).json({ msg: 'Not all fields have been entered.' });
@@ -370,6 +404,11 @@ exports.updatePassword = async (req, res) => {
 
 exports.delete = async (req, res) => {
   try {
+    const { db_name } = req.session;
+    if (db_name) {
+      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+    }
+
     let updates = {
       removed: true,
     };
@@ -406,6 +445,11 @@ exports.delete = async (req, res) => {
 
 exports.status = async (req, res) => {
   try {
+    const { db_name } = req.session;
+    if (db_name) {
+      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+    }
+
     if (req.query.enabled === true || req.query.enabled === false) {
       let updates = {
         enabled: req.query.enabled,
@@ -455,6 +499,11 @@ exports.search = async (req, res) => {
 
   // console.log(fields)
   try {
+    const { db_name } = req.session;
+    if (db_name) {
+      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+    }
+
     if (req.query.q === undefined || req.query.q === '' || req.query.q === ' ') {
       return res
         .status(202)
@@ -501,6 +550,11 @@ exports.search = async (req, res) => {
 
 exports.filter = async (req, res) => {
   try {
+    const { db_name } = req.session;
+    if (db_name) {
+      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+    }
+
     if (req.query.filter === undefined || req.query.equal === undefined) {
       return res.status(403).json({
         success: false,

@@ -45,7 +45,7 @@ export default function Navigation() {
   const onCollapse = () => {
     navMenu.collapse();
   };
-  const { role } = JSON.parse(window.localStorage.auth);
+  const { role, company } = JSON.parse(window.localStorage.auth);
   return (
     <>
       <Sider collapsible collapsed={isNavMenuClose} onCollapse={onCollapse} className="navigation">
@@ -108,13 +108,15 @@ export default function Navigation() {
               Store
             </Menu.Item>
           }
+          {!company &&
+            <Menu.Item key={'Company'} icon={<TeamOutlined />}>
+              <Link to={'/company'} />
+              Company
+            </Menu.Item>}
           {
             role === 0 &&
             <>
-              <Menu.Item key={'Company'} icon={<TeamOutlined />}>
-                <Link to={'/company'} />
-                Company
-              </Menu.Item>
+
               <Menu.Item key={'Admin'} icon={<TeamOutlined />}>
                 <Link to={'/admin'} />
                 Admin

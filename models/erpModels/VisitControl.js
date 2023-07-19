@@ -9,6 +9,9 @@ const visitControlSchema = new mongoose.Schema({
   comments: {
     type: String,
   },
+  inspection_comment: {
+    type: String,
+  },
   customer: {
     type: mongoose.Schema.ObjectId,
     ref: 'Client',

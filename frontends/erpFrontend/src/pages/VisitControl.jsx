@@ -90,7 +90,7 @@ const VisitControl = () => {
   const [historyData, setHistoryData] = useState([])
   const [reportData, setReportData] = useState([]);
   const [typeValue, setTypeValue] = useState();
-  const [tabsStatus, setTabStatus] = useState(1);
+  const [tabsStatus, setTabStatus] = useState(3);
   const dataSource = [
     {
       item_label: "Limpieza general de instalaciones",
@@ -381,7 +381,7 @@ const VisitControl = () => {
       const id = currentId;
       dispatch(crud.update({ entity, id, jsonData: values }));
     } else {
-      values["inspection_details"] = JSON.stringify(data)
+      // values["inspection_details"] = JSON.stringify(data)
       // const { result } = await request.create({ entity, jsonData: values });
       dispatch(crud.create({ entity, jsonData: values }));
     }
@@ -799,10 +799,11 @@ const VisitControl = () => {
 
   const [inspectionOfficer, setInspectionOfficer] = useState();
   const [personAcknowledgingReceipt, setPersonAcknowledgingReceipt] = useState();
+  const [inspectionComment, setInspectionComment] = useState();
   const [customerPerception, setCustomerPerception] = useState();
 
   const showInspectionForm = (record) => {
-    const { inspection_details, inspection_officer, person_acknowledging_receipt, customer_perception } = record;
+    const { inspection_comment, inspection_details, inspection_officer, person_acknowledging_receipt, customer_perception } = record;
     if (inspection_details)
       setData(JSON.parse(inspection_details || "[]"));
     else
@@ -811,20 +812,10 @@ const VisitControl = () => {
     setInspectionOfficer(inspection_officer || '');
     setPersonAcknowledgingReceipt(person_acknowledging_receipt || '');
     setCustomerPerception(customer_perception || '');
-
+    setInspectionComment(inspection_comment || '');
     setIsInspectionModal(true)
 
   }
-  const handleCheckChange = (key, column, checked) => {
-    const newData = [...data];
-    const target = newData.find(item => item.key === key);
-    const index = newData.findIndex(item => item.key === key);
-    if (target) {
-      target[column] = checked
-      newData[index] = target;
-      setData(newData);
-    }
-  };
 
   return (
 
@@ -851,7 +842,7 @@ const VisitControl = () => {
 
               <Row gutter={24}>
 
-                <Col span={typeValue === 3 ? 12 : 24}>
+                <Col span={24}>
                   <Form.Item
                     name="customer"
                     label="Customer"
@@ -962,6 +953,17 @@ const VisitControl = () => {
                       >
                         <Input />
                       </Form.Item>
+                      <Form.Item
+                        name="inspection_comment"
+                        label="Inspection Comment"
+                        rules={[
+                          {
+                            required: true,
+                          },
+                        ]}
+                      >
+                        <Input.TextArea />
+                      </Form.Item>
                       {/* <Form.Item
                         label='Limieza general de instalaciones'
                       >
@@ -980,7 +982,7 @@ const VisitControl = () => {
                     </>
                   }
                 </Col>
-                {
+                {/* {
                   typeValue === 3 &&
                   <Col span={12}>
                     <Table
@@ -1019,7 +1021,7 @@ const VisitControl = () => {
                       dataSource={data || []}
                     />
                   </Col>
-                }
+                } */}
               </Row>
               <Form.Item
                 wrapperCol={{
@@ -1060,9 +1062,10 @@ const VisitControl = () => {
           <h3>Encargado de inspección : {inspectionOfficer}</h3>
           <h3>Cliente: Percepción del servicio el último mes / alguna oportunidad de mejora : {customerPerception}</h3>
           <h3>Persona que acusa de recibido : {personAcknowledgingReceipt}</h3>
+          <h3>Comment : {inspectionComment}</h3>
 
 
-          <Table
+          {/* <Table
             pagination={[{ pageSize: 20 }]}
             columns={[
               {
@@ -1096,7 +1099,7 @@ const VisitControl = () => {
 
             ]}
             dataSource={data || []}
-          />
+          /> */}
         </Modal>
         <Layout >
 

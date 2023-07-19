@@ -642,16 +642,21 @@ const Projects = () => {
     }
   ]
   const [costList, setCostList] = useState([]);
+  const [allEmployeeCost, setAllEmployeeCost] = useState(0);
+  const [all_Cost, setAll_Cost] = useState(0);
   useEffect(() => {
 
-    let totalCost = 0;
+    var totalCost = 0, employee_cost = 0, _cost = 0;
     employeeList.map(item => {
-      totalCost += parseFloat(item.total) || 0
+      totalCost += parseFloat(item.total) || 0;
+      employee_cost += parseFloat(item.total) || 0;
     })
-
+    setAllEmployeeCost(employee_cost);
     costList.map(obj => {
-      totalCost += parseFloat(obj.cost) || 0
+      totalCost += parseFloat(obj.cost) || 0;
+      _cost += parseFloat(obj.cost) || 0;
     })
+    setAll_Cost(_cost)
     setSummatoryCost(totalCost)
     if (formRef.current) formRef.current.setFieldsValue({ cost: totalCost })
   }, [
@@ -836,7 +841,9 @@ const Projects = () => {
             <Row gutter={24}>
 
               <Col span={16}>
+
                 <Button onClick={addEmployee}>Add Employee</Button>
+                <label style={{ float: 'right' }}> Total Cost:{allEmployeeCost}</label>
                 <Table
                   dataSource={employeeList || []}
                   columns={_columns}
@@ -847,6 +854,7 @@ const Projects = () => {
               </Col>
               <Col span={8}>
                 <Button onClick={addCost}>Add Cost</Button>
+                <label style={{ float: 'right' }}> Total Cost:{all_Cost}</label>
                 <Table
                   dataSource={costList || []}
                   columns={costColumn.map((col) => {
