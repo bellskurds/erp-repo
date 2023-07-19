@@ -112,7 +112,7 @@ const Contract = (props) => {
                 item.start_date = moment(new Date(item.start_date), 'mm/dd/yyyy')
                 item.end_date = moment(new Date(item.end_date), 'mm/dd/yyyy')
                 console.log(item, 'itemitemitemitem')
-                if (formRef.current) formRef.current.setFieldsValue(item);
+                if (formRef.current) formRef.current.setFieldsValue({ ...item, sal_biweekly: (item.sal_monthly / 2).toFixed(2) });
                 setCurrentId(item._id);
             }, 500);
 
@@ -198,6 +198,7 @@ const Contract = (props) => {
             const monthly = (salaryHour * hourWeek * 4.333).toFixed();
             formRef.current.setFieldsValue({
                 sal_monthly: monthly,
+                sal_biweekly: parseFloat(monthly / 2).toFixed(2)
             });
         }
     }, [
@@ -286,10 +287,6 @@ const Contract = (props) => {
                         </Col>
                         <Col span={12}>
                             <Form.Item
-                                // wrapperCol={{
-                                //     offset: 8,
-                                //     span: 16,
-                                // }}
                                 name="sal_monthly"
                                 label="Sal/Mon"
                                 rules={[
@@ -299,6 +296,17 @@ const Contract = (props) => {
                                 ]}
                             >
                                 <Input />
+                            </Form.Item>
+                            <Form.Item
+                                name="sal_biweekly"
+                                label="Sal/Biweekly"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <Input readOnly />
                             </Form.Item>
                             <Form.Item
                             // wrapperCol={{

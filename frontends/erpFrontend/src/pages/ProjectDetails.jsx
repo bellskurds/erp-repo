@@ -17,8 +17,13 @@ const ProjectDetails = () => {
   const [changedDays, setChangedDays] = useState([]);
   const columns = [
     {
-      title: 'Customer',
+      title: 'Customer Name',
       dataIndex: ['customer', 'name'],
+      width: '100',
+    },
+    {
+      title: 'Billing ID',
+      dataIndex: 'billing_id',
       width: '100',
     },
     {
@@ -32,12 +37,14 @@ const ProjectDetails = () => {
       width: '200',
     },
     {
-      title: 'Reference',
-      dataIndex: ['ref', 'ref'],
+      title: 'Category',
       width: '100',
+      render: () => {
+        return "Project"
+      }
     },
     {
-      title: 'Quincena',
+      title: 'Payment',
       dataIndex: 'quincena',
       width: '100',
     },
@@ -170,13 +177,13 @@ const ProjectDetails = () => {
     listItems.map(obj => {
       const { customer, ref, enabled, key, periods, removed, status, type, __v, _id, billing, cost, employee, quincena, created, project_id, ...others } = obj;
       const { name: customer_name } = customer;
-      const { ref: ref_name } = ref;
       excelLists.push({
-        customer: customer_name,
+        customer_name: customer_name,
+        billing_id: "",
         employee: employee,
         project: project_id,
-        reference: ref_name,
-        quincena: quincena,
+        category: "Project",
+        payment: quincena,
         ...others
       });
     })
