@@ -158,6 +158,8 @@ const ProjectPaymentManagement = () => {
     async function init() {
       const { result } = await request.list({ entity });
       const { result: allHours } = await request.list({ entity });
+
+      console.log(result, allHours, 'testing..........')
       setPayrollDetails(result);
       setAllHours(allHours)
     }
