@@ -1,15 +1,26 @@
 const employeeSchema = require('@/models/erpModels/Employee');
 const apiRest = require('./apiRest');
 const mongoose = require('mongoose');
+const { getConnection } = require('@/db');
+const AssignedEmployee = require('@/models/erpModels/AssignedEmployee');
+const AssignedEmployeeSchema = require('@/models/erpModels/AssignedEmployee');
+const workContract = require('@/models/erpModels/workContract');
+const WorkContractSchema = require('@/models/erpModels/workContract');
+
+
 
 
 exports.createCRUDController = (modelName, filter = []) => {
 
-  const Model = mongoose.model(modelName);
+
+  console.log(modelName, 'modelNamemodelName')
+  var Model = mongoose.model(modelName);
   let crudMethods = {};
 
   if (!filter.includes('create')) {
     crudMethods.create = async (req, res) => {
+
+
       apiRest.create(Model, req, res);
     };
   }
@@ -29,8 +40,15 @@ exports.createCRUDController = (modelName, filter = []) => {
     };
   }
   if (!filter.includes('list')) {
+
     crudMethods.list = async (req, res) => {
-      apiRest.list(Model, req, res);
+      const modelSchema = Model.schema;
+      const { db_name } = req.session;
+      console.log(db_name, modelName, '343434334')
+      if (db_name) {
+        Model = (await getConnection(db_name)).model(modelName, modelSchema);
+      }
+      apiRest.list(Model, req, res, modelName);
     };
   }
   if (!filter.includes('search')) {
@@ -55,6 +73,12 @@ exports.createCRUDController = (modelName, filter = []) => {
   }
   if (!filter.includes('byParentId')) {
     crudMethods.getByParentId = async (req, res) => {
+      const modelSchema = Model.schema;
+      const { db_name } = req.session;
+      console.log(db_name, modelName, '343434334')
+      if (db_name) {
+        Model = (await getConnection(db_name)).model(modelName, modelSchema);
+      }
       apiRest.getByParentId(Model, req, res);
     };
   }

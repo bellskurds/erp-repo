@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const path = require('path');
 const cors = require('cors');
 const session = require('express-session');
+const mongoose = require('mongoose');
 
 const cookieParser = require('cookie-parser');
 require('dotenv').config({ path: '.variables.env' });
@@ -43,11 +44,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 // );
 
 
-
+app.use(session({
+  secret: 'yourSecretKey',
+  resave: false,
+  saveUninitialized: true
+}));
 // pass variables to our templates + all requests
 app.use((req, res, next) => {
-
-  console.log(req.admin, 'req.admin')
   res.locals.h = helpers;
   res.locals.admin = req.admin || null;
   res.locals.currentPath = req.path;

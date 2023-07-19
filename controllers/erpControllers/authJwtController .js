@@ -1,5 +1,5 @@
-const { createConnection } = require('@/db');
-const adminSchema = require('@/models/erpModels/Admin');
+const { connectDB, getConnection } = require('@/db');
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { stubFalse } = require('lodash');
@@ -24,12 +24,18 @@ exports.login = async (req, res) => {
   try {
     const { email, password, company: company_id } = req.body;
     if (company_id) {
-      const { db_name } = await Company.findOne({ _id: company_id });
+      var { db_name } = await Company.findOne({ _id: company_id });
       if (db_name) {
-        Admin = createConnection(db_name).model("Admin", adminSchema);
+        Admin = (await getConnection(db_name)).model("Admin", Admin.schema);
+
+        // Admin = createConnection(db_name).model("Admin", Admin.schema);
+
       }
+    } else {
+      db_name = 'erp-pro'
+      Admin = (await getConnection(db_name)).model("Admin", Admin.schema);
     }
-    // console.log(req.body, db_name, 'companycompany')
+    console.log(db_name, 'db_name');
     // validate
     if (!email || !password)
       return res.status(400).json({
@@ -39,7 +45,6 @@ exports.login = async (req, res) => {
       });
 
     const admin = await Admin.findOne({ email: email, removed: false });
-
 
     if (!admin)
       return res.status(400).json({
@@ -58,7 +63,7 @@ exports.login = async (req, res) => {
       });
 
 
-
+    req.session.db_name = db_name;
     const token = jwt.sign(
       {
         id: admin._id,
@@ -99,11 +104,14 @@ exports.login = async (req, res) => {
           name: result.name,
           role: result.role,
           isLoggedIn: result.isLoggedIn,
+          company: db_name
         },
       },
       message: 'Successfully login admin',
     });
   } catch (err) {
+
+    console.log(err, 'errrr')
     res.status(500).json({ success: false, result: null, message: err.message, error: err });
   }
 };
@@ -123,7 +131,10 @@ exports.isValidAdminToken = async (req, res, next) => {
       });
 
     const verified = jwt.verify(token, secretKey);
-
+    const { db_name } = req.session;
+    if (db_name) {
+      Admin = (await getConnection(db_name)).model("Admin", Admin.schema);
+    }
     if (!verified)
       return res.status(401).json({
         success: false,

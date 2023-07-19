@@ -9,6 +9,7 @@ const moment = require('moment');
 const { default: mongoose } = require('mongoose');
 const { generateResetToken, verifyResetToken } = require('../erpControllers/authJwtController ');
 const adminSchema = require('@/models/erpModels/Admin');
+const { getConnection } = require('@/db');
 const createConnection = (db) => {
   return mongoose.createConnection(`mongodb://localhost/${db}`, {
     useNewUrlParser: true,
@@ -16,6 +17,16 @@ const createConnection = (db) => {
 
   })
 }
+
+const getModelWithDBName = (modelName, db_name) => {
+  const connection = mongoose.connections.find(conn => conn.name === db_name);
+  if (connection) {
+    return connection.model(modelName, Model.schema);
+  } else {
+    return mongoose.model(modelName, Model.schema);
+  }
+};
+
 exports.read = async (Model, req, res) => {
   try {
     // Find document by id
@@ -318,7 +329,8 @@ exports.delete = async (Model, req, res) => {
  *  @returns {Object} Results with pagination
  */
 
-exports.list = async (Model, req, res) => {
+exports.list = async (Model, req, res, modelName) => {
+
 
   // if (req.url.includes('employee')) {
   //   Model = employeeConnection.model('Employee', employeeSchema);
@@ -335,6 +347,7 @@ exports.list = async (Model, req, res) => {
       // .limit(limit)
       .sort({ created: 'desc' })
       .populate();
+
     // Counting the total documents
     const countPromise = Model.count({ removed: false });
     // Resolving both promises
@@ -360,6 +373,7 @@ exports.list = async (Model, req, res) => {
       });
     }
   } catch (err) {
+    console.log(err, '3errrr')
     return res.status(500).json({
       success: false,
       result: [],

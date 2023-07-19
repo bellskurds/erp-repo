@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+
 const Admin = mongoose.model('Admin');
 const getOne = require('../corsControllers/custom').getOne;
 
@@ -212,6 +213,7 @@ exports.create = async (req, res) => {
       });
 
     var newAdmin = new Admin();
+
     const passwordHash = newAdmin.generateHash(password);
     req.body.password = passwordHash;
 

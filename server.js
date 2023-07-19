@@ -25,11 +25,13 @@ const glob = require('glob');
 const path = require('path');
 
 glob.sync('./models/**/*.js').forEach(function (file) {
-  require(path.resolve(file));
+  const model = require(path.resolve(file));
 });
+
 
 // Start our app!
 const app = require('./app');
+
 
 
 app.set('port', process.env.PORT || 8888);
