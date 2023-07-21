@@ -123,6 +123,10 @@ var routes = [
     path: '/position',
     component: 'Position',
   },
+  {
+    path: '/comparative_Report',
+    component: 'ComparativeReport',
+  },
 ]
 
 
