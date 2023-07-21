@@ -127,6 +127,11 @@ const PayrollDetails = () => {
       width: '100',
     },
     {
+      title: 'Position',
+      dataIndex: 'position',
+      width: '100',
+    },
+    {
       title: 'Employee',
       dataIndex: ['employee', 'name'],
       width: '100',
@@ -460,7 +465,7 @@ const PayrollDetails = () => {
       )
       _listItems.map(obj => {
         const { contract: assignedContract } = obj;
-
+        obj.position = obj.position;
         obj.sunday_hr = obj.sunday ? getHours(obj.sunday) : 0;
         obj.monday_hr = obj.monday ? getHours(obj.monday) : 0;
         obj.tuesday_hr = obj.tuesday ? getHours(obj.tuesday) : 0;

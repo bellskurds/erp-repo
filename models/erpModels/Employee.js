@@ -94,7 +94,7 @@ const employeeSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
-// employeeSchema.plugin(require('mongoose-autopopulate'));
+employeeSchema.plugin(require('mongoose-autopopulate'));
 employeeSchema.index({
   name: 'text',
   surname: 'text',

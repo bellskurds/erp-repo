@@ -9,6 +9,7 @@ import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
 import { Link } from 'react-router-dom/cjs/react-router-dom';
 import { request } from '@/request';
+import SelectAsync from '@/components/SelectAsync';
 const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
 const customerColumns = [

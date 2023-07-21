@@ -154,7 +154,7 @@ const EditableCell = ({
       </div>
     );
   }
-  return <td {...restProps}>{childNode}</td>;
+  return <td {...restProps} onDoubleClick={toggleEdit}>{childNode}</td>;
 };
 const Projects = () => {
   const entity = "project"

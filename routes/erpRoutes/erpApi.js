@@ -44,6 +44,7 @@ const referenceController = require('@/controllers/erpControllers/referenceContr
 const payrollController = require('@/controllers/erpControllers/payrollController');
 const visitControlController = require('@/controllers/erpControllers/visitControlController');
 const companyController = require('@/controllers/erpControllers/companyController');
+const positionController = require('@/controllers/erpControllers/positionController');
 
 const baseFilePath = 'public/uploads/admin/'
 // //_______________________________ Admin management_______________________________
@@ -244,6 +245,17 @@ router.route('/reference/search').get(catchErrors(referenceController.search));
 router.route('/reference/list').get(catchErrors(referenceController.list));
 router.route('/reference/filter').get(catchErrors(referenceController.filter));
 router.route('/reference/byParentId').post(catchErrors(referenceController.getByParentId));
+
+
+// //_____________________________________ API for Project of Reference contacts __________________________________________________
+router.route('/position/create').post(catchErrors(positionController.create));
+router.route('/position/read/:id').get(catchErrors(positionController.read));
+router.route('/position/update/:id').patch(catchErrors(positionController.update));
+router.route('/position/delete/:id').delete(catchErrors(positionController.delete));
+router.route('/position/search').get(catchErrors(positionController.search));
+router.route('/position/list').get(catchErrors(positionController.list));
+router.route('/position/filter').get(catchErrors(positionController.filter));
+router.route('/position/byParentId').post(catchErrors(positionController.getByParentId));
 
 
 // //_____________________________________ API for Project of Payroll __________________________________________________

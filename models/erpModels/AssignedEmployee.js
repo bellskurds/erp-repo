@@ -38,6 +38,9 @@ const AssignedEmployeeSchema = new mongoose.Schema({
   parent_id: {
     type: mongoose.Schema.ObjectId, ref: 'Client', autopopulate: true
   },
+  position: {
+    type: String,
+  },
   removed: {
     type: Boolean,
     default: false,

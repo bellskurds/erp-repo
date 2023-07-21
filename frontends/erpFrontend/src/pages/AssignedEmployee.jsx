@@ -1,7 +1,7 @@
 import { crud } from "@/redux/crud/actions";
 import { selectListsByAssignedEmployee, selectListsByContract, selectListsByCustomerStores, } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined, } from "@ant-design/icons";
-import { Button, Checkbox, Col, Form, InputNumber, Modal, Popconfirm, Row, Select, Table, TimePicker, Typography } from "antd";
+import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Table, TimePicker, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import SelectAsync from "@/components/SelectAsync";
@@ -18,6 +18,10 @@ const AssignedEmployee = (props) => {
 
     const contractType = ["", "Payroll", "Services"];
     const bankColumns = [
+        {
+            title: 'Position',
+            dataIndex: 'position',
+        },
         {
             title: 'Name',
             dataIndex: ['employee', 'name'],
@@ -91,7 +95,7 @@ const AssignedEmployee = (props) => {
     const editBankModal = () => {
         setIsBankModal(true);
         setIsUpdate(false);
-        // if (formRef) formRef.current.resetFields();
+        if (formRef) formRef.current.resetFields();
     }
 
     const getFormattedHours = (days) => {
@@ -114,6 +118,7 @@ const AssignedEmployee = (props) => {
         if (item) {
             setIsBankModal(true);
             setIsUpdate(true);
+            if (formRef.current) formRef.current.resetFields();
             setTimeout(() => {
                 if (item.monday) setMondayValue(true);
                 if (item.tuesday) setTuesdayValue(true);
@@ -122,13 +127,6 @@ const AssignedEmployee = (props) => {
                 if (item.friday) setFridayValue(true);
                 if (item.saturday) setSaturdayValue(true);
                 if (item.sunday) setSundayValue(true);
-
-                // item.tuesday = item.tuesday ? [moment(item.tuesday[0]), moment(item.tuesday[1])] : null;
-                // item.wednesday = item.wednesday ? [moment(item.wednesday[0]), moment(item.wednesday[1])] : null;
-                // item.thursday = item.thursday ? [moment(item.thursday[0]), moment(item.thursday[1])] : null;
-                // item.friday = item.friday ? [moment(item.friday[0]), moment(item.friday[1])] : null;
-                // item.saturday = item.saturday ? [moment(item.saturday[0]), moment(item.saturday[1])] : null;
-                // item.sunday = item.sunday ? [moment(item.sunday[0]), moment(item.sunday[1])] : null;
                 console.log(item, 'fffffffffffffffffffsssffffff')
                 if (formRef.current) formRef.current.setFieldsValue({
                     monday: item.monday ? [moment(item.monday[0]), moment(item.monday[1])] : null,
@@ -141,7 +139,8 @@ const AssignedEmployee = (props) => {
                     store: item.store._id,
                     sal_hr: item.sal_hr,
                     hr_week: item.hr_week,
-                    contract: item.contract._id
+                    contract: item.contract._id,
+                    position: item.position,
                 });
                 setCurrentId(item._id);
             }, 200);
@@ -163,6 +162,8 @@ const AssignedEmployee = (props) => {
         setIsBankModal(false)
     }
     const saveBankDetails = (values) => {
+
+
         const parentId = currentEmployeeId;
         if (currentId && parentId && isUpdate) {
             const id = currentId;
@@ -251,7 +252,7 @@ const AssignedEmployee = (props) => {
                 if (item.status === "active") {
                     return {
                         value: item._id,
-                        label: `${item.start_date}~${item.end_date}`
+                        label: `${item.sal_hr}~${item.sal_monthly}`
                     }
                 } else {
                     return {}
@@ -289,6 +290,12 @@ const AssignedEmployee = (props) => {
 
                     <Row gutter={24}>
                         <Col span={15}>
+                            <Form.Item
+                                name={"position"}
+                                label="Position"
+                            >
+                                <Input />
+                            </Form.Item>
                             <Form.Item
                                 name="employee"
                                 label="Employee"
@@ -503,7 +510,7 @@ const AssignedEmployee = (props) => {
             </Modal>
             <Row>
                 <Col span={3}>
-                    <h3 style={{ color: '#22075e', marginBottom: 5 }}>Assigned Employees</h3>
+                    <h3 style={{ color: '#22075e', marginBottom: 5 }}>Positions</h3>
                 </Col>
                 <Col span={12}>
                     <Button type="primary" onClick={editBankModal}>Assign</Button>

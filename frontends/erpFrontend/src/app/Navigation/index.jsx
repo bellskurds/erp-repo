@@ -125,13 +125,19 @@ export default function Navigation() {
           }
           {
             role !== 3 &&
+            <>
+              <SubMenu key={'Settings'} icon={<SettingOutlined />} title={'Settings'}>
+                <Menu.Item key={'Ref'}>
+                  <Link to={'/ref'} />
+                  Reference
+                </Menu.Item>
+                <Menu.Item key={'Position'}>
+                  <Link to={'/position'} />
+                  Position
+                </Menu.Item>
+              </SubMenu>
 
-            <SubMenu key={'Settings'} icon={<SettingOutlined />} title={'Settings'}>
-              <Menu.Item key={'Ref'}>
-                <Link to={'/ref'} />
-                Reference
-              </Menu.Item>
-            </SubMenu>
+            </>
           }
         </Menu>
       </Sider>

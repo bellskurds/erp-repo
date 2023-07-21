@@ -119,6 +119,10 @@ var routes = [
     path: '/ref',
     component: 'Reference',
   },
+  {
+    path: '/position',
+    component: 'Position',
+  },
 ]
 
 
