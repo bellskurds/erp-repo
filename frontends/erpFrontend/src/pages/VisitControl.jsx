@@ -69,7 +69,13 @@ const VisitControl = () => {
     setIsModalVisible(true);
     setIsUpdate(false);
 
-    if (formRef.current) formRef.current.resetFields();
+    if (formRef.current) {
+      console.log(tabsStatus, 'tabsStatustabsStatus')
+      // formRef.current.resetFields();
+      formRef.current.setFieldsValue({
+        type: tabsStatus
+      })
+    }
   };
   const dispatch = useDispatch();
   const handleOk = () => {
@@ -469,7 +475,6 @@ const VisitControl = () => {
 
     async function init() {
 
-      setVisitTypeValue(tabsStatus)
       const startDay = 1;
       const endDay = new Date(currentYear, currentMonth, 0).getDate();
       const start_date = new Date(currentYear, currentMonth - 1, startDay);

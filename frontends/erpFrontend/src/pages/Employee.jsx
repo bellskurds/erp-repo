@@ -217,9 +217,13 @@ const Employees = () => {
         item['customers_'] = [];
         assignedEmployees.map(obj => {
           const { employee } = obj
-          const { _id: employee_id1 } = employee;
-          if (employee_id === employee_id1) {
-            item['customers_'].push(obj)
+          if (employee) {
+
+            console.log(employee, 'employee')
+            const { _id: employee_id1 } = employee;
+            if (employee_id === employee_id1) {
+              item['customers_'].push(obj)
+            }
           }
         })
         item['customers'] = item['customers_'].length
