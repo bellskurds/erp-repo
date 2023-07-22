@@ -61,3 +61,6 @@ exports.productionErrors = (err, req, res, next) => {
     error: err,
   });
 };
+exports.sendMail = (req, res) => {
+  console.log(req.url)
+}

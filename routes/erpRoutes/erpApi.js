@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const path = require('path');
 const setFilePathToBody = require('@/middlewares/setFilePathToBody');
-const { catchErrors } = require('@/handlers/errorHandlers');
+const { catchErrors, sendMail } = require('@/handlers/errorHandlers');
 
 const router = express.Router();
 
@@ -313,6 +313,7 @@ router.route('/visitControl/search').get(catchErrors(visitControlController.sear
 router.route('/visitControl/list').get(catchErrors(visitControlController.list));
 router.route('/visitControl/filter').get(catchErrors(visitControlController.filter));
 router.route('/visitControl/byParentId').post(catchErrors(visitControlController.getByParentId));
+router.route('/visitControl/upload').post(documentUpload.single('file'), catchErrors(sendMail))
 
 
 

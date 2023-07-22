@@ -48,6 +48,7 @@ const VisitControl = () => {
   const [rangeDate] = useState();
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [currentFile, setCurrentFile] = useState();
   const visitType = [
     '',
     <TeamOutlined />,
@@ -96,7 +97,7 @@ const VisitControl = () => {
   const [isHistory, setIsHistory] = useState(false);
   const [historyData, setHistoryData] = useState([])
   const [reportData, setReportData] = useState([]);
-  const [typeValue, setTypeValue] = useState();
+  const [typeValue, setTypeValue] = useState(3);
   const [tabsStatus, setTabStatus] = useState(3);
   const [visitTypeValue, setVisitTypeValue] = useState(3);
   const [isClientStore, setIsClientStore] = useState(false);
@@ -837,7 +838,12 @@ const VisitControl = () => {
     setIsInspectionModal(true)
 
   }
+  const handleUpload = (e) => {
+    e.preventDefault();
 
+    const file = e.target.files[0];
+    setCurrentFile(file);
+  };
   return (
 
     <DashboardLayout>
@@ -940,68 +946,17 @@ const VisitControl = () => {
 
                   {
                     typeValue === 3 &&
-                    <>
+                    <Form.Item
+                      name="pdf"
+                      label="Upload File"
+                    >
+                      <Input
+                        type='file'
+                        name='file'
+                        onChange={handleUpload}
+                      />
 
-                      <Form.Item
-                        name="inspection_officer"
-                        label="Encargado de inspección"
-                        rules={[
-                          {
-                            required: true,
-                          },
-                        ]}
-                      >
-                        <Input />
-                      </Form.Item>
-                      <Form.Item
-                        name="customer_perception"
-                        label="Cliente: Percepción del servicio el último mes / alguna oportunidad de mejora"
-                        rules={[
-                          {
-                            required: true,
-                          },
-                        ]}
-                      >
-                        <Input />
-                      </Form.Item>
-                      <Form.Item
-                        name="person_acknowledging_receipt"
-                        label="Persona que acusa de recibido"
-                        rules={[
-                          {
-                            required: true,
-                          },
-                        ]}
-                      >
-                        <Input />
-                      </Form.Item>
-                      <Form.Item
-                        name="inspection_comment"
-                        label="Inspection Comment"
-                        rules={[
-                          {
-                            required: true,
-                          },
-                        ]}
-                      >
-                        <Input.TextArea />
-                      </Form.Item>
-                      {/* <Form.Item
-                        label='Limieza general de instalaciones'
-                      >
-                        <Checkbox />
-                      </Form.Item>
-                      <Form.Item
-                        label='Limieza de pisos'
-                      >
-                        <Checkbox />
-                      </Form.Item>
-                      <Form.Item
-                        label='Limieza de superficies de vidrio'
-                      >
-                        <Checkbox />
-                      </Form.Item> */}
-                    </>
+                    </Form.Item>
                   }
                 </Col>
                 {/* {
