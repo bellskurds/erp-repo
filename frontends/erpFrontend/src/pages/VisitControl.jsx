@@ -73,7 +73,7 @@ const VisitControl = () => {
       console.log(tabsStatus, 'tabsStatustabsStatus')
       // formRef.current.resetFields();
       formRef.current.setFieldsValue({
-        type: tabsStatus
+        type: parseInt(tabsStatus)
       })
     }
   };
@@ -854,7 +854,7 @@ const VisitControl = () => {
                 span: 16,
               }}
               initialValues={{
-                remember: true,
+                type: 3,
               }}
               onFinish={onFinish}
               onFinishFailed={onFinishFailed}
@@ -909,6 +909,7 @@ const VisitControl = () => {
                     ]}
                   >
                     <Radio.Group
+                      name='radioGroup'
                       options={[
                         {
                           value: 1,
@@ -923,7 +924,6 @@ const VisitControl = () => {
                           label: "Inspection"
                         }]}
                       onChange={(e) => setTypeValue(e.target.value)}
-                      value={visitTypeValue}
                     />
                   </Form.Item>
                   <Form.Item

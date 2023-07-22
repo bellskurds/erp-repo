@@ -34,7 +34,7 @@ const projectSchema = new mongoose.Schema({
     type: Object,
   },
   ref: {
-    type: mongoose.Schema.ObjectId, ref: 'Reference', autopopulate: true
+    type: String,
   },
   invoice_id: {
     type: String,

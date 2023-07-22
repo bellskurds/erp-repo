@@ -251,7 +251,7 @@ const Projects = () => {
     },
     {
       title: 'Reference',
-      dataIndex: ['ref', 'ref'],
+      dataIndex: 'ref',
       width: '15%',
     },
     {
@@ -777,7 +777,8 @@ const Projects = () => {
                       },
                     ]}
                   >
-                    <SelectAsync entity={'reference'} displayLabels={['ref']} />
+                    <Input />
+                    {/* <SelectAsync entity={'reference'} displayLabels={['ref']} /> */}
 
                     {/* <Select
 
