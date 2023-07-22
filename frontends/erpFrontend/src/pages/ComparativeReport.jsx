@@ -126,7 +126,7 @@ const ComparativeReport = () => {
       width: '100',
       align: "center",
       render: (_) => {
-        return `$${_.toFixed(2) || 0}`
+        return `$${_ ? _.toFixed(2) : 0 || 0}`
       }
 
     },
@@ -136,7 +136,7 @@ const ComparativeReport = () => {
       width: '100',
       align: "center",
       render: (_) => {
-        return `$${_.toFixed(2)}`
+        return `$${_ ? _.toFixed(2) : 0}`
       }
 
     },
