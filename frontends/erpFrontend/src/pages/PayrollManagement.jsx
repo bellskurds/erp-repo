@@ -177,7 +177,7 @@ const PayrollManagement = () => {
     const start_date = new Date(year, startDay === 31 ? (month - 2) : (month - 1), startDay);
     const end_date = new Date(year, month - 1, endDay);
     const _listItems = _assignedEmployees.filter(({ contract }) =>
-      contract.status === "active" &&
+      Object(contract).hasOwnProperty("status") && contract.status === "active" &&
       (
         (
           dateValue(contract.start_date) <= dateValue(start_date) &&
@@ -296,7 +296,7 @@ const PayrollManagement = () => {
     })
 
     filteredWorkContracts.map(contract => {
-      const item = assignedContracts.filter(obj => obj._id === contract._id);
+      const item = assignedContracts.filter(obj => (Object(obj).hasOwnProperty('_id') && obj._id === contract._id));
       if (!item.length) {
         contract.employee = contract.parent_id
         contract.contract = { type: contract.type };

@@ -41,6 +41,9 @@ const AssignedEmployeeSchema = new mongoose.Schema({
   position: {
     type: String,
   },
+  gross_salary: {
+    type: Number,
+  },
   removed: {
     type: Boolean,
     default: false,

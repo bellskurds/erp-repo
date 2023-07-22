@@ -68,6 +68,10 @@ const AssignedEmployee = (props) => {
             dataIndex: 'sal_hr',
         },
         {
+            title: 'Gross Salary',
+            dataIndex: 'gross_salary',
+        },
+        {
             title: 'Actions',
             dataIndex: 'operation',
             width: "10%",
@@ -95,7 +99,15 @@ const AssignedEmployee = (props) => {
     const editBankModal = () => {
         setIsBankModal(true);
         setIsUpdate(false);
-        if (formRef) formRef.current.resetFields();
+
+        setMondayValue(false);
+        setTuesdayValue(false);
+        setWednesdayValue(false);
+        setTursdayValue(false);
+        setFridayValue(false);
+        setSaturdayValue(false);
+        setSundayValue(false);
+        if (formRef.current) { formRef.current.resetFields(); }
     }
 
     const getFormattedHours = (days) => {
@@ -120,16 +132,39 @@ const AssignedEmployee = (props) => {
             setIsUpdate(true);
             if (formRef.current) formRef.current.resetFields();
             setTimeout(() => {
-                if (item.monday) setMondayValue(true);
-                if (item.tuesday) setTuesdayValue(true);
-                if (item.wednesday) setWednesdayValue(true);
-                if (item.thursday) setTursdayValue(true);
-                if (item.friday) setFridayValue(true);
-                if (item.saturday) setSaturdayValue(true);
-                if (item.sunday) setSundayValue(true);
+                if (item.monday) { setMondayValue(true) }
+                else {
+                    setMondayValue(false)
+                }
+                if (item.tuesday) setTuesdayValue(true)
+                else {
+                    setTuesdayValue(false)
+                }
+                if (item.wednesday) setWednesdayValue(true)
+                else {
+                    setWednesdayValue(false)
+                }
+                if (item.thursday) setTursdayValue(true)
+                else {
+                    setTursdayValue(false)
+                }
+                if (item.friday) setFridayValue(true)
+                else {
+                    setFridayValue(false)
+                }
+                if (item.saturday) setSaturdayValue(true)
+                else {
+                    setSaturdayValue(false)
+                }
+                if (item.sunday) setSundayValue(true)
+                else {
+                    setSundayValue(false)
+                }
+
                 console.log(item, 'fffffffffffffffffffsssffffff')
                 if (formRef.current) formRef.current.setFieldsValue({
                     monday: item.monday ? [moment(item.monday[0]), moment(item.monday[1])] : null,
+                    tuesday: item.tuesday ? [moment(item.tuesday[0]), moment(item.tuesday[1])] : null,
                     wednesday: item.wednesday ? [moment(item.wednesday[0]), moment(item.wednesday[1])] : null,
                     thursday: item.thursday ? [moment(item.thursday[0]), moment(item.thursday[1])] : null,
                     friday: item.friday ? [moment(item.friday[0]), moment(item.friday[1])] : null,
@@ -141,6 +176,7 @@ const AssignedEmployee = (props) => {
                     hr_week: item.hr_week,
                     contract: item.contract._id,
                     position: item.position,
+                    gross_salary: item.gross_salary
                 });
                 setCurrentId(item._id);
             }, 200);
@@ -299,11 +335,11 @@ const AssignedEmployee = (props) => {
                             <Form.Item
                                 name="employee"
                                 label="Employee"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
+                            // rules={[
+                            //     {
+                            //         required: true,
+                            //     },
+                            // ]}
                             >
                                 <SelectAsync onChange={changeEmployee} entity={'employee'} displayLabels={['name']}></SelectAsync>
 
@@ -311,11 +347,11 @@ const AssignedEmployee = (props) => {
                             <Form.Item
                                 name="contract"
                                 label="Contract"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
+                            // rules={[
+                            //     {
+                            //         required: true,
+                            //     },
+                            // ]}
                             >
                                 <Select
                                     showSearch
@@ -332,7 +368,7 @@ const AssignedEmployee = (props) => {
 
                             <Form.Item
                                 name="monday"
-                                label={<Checkbox onChange={(e) => { e.target.checked ? setMondayValue(true) : setMondayValue(false) }}>Monday</Checkbox>}
+                                label={<Checkbox checked={mondayValue} onChange={(e) => { e.target.checked ? setMondayValue(true) : setMondayValue(false) }}>Monday</Checkbox>}
                             // rules={[
                             //     {
                             //         required: true,
@@ -346,7 +382,7 @@ const AssignedEmployee = (props) => {
                             </Form.Item>
                             <Form.Item
                                 name="tuesday"
-                                label={<Checkbox onChange={(e) => { e.target.checked ? setTuesdayValue(true) : setTuesdayValue(false) }}>Tuesday</Checkbox>}
+                                label={<Checkbox checked={tuesdayValue} onChange={(e) => { e.target.checked ? setTuesdayValue(true) : setTuesdayValue(false) }}>Tuesday</Checkbox>}
                             // rules={[
                             //     {
                             //         required: true,
@@ -360,7 +396,7 @@ const AssignedEmployee = (props) => {
                             </Form.Item>
                             <Form.Item
                                 name="wednesday"
-                                label={<Checkbox onChange={(e) => { e.target.checked ? setWednesdayValue(true) : setWednesdayValue(false) }}>Wednesday</Checkbox>}
+                                label={<Checkbox checked={wednesdayValue} onChange={(e) => { e.target.checked ? setWednesdayValue(true) : setWednesdayValue(false) }}>Wednesday</Checkbox>}
 
                             // rules={[
                             //     {
@@ -375,7 +411,7 @@ const AssignedEmployee = (props) => {
                             </Form.Item>
                             <Form.Item
                                 name="thursday"
-                                label={<Checkbox onChange={(e) => { e.target.checked ? setTursdayValue(true) : setTursdayValue(false) }}>Thursday</Checkbox>}
+                                label={<Checkbox checked={tursdayValue} onChange={(e) => { e.target.checked ? setTursdayValue(true) : setTursdayValue(false) }}>Thursday</Checkbox>}
 
                             // rules={[
                             //     {
@@ -391,7 +427,7 @@ const AssignedEmployee = (props) => {
                             <Form.Item
                                 name="friday"
 
-                                label={<Checkbox onChange={(e) => { e.target.checked ? setFridayValue(true) : setFridayValue(false) }}>Friday</Checkbox>}
+                                label={<Checkbox checked={fridayValue} onChange={(e) => { e.target.checked ? setFridayValue(true) : setFridayValue(false) }}>Friday</Checkbox>}
                             // rules={[
                             //     {
                             //         required: true,
@@ -406,7 +442,7 @@ const AssignedEmployee = (props) => {
                             <Form.Item
                                 name="saturday"
 
-                                label={<Checkbox onChange={(e) => { e.target.checked ? setSaturdayValue(true) : setSaturdayValue(false) }}>Saturday</Checkbox>}
+                                label={<Checkbox checked={saturdayValue} onChange={(e) => { e.target.checked ? setSaturdayValue(true) : setSaturdayValue(false) }}>Saturday</Checkbox>}
                             // rules={[
                             //     {
                             //         required: true,
@@ -421,7 +457,7 @@ const AssignedEmployee = (props) => {
                             <Form.Item
                                 name="sunday"
 
-                                label={<Checkbox onChange={(e) => { e.target.checked ? setSundayValue(true) : setSundayValue(false) }}>Sunday</Checkbox>}
+                                label={<Checkbox checked={sundayValue} onChange={(e) => { e.target.checked ? setSundayValue(true) : setSundayValue(false) }}>Sunday</Checkbox>}
                             // rules={[
                             //     {
                             //         required: true,
@@ -468,7 +504,7 @@ const AssignedEmployee = (props) => {
                                     },
                                 ]}
                             >
-                                <InputNumber />
+                                <Input type='number' />
                             </Form.Item>
                             <Form.Item
                                 name="hr_week"
@@ -479,7 +515,18 @@ const AssignedEmployee = (props) => {
                                     },
                                 ]}
                             >
-                                <InputNumber />
+                                <Input type='number' />
+                            </Form.Item>
+                            <Form.Item
+                                name="gross_salary"
+                                label="Gross Salary"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <Input type='number' />
                             </Form.Item>
                         </Col>
                     </Row>

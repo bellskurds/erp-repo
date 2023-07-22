@@ -449,7 +449,7 @@ const PayrollDetails = () => {
 
 
       const _listItems = assignedEmployees.filter(({ contract }) =>
-        contract.status === "active" &&
+        Object(contract).hasOwnProperty('status') && contract.status === "active" &&
         (
           (
             dateValue(contract.start_date) <= dateValue(start_date) &&
@@ -563,7 +563,7 @@ const PayrollDetails = () => {
         )
       )
       filteredWorkContracts.map(contract => {
-        const item = assignedContracts.filter(obj => obj._id === contract._id);
+        const item = assignedContracts.filter(obj => (Object(obj).hasOwnProperty('_id') && obj._id === contract._id));
         if (!item.length) {
           contract.employee = contract.parent_id
           delete contract.parent_id

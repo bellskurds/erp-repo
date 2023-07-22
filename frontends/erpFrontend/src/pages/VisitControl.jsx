@@ -68,6 +68,7 @@ const VisitControl = () => {
     setCurrentId(new Date().valueOf())
     setIsModalVisible(true);
     setIsUpdate(false);
+
     if (formRef.current) formRef.current.resetFields();
   };
   const dispatch = useDispatch();
@@ -91,6 +92,7 @@ const VisitControl = () => {
   const [reportData, setReportData] = useState([]);
   const [typeValue, setTypeValue] = useState();
   const [tabsStatus, setTabStatus] = useState(3);
+  const [visitTypeValue, setVisitTypeValue] = useState(3);
   const [isClientStore, setIsClientStore] = useState(false);
   const [customerStore, setCustomerStore] = useState([]);
   const dataSource = [
@@ -467,7 +469,7 @@ const VisitControl = () => {
 
     async function init() {
 
-
+      setVisitTypeValue(tabsStatus)
       const startDay = 1;
       const endDay = new Date(currentYear, currentMonth, 0).getDate();
       const start_date = new Date(currentYear, currentMonth - 1, startDay);
@@ -916,6 +918,7 @@ const VisitControl = () => {
                           label: "Inspection"
                         }]}
                       onChange={(e) => setTypeValue(e.target.value)}
+                      value={visitTypeValue}
                     />
                   </Form.Item>
                   <Form.Item

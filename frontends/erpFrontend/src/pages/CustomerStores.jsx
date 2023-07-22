@@ -169,6 +169,13 @@ const CustomerStores = (props) => {
         setIsBankModal(true);
         setIsUpdate(false);
         if (formRef.current) formRef.current.resetFields();
+        setSundayValue(false)
+        setSaturdayValue(false)
+        setFridayValue(false)
+        setTursdayValue(false)
+        setWednesdayValue(false)
+        setTuesdayValue(false)
+        setMondayValue(false)
     }
     const getFormattedHours = (days) => {
         const dayLabels = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
