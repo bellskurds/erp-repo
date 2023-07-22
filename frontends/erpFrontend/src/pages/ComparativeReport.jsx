@@ -57,6 +57,13 @@ const ComparativeReport = () => {
   const handleCancel = () => {
     setIsModalVisible(false);
   };
+  const getCurrentQ = (date) => {
+    if (date > 15) {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
 
   const [form] = Form.useForm();
   const [currentId, setCurrentId] = useState('');
@@ -65,7 +72,7 @@ const ComparativeReport = () => {
   const [saveStatus, setSaveStatus] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [currentQ, setCurrentQ] = useState(1)
+  const [currentQ, setCurrentQ] = useState(getCurrentQ(new Date().getDate()))
   const [currentBiWeek, setCurrentBiweek] = useState(new Date())
   const [currentPeriod, setCurrentPeriod] = useState('1-15')
   const [changedDays, setChangedDays] = useState([]);
@@ -94,24 +101,8 @@ const ComparativeReport = () => {
       setIsUpdate(true);
     }
   }
-  const deleteItem = (item) => {
-    const id = item._id;
-    dispatch(crud.delete({ entity, id }))
-    setTimeout(() => {
-      dispatch(crud.list({ entity }));
-    }, 1000)
-  }
 
-  const navigateBiWeeks = (date, direction) => {
-    const newDate = new Date(date);
-    if (direction === 'previous') {
-      newDate.setDate(newDate.getDate() - 15);
-    } else if (direction === 'next') {
-      newDate.setDate(newDate.getDate() + 15);
-    }
-    setCurrentBiweek(newDate);
-    return newDate;
-  }
+
   const calcAdjustment = (record) => {
     var adjust = 0;
     for (var key in record) {
