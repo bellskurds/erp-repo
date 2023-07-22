@@ -365,7 +365,7 @@ const ComparativeReport = () => {
 
 
       const _listItems = assignedEmployees.filter(({ contract }) =>
-        contract.status === "active" &&
+        Object(contract).hasOwnProperty('status') && contract.status === "active" &&
         (
           (
             dateValue(contract.start_date) <= dateValue(start_date) &&
