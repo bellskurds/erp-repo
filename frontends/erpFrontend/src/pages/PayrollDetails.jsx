@@ -575,8 +575,14 @@ const PayrollDetails = () => {
           unassignedContracts.push(contract)
         }
       })
-      setListItems([..._listItems, ...unassignedContracts])
-      console.log([...assignedEmployees, ...unassignedContracts], 'currentPeriod');
+      const unAssingedEmployees = [];
+      assignedEmployees.map(({ contract, employee, ...otherObject }) => {
+        if (!contract || !employee)
+          unAssingedEmployees.push(otherObject);
+      })
+
+      setListItems([..._listItems, ...unassignedContracts, ...unAssingedEmployees])
+      console.log([...assignedEmployees, ...unassignedContracts, ...unAssingedEmployees], 'currentPeriod');
     }
     init()
   }, [
@@ -592,7 +598,8 @@ const PayrollDetails = () => {
     return hours;
   }
   useEffect(() => {
-  }, [biWeek]);
+    console.log(listItems, 'listItems')
+  }, [listItems]);
 
 
   return (

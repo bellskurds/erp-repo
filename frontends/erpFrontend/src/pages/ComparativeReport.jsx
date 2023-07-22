@@ -74,6 +74,8 @@ const ComparativeReport = () => {
   const [selectedDate, setSelectedDate] = useState();
   const [byEmail, setByEmail] = useState();
   const [adjust, setAdjust] = useState(0);
+  const [totalProjection, setTotalProjection] = useState(0);
+  const [totalDifference, setTotalDifference] = useState(0);
   const editItem = (item, cellItem, current, mainHour) => {
     const { hour, comment, by: { email: byEmail = '' } = {} } = cellItem
     if (item) {
@@ -124,11 +126,36 @@ const ComparativeReport = () => {
       title: 'Customer',
       dataIndex: ['parent_id', 'name'],
       width: '100',
+      align: "center"
+
     },
     {
-      title: 'Transferencia',
+      title: 'Projection ',
+      dataIndex: 'gross_salary',
+      width: '100',
+      align: "center",
+      render: (_) => {
+        return `$${_.toFixed(2) || 0}`
+      }
+
+    },
+    {
+      title: 'Real Payment',
       dataIndex: 'transferencia',
       width: '100',
+      align: "center",
+      render: (_) => {
+        return `$${_.toFixed(2)}`
+      }
+
+    },
+    {
+      title: 'Difference',
+      width: '100',
+      render: (_, record) => {
+        return `$${((parseInt(record.gross_salary) || 0) - (parseInt(record.transferencia) || 0)).toFixed(2)}`
+      },
+      align: "center"
     },
   ];
   const getPeriods = (month, year, Q = 0) => {
@@ -456,17 +483,35 @@ const ComparativeReport = () => {
         obj.adjust = calcAdjustment(obj) * obj.sal_hr;
         obj.salary = parseFloat(obj.adjust) + parseFloat(obj.week_pay);
         obj.transferencia = assignedContract.type === 1 ? obj.salary : obj.salary * 0.89;
-
-
       });
-
-      setListItems([..._listItems])
-
-      console.log(_listItems, '_listItems')
+      const groupedCustomer = _listItems.reduce((acc, item) => {
+        const existingItem = acc.find(i => i.parent_id._id === item.parent_id._id);
+        if (!existingItem) {
+          acc.push(item);
+        }
+        return acc;
+      }, []);
+      let _totalProjection = 0, _totalDifference = 0, _totalRealPayment = 0;
+      groupedCustomer.map(item => {
+        const { parent_id: customer1 } = item;
+        _listItems.map(list => {
+          const { parent_id: customer2 } = list
+          if (item._id !== list._id && customer1._id === customer2._id) {
+            item.transferencia += parseFloat(list.transferencia);
+            item.gross_salary += parseFloat(list.gross_salary);
+          }
+        });
+        _totalProjection += item.gross_salary;
+        _totalRealPayment += item.transferencia;
+      })
+      _totalDifference = _totalProjection - _totalRealPayment;
+      setTotalProjection(parseFloat(_totalProjection).toFixed(2));
+      setTotalDifference(parseFloat(_totalDifference).toFixed(2));
+      setListItems([...groupedCustomer])
     }
     init()
   }, [
-    currentPeriod, saveStatus
+    currentPeriod, saveStatus, currentMonth, currentYear
   ]);
   const getServiceHours = (record) => {
     var hours = 0;
@@ -571,6 +616,17 @@ const ComparativeReport = () => {
           </h3>
         </Col>
       </Row>
+      <Row style={{
+        textAlign: 'center', paddingTop: "50px", paddingBottom: "30px"
+      }}>
+        <Col span={12}>
+          <h4 >Total Projection: ${totalProjection}</h4>
+        </Col>
+        <Col span={12}>
+          <h4>Total Difference: ${totalDifference}</h4>
+
+        </Col>
+      </Row>
       <Table
 
         // scroll={{ x: (changedDays.length + columns.length) * 100, y: 1300 }}
@@ -580,7 +636,7 @@ const ComparativeReport = () => {
         dataSource={listItems || []}
         columns={[...columns]}
         rowClassName="editable-row"
-        style={{ width: '1000px' }}
+        style={{ width: '1500px' }}
       />
 
 

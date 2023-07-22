@@ -100,6 +100,12 @@ export default function Navigation() {
             <Link to={'/visit_control'} />
             Visit Control
           </Menu.Item>
+          <SubMenu key={'Reports'} icon={<SettingOutlined />} title={'Reports'}>
+            <Menu.Item key={'Comparative Report'}>
+              <Link to={'/comparative_Report'} />
+              Comparative Report
+            </Menu.Item>
+          </SubMenu>
           {
             role !== 3 &&
 
@@ -123,12 +129,7 @@ export default function Navigation() {
               </Menu.Item>
             </>
           }
-          <SubMenu key={'Reports'} icon={<SettingOutlined />} title={'Reports'}>
-            <Menu.Item key={'Comparative Report'}>
-              <Link to={'/comparative_Report'} />
-              Comparative Report
-            </Menu.Item>
-          </SubMenu>
+
           {
             role !== 3 &&
             <>
