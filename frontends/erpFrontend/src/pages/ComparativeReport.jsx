@@ -488,12 +488,12 @@ const ComparativeReport = () => {
         _listItems.map(list => {
           const { parent_id: customer2 } = list
           if (item._id !== list._id && customer1._id === customer2._id) {
-            item.transferencia += parseFloat(list.transferencia);
-            item.gross_salary += parseFloat(list.gross_salary);
+            item.transferencia += parseFloat(list.transferencia || 0);
+            item.gross_salary += parseFloat(list.gross_salary || 0);
           }
         });
-        _totalProjection += item.gross_salary;
-        _totalRealPayment += item.transferencia;
+        _totalProjection += item.gross_salary || 0;
+        _totalRealPayment += item.transferencia || 0;
       })
       _totalDifference = _totalProjection - _totalRealPayment;
       setTotalProjection(parseFloat(_totalProjection).toFixed(2));
