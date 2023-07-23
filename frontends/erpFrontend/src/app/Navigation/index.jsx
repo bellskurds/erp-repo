@@ -105,6 +105,10 @@ export default function Navigation() {
               <Link to={'/comparative_Report'} />
               Comparative Report
             </Menu.Item>
+            <Menu.Item key={'Monthly Billing Report'}>
+              <Link to={'/billing_report'} />
+              Billing Report
+            </Menu.Item>
           </SubMenu>
           {
             role !== 3 &&

@@ -127,6 +127,10 @@ var routes = [
     path: '/comparative_Report',
     component: 'ComparativeReport',
   },
+  {
+    path: '/billing_report',
+    component: 'BillingReport',
+  },
 ]
 
 
