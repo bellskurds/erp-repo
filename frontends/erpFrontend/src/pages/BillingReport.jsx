@@ -6,6 +6,9 @@ import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Layout, Mo
 import { DashboardLayout } from '@/layout';
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
+
+
 import moment from "moment";
 import useOnFetch from '@/hooks/useOnFetch';
 import { request } from '@/request';
@@ -276,16 +279,28 @@ const InvoiceHistory = (props) => {
     setCustomerData(result);
   }, [result])
   const exportToExcel = () => {
+    const tableData = [];
 
-    const _invoices = invoices.map(obj => ({
-      date: obj.start_date,
-      amount: obj.amount,
-      details: obj.details
-    }))
-    const worksheet = XLSX.utils.json_to_sheet(_invoices);
+    const columns1 = [...TopColumns, ...monthColumns];
+    const columns2 = [...Columns, ...monthColumns];
+    const headerRow1 = columns1.map((column) => column.title);
+    tableData.push(headerRow1);
+    const headerRow2 = columns2.map((column) => column.title);
+    tableData.push(headerRow2);
+
+    statisticsData.forEach((record) => {
+      const rowData = columns1.map((column) => record[column.dataIndex]);
+      tableData.push(rowData);
+    });
+    billingData.forEach((record) => {
+      const rowData = columns2.map((column) => record[column.dataIndex]);
+      tableData.push(rowData);
+    });
+    const worksheet = XLSX.utils.json_to_sheet(tableData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-    XLSX.writeFile(workbook, 'table.xlsx');
+    XLSX.writeFile(workbook, `BillingReport${new Date().valueOf()}.xlsx`);
+
   }
   const handleDateChange = (e) => {
     setCurrentPeriods(e);
@@ -376,7 +391,7 @@ const InvoiceHistory = (props) => {
             <DatePicker.RangePicker picker="month" onCalendarChange={handleDateChange} />
           </Col>
           <Col span={7}>
-            {/* <Button type='primary' onClick={exportToExcel}>Export to Excel</Button> */}
+            <Button type='primary' onClick={exportToExcel}>Export to Excel</Button>
           </Col>
         </Row>
         <Table
