@@ -283,8 +283,8 @@ const InvoiceHistory = (props) => {
 
     const columns1 = [...TopColumns, ...monthColumns];
     const columns2 = [...Columns, ...monthColumns];
-    const headerRow1 = columns1.map((column) => column.title);
-    tableData.push(headerRow1);
+    // const headerRow1 = columns1.map((column) => column.title);
+    // tableData.push(headerRow1);
     const headerRow2 = columns2.map((column) => column.title);
     tableData.push(headerRow2);
 
