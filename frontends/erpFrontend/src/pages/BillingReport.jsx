@@ -103,6 +103,7 @@ const InvoiceHistory = (props) => {
     const sumBillingMonthly = {};
     const customersCount = {};
     const averageBilling = {};
+    const growBilling = {};
     while (current.isSameOrBefore(end)) {
 
       const column = {
@@ -113,6 +114,7 @@ const InvoiceHistory = (props) => {
       sumBillingMonthly[`${current.format("MM/YYYY")}`] = 0;
       customersCount[`${current.format("MM/YYYY")}`] = 0;
       averageBilling[`${current.format("MM/YYYY")}`] = 0;
+      growBilling[`${current.format("MM/YYYY")}`] = 0;
       monthlyColumns.push(column)
       current = current.add(1, 'months');
     }
@@ -191,13 +193,24 @@ const InvoiceHistory = (props) => {
       }
     });
     for (var key in sumBillingMonthly) {
-      averageBilling[key] = sumBillingMonthly[key] / customerData.length;
-      averageBilling[key] = (averageBilling[key]).toFixed(2)
+      if (customerData) {
+
+        averageBilling[key] = sumBillingMonthly[key] / customerData.length;
+        averageBilling[key] = (averageBilling[key]).toFixed(2)
+      }
     }
     setBillingData(billingData);
 
+    for (var key2 in growBilling) {
+      const beforeKey = moment(new Date(`${key2.split("/")[0]}/1/${key2.split("/")[1]}`)).subtract(1, 'months').format("MM/YYYY");
+      if (!sumBillingMonthly[key2] || !sumBillingMonthly[beforeKey]) {
+        growBilling[key2] = ''
+      } else {
+        growBilling[key2] = `${((sumBillingMonthly[key2] - sumBillingMonthly[beforeKey]) / (sumBillingMonthly[beforeKey]) * 100).toFixed(2)}%`
+      }
 
 
+    }
     const statistics = [
       {
         customer_name: "Customers No. (Amount of customers billed on related month)",
@@ -211,7 +224,8 @@ const InvoiceHistory = (props) => {
       },
       {
         customer_name: "Monthly Grow",
-        key: new Date().valueOf() + 2
+        key: new Date().valueOf() + 2,
+        ...growBilling
       },
       {
         customer_name: "Monthly Billing (summatory of billing of all customers on related month)",
@@ -219,6 +233,8 @@ const InvoiceHistory = (props) => {
         ...sumBillingMonthly
       }
     ]
+
+    console.log(statistics, 'statistics')
     setStatisticsData(statistics)
   }, [
     currentYear, currentMonth, invoices, customerData, projectBillingData
@@ -347,11 +363,11 @@ const InvoiceHistory = (props) => {
           <Col span={3}>
             <h3 style={{ color: '#22075e', marginBottom: 5 }}>Monthly Billing Report</h3>
           </Col>
-          <Col span={12}>
+          {/* <Col span={12}>
 
             <button onClick={exportToExcel}>Export to Excel</button>
 
-          </Col>
+          </Col> */}
         </Row>
 
         <Table
