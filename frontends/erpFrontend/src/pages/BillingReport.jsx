@@ -26,17 +26,29 @@ const InvoiceHistory = (props) => {
   const Columns = [
     {
       title: "Customer Name",
-      dataIndex: 'customer_name'
+      dataIndex: 'customer_name',
+      width: '10%'
     },
     {
       title: "Fact M Base",
-      dataIndex: 'recurrent_amount'
+      dataIndex: 'recurrent_amount',
+      width: '10%'
     },
     {
       title: "Notes",
-      dataIndex: "notes"
+      dataIndex: "notes",
+      width: '10%'
     },
   ];
+  const TopColumns = [
+    {
+      title: "Customer Name",
+      dataIndex: 'customer_name',
+      width: '30%'
+    },
+
+  ];
+  const [statisticsData, setStatisticsData] = useState([]);
   const [currentId, setCurrentId] = useState('');
   const [isUpdate, setIsUpdate] = useState(false);
 
@@ -88,22 +100,23 @@ const InvoiceHistory = (props) => {
     let current = moment(new Date(currentYear, 0, 1));
     const end = moment(new Date(currentYear, currentMonth, 1));
     const monthlyColumns = [];
+    const sumBillingMonthly = {};
+    const customersCount = {};
+    const averageBilling = {};
     while (current.isSameOrBefore(end)) {
-      monthlyColumns.push({
+
+      const column = {
         title: current.format("MMMM").slice(0, 3),
-        dataIndex: current.format("MM/YYYY")
-      })
+        dataIndex: current.format("MM/YYYY"),
+        width: '10%'
+      }
+      sumBillingMonthly[`${current.format("MM/YYYY")}`] = 0;
+      customersCount[`${current.format("MM/YYYY")}`] = 0;
+      averageBilling[`${current.format("MM/YYYY")}`] = 0;
+      monthlyColumns.push(column)
       current = current.add(1, 'months');
     }
     setMonthColumns(monthlyColumns)
-
-    const groupedCustomer = invoices.reduce((acc, item) => {
-      const existingItem = acc.find(i => i.parent_id._id === item.parent_id._id);
-      if (!existingItem) {
-        acc.push(item);
-      }
-      return acc;
-    }, []);
     const groupedRecurrent = invoices.reduce((acc, item) => {
       const existingItem = acc.find(i => i.recurrent_id._id === item.recurrent_id._id);
       if (!existingItem) {
@@ -147,6 +160,13 @@ const InvoiceHistory = (props) => {
     billingData.map((customer, index) => {
       const { customer_id, recurrent_count } = customer;
       customer['key'] = index;
+      invoices.map(invoice => {
+        const { parent_id: customer1, start_date, amount } = invoice;
+        if (customer_id === customer1._id) {
+          const date_key = moment(new Date(start_date)).format("MM/YYYY");
+          customer[date_key] += amount || 0
+        }
+      })
       if (!recurrent_count) {
         customer.recurrent_amount = 'N/A';
         projectBillingData.map(project => {
@@ -160,15 +180,46 @@ const InvoiceHistory = (props) => {
           }
         })
       }
-      invoices.map(invoice => {
-        const { parent_id: customer1, start_date, amount } = invoice;
-        if (customer_id === customer1._id) {
-          const date_key = moment(new Date(start_date)).format("MM/YYYY");
-          customer[date_key] += amount || 0
+      for (var key in sumBillingMonthly) {
+        sumBillingMonthly[key] += customer[key] || 0;
+      }
+      for (var key1 in customersCount) {
+
+        if (recurrent_count && (customer[key1] === 0 || customer[key1])) {
+          customersCount[key1]++;
         }
-      })
-    })
+      }
+    });
+    for (var key in sumBillingMonthly) {
+      averageBilling[key] = sumBillingMonthly[key] / customerData.length;
+      averageBilling[key] = (averageBilling[key]).toFixed(2)
+    }
     setBillingData(billingData);
+
+
+
+    const statistics = [
+      {
+        customer_name: "Customers No. (Amount of customers billed on related month)",
+        key: new Date().valueOf(),
+        ...customersCount
+      },
+      {
+        customer_name: "Billing Average (Total billing / customers billed  'for related month' )",
+        key: new Date().valueOf() + 1,
+        ...averageBilling
+      },
+      {
+        customer_name: "Monthly Grow",
+        key: new Date().valueOf() + 2
+      },
+      {
+        customer_name: "Monthly Billing (summatory of billing of all customers on related month)",
+        key: new Date().valueOf() + 3,
+        ...sumBillingMonthly
+      }
+    ]
+    setStatisticsData(statistics)
   }, [
     currentYear, currentMonth, invoices, customerData, projectBillingData
   ]);
@@ -302,9 +353,18 @@ const InvoiceHistory = (props) => {
 
           </Col>
         </Row>
+
         <Table
           bordered
-          dataSource={billingData || []}
+          dataSource={[...statisticsData] || []}
+          columns={[...TopColumns, ...monthColumns]}
+          rowClassName="editable-row"
+          showHeader={false}
+          pagination={false}
+        />
+        <Table
+          bordered
+          dataSource={[...billingData] || []}
           columns={[...Columns, ...monthColumns]}
           rowClassName="editable-row"
         />
