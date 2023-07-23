@@ -23,6 +23,8 @@ const InvoiceHistory = (props) => {
   const [billingData, setBillingData] = useState([]);
   const [customerData, setCustomerData] = useState([]);
   const [projectBillingData, setProjectBillingData] = useState([]);
+  const [currentPeriods, setCurrentPeriods] = useState();
+
   const Columns = [
     {
       title: "Customer Name",
@@ -98,7 +100,11 @@ const InvoiceHistory = (props) => {
   useEffect(() => {
 
     let current = moment(new Date(currentYear, 0, 1));
-    const end = moment(new Date(currentYear, currentMonth, 1));
+    let end = moment(new Date(currentYear, 11, 1));
+    if (currentPeriods) {
+      current = moment(currentPeriods[0]);
+      end = currentPeriods[1];
+    }
     const monthlyColumns = [];
     const sumBillingMonthly = {};
     const customersCount = {};
@@ -237,7 +243,7 @@ const InvoiceHistory = (props) => {
     console.log(statistics, 'statistics')
     setStatisticsData(statistics)
   }, [
-    currentYear, currentMonth, invoices, customerData, projectBillingData
+    currentYear, currentMonth, invoices, customerData, projectBillingData, currentPeriods
   ]);
 
 
@@ -280,6 +286,9 @@ const InvoiceHistory = (props) => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
     XLSX.writeFile(workbook, 'table.xlsx');
+  }
+  const handleDateChange = (e) => {
+    setCurrentPeriods(e);
   }
   return (
     <DashboardLayout>
@@ -360,16 +369,16 @@ const InvoiceHistory = (props) => {
           </>
         </Modal>
         <Row>
-          <Col span={3}>
+          <Col span={10}>
             <h3 style={{ color: '#22075e', marginBottom: 5 }}>Monthly Billing Report</h3>
           </Col>
-          {/* <Col span={12}>
-
-            <button onClick={exportToExcel}>Export to Excel</button>
-
-          </Col> */}
+          <Col span={7}>
+            <DatePicker.RangePicker picker="month" onCalendarChange={handleDateChange} />
+          </Col>
+          <Col span={7}>
+            {/* <Button type='primary' onClick={exportToExcel}>Export to Excel</Button> */}
+          </Col>
         </Row>
-
         <Table
           bordered
           dataSource={[...statisticsData] || []}
