@@ -189,6 +189,17 @@ export default function Details() {
               }}
             >
               <Form.Item
+                name="name"
+                label="Customer Name"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
                 name="legal_name"
                 label="Legal Name"
                 rules={[
@@ -280,9 +291,11 @@ export default function Details() {
               </Col>
               <Col span={6}>
 
-                <Select style={{ width: 120 }} onChange={changeStatus} value={currentItem ? currentItem.status : 4} options={statusOptions} />
+                <Select style={{ width: 120, paddingBottom: '20px' }} onChange={changeStatus} value={currentItem ? currentItem.status : 4} options={statusOptions} />
+                <p style={{ paddingBottom: '20px' }}>
+                  <Button type="primary" onClick={editCustomer} >Edit</Button>
+                </p>
               </Col>
-              <Button type="primary" onClick={editCustomer} >Edit</Button>
             </Row>
             {/* <div className="profile-details">
               <Row>
