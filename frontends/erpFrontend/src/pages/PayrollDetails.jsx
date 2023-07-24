@@ -612,115 +612,109 @@ const PayrollDetails = () => {
 
   return (
 
-    <DashboardLayout>
-      <Layout style={{ padding: '30px', overflow: 'auto' }}>
-        <Modal title={selectedDate} visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null}>
-          <>
-            <Form
-              ref={formRef}
-              name="basic"
-              labelCol={{
-                span: 8,
-              }}
+    <Layout style={{ padding: '30px', overflow: 'auto' }}>
+      <Modal title={selectedDate} visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null}>
+        <>
+          <Form
+            ref={formRef}
+            name="basic"
+            labelCol={{
+              span: 8,
+            }}
+            wrapperCol={{
+              span: 16,
+            }}
+            initialValues={{
+              remember: true,
+            }}
+            onFinish={onFinish}
+            // onFinishFailed={onFinishFailed}
+            autoComplete="off"
+          >
+            <Form.Item
+              name="hours"
+              label="Hours"
+              rules={[
+                {
+                  required: true,
+                  validator: (_, value) => {
+                    if (selectedCellValue === 0) {
+                      if (value && value > 10) {
+                        return Promise.reject(`Value must be less than or equal to 10`);
+                      }
+                    } else {
+                      if (value && value > Math.abs(selectedCellValue)) {
+                        return Promise.reject(`Value must be less than or equal to ${Math.abs(selectedCellValue)}`);
+                      }
+                    }
+                    return Promise.resolve();
+                  }
+
+                },
+              ]}
+            >
+              <Input type='number' />
+            </Form.Item>
+            <Form.Item
+              name="comment"
+              label="Comment"
+              rules={[
+                {
+                  required: true,
+                },
+              ]}
+            >
+              <Input.TextArea />
+            </Form.Item>
+            <Form.Item
               wrapperCol={{
+                offset: 8,
                 span: 16,
               }}
-              initialValues={{
-                remember: true,
-              }}
-              onFinish={onFinish}
-              // onFinishFailed={onFinishFailed}
-              autoComplete="off"
             >
-              <Form.Item
-                name="hours"
-                label="Hours"
-                rules={[
-                  {
-                    required: true,
-                    validator: (_, value) => {
-                      if (selectedCellValue === 0) {
-                        if (value && value > 10) {
-                          return Promise.reject(`Value must be less than or equal to 10`);
-                        }
-                      } else {
-                        if (value && value > Math.abs(selectedCellValue)) {
-                          return Promise.reject(`Value must be less than or equal to ${Math.abs(selectedCellValue)}`);
-                        }
-                      }
-                      return Promise.resolve();
-                    }
+              {
+                isUpdate ? <Button type="primary" htmlType="submit">
+                  Update
+                </Button> :
+                  <Button type="primary" htmlType="submit">
+                    Save
+                  </Button>
 
-                  },
-                ]}
-              >
-                <Input type='number' />
-              </Form.Item>
-              <Form.Item
-                name="comment"
-                label="Comment"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Input.TextArea />
-              </Form.Item>
-              <Form.Item
-                wrapperCol={{
-                  offset: 8,
-                  span: 16,
-                }}
-              >
-                {
-                  isUpdate ? <Button type="primary" htmlType="submit">
-                    Update
-                  </Button> :
-                    <Button type="primary" htmlType="submit">
-                      Save
-                    </Button>
+              }
 
-                }
+              <Button type="ghost" onClick={handleCancel}>
+                cancel
+              </Button>
+            </Form.Item>
+          </Form>
+          {byEmail && `Changed by ${byEmail}`}
+        </>
+      </Modal>
+      <Row>
+        <Col span={24}>
+          <h3 style={{ textAlign: 'center' }}>
+            <LeftOutlined onClick={prevData} />
+            QUINCENA: {currentPeriod.split("-")[0]} DE {parseInt(currentPeriod.split("-")[0]) !== 31 ? new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' }) : new Date(currentYear, currentMonth - 2).toLocaleString('default', { month: 'long' })} AL {currentPeriod.split("-")[1]} DE {new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' })} {currentYear}
+            <RightOutlined onClick={nextData} />
 
-                <Button type="ghost" onClick={handleCancel}>
-                  cancel
-                </Button>
-              </Form.Item>
-            </Form>
-            {byEmail && `Changed by ${byEmail}`}
-          </>
-        </Modal>
-        <Row>
-          <Col span={24}>
-            <h3 style={{ textAlign: 'center' }}>
-              <LeftOutlined onClick={prevData} />
-              QUINCENA: {currentPeriod.split("-")[0]} DE {parseInt(currentPeriod.split("-")[0]) !== 31 ? new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' }) : new Date(currentYear, currentMonth - 2).toLocaleString('default', { month: 'long' })} AL {currentPeriod.split("-")[1]} DE {new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' })} {currentYear}
-              <RightOutlined onClick={nextData} />
-
-            </h3>
-          </Col>
-        </Row>
-        <Table
-          bordered
-          rowKey={(item) => item._id}
-          key={(item) => item._id}
-          dataSource={[...listItems] || []}
-          columns={[...mergedColumns]}
-          rowClassName="editable-row"
-          ref={tableRef}
-          size='large'
-          className='payroll_details'
-          scroll={{
-            x: 3300,
-          }}
-        />
-
-
-      </Layout>
-
-
-    </DashboardLayout>
+          </h3>
+        </Col>
+      </Row>
+      <Table
+        bordered
+        rowKey={(item) => item._id}
+        key={(item) => item._id}
+        dataSource={[...listItems] || []}
+        columns={[...mergedColumns]}
+        rowClassName="editable-row"
+        ref={tableRef}
+        size='large'
+        className='payroll_details'
+        scroll={{
+          x: 3300,
+        }}
+      />
+    </Layout>
   );
 };
 export default PayrollDetails;
