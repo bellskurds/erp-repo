@@ -140,6 +140,11 @@ const Store = () => {
       width: '15%',
     },
     {
+      title: 'Routes',
+      dataIndex: ['routes', 'routes'],
+      width: '15%',
+    },
+    {
       title: 'Email',
       dataIndex: ['parent_id', 'email'],
       width: '15%',
@@ -263,11 +268,17 @@ const Store = () => {
 
   useEffect(() => {
     const filteredData = globalData.filter((record) => {
-      const { parent_id: customer, store } = record;
+      const { parent_id: customer, store, routes } = record;
+      let routesStirng = ''
       const { name, email } = customer || {}
+      if (!routes) {
+        routesStirng = '';
+      } else {
+        routesStirng = routes.routes
+      }
       return (
         (!searchText || store.toString().toLowerCase().includes(searchText.toLowerCase()) ||
-          name.toString().toLowerCase().includes(searchText.toLowerCase()) || email.toString().toLowerCase().includes(searchText.toLowerCase())) &&
+          name.toString().toLowerCase().includes(searchText.toLowerCase()) || email.toString().toLowerCase().includes(searchText.toLowerCase()) || routesStirng.toString().toLowerCase().includes(searchText.toLowerCase())) &&
         (!status || record.status === status)
       );
     })

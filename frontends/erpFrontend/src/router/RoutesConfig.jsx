@@ -131,6 +131,10 @@ var routes = [
     path: '/billing_report',
     component: 'BillingReport',
   },
+  {
+    path: '/routes',
+    component: 'Routes',
+  },
 ]
 
 

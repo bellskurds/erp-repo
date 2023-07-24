@@ -20,6 +20,11 @@ const CustomerStoresSchema = new mongoose.Schema({
   billing: {
     type: Number,
   },
+  routes: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Routes',
+    autopopulate: true
+  },
   labour_billing: {
     type: Number,
   },

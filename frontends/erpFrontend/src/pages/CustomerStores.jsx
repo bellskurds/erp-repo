@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { request } from "@/request";
+import SelectAsync from "@/components/SelectAsync";
 const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
 const compare = (a, b) => {
@@ -256,6 +257,7 @@ const CustomerStores = (props) => {
                 item.friday = item.friday ? [moment(item.friday[0]), moment(item.friday[1])] : null;
                 item.saturday = item.saturday ? [moment(item.saturday[0]), moment(item.saturday[1])] : null;
                 item.sunday = item.sunday ? [moment(item.sunday[0]), moment(item.sunday[1])] : null;
+                item.routes = item.routes ? item.routes._id : undefined;
                 if (formRef.current) formRef.current.setFieldsValue(item);
                 setCurrentId(item._id);
             }, 200);
@@ -463,6 +465,17 @@ const CustomerStores = (props) => {
                                 ]}
                             >
                                 <Input />
+                            </Form.Item>
+                            <Form.Item
+                                name="routes"
+                                label="Routes"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <SelectAsync entity={'routes'} displayLabels={['routes']}></SelectAsync>
                             </Form.Item>
                             <Form.Item
                                 name="billing"

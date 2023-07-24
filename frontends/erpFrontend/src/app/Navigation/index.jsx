@@ -134,9 +134,9 @@ export default function Navigation() {
             role !== 3 &&
             <>
               <SubMenu key={'Settings'} icon={<SettingOutlined />} title={'Settings'}>
-                <Menu.Item key={'Ref'}>
-                  <Link to={'/ref'} />
-                  Reference
+                <Menu.Item key={'Routes'}>
+                  <Link to={'/routes'} />
+                  Routes
                 </Menu.Item>
               </SubMenu>
             </>
