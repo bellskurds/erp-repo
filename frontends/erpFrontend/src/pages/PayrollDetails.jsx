@@ -41,6 +41,7 @@ const PayrollDetails = () => {
   const entity = "payroll"
   const url = useParams().id;
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const tableRef = useRef(null);
 
   const [isUpdate, setIsUpdate] = useState(false);
   const showModal = () => {
@@ -75,6 +76,7 @@ const PayrollDetails = () => {
   const [selectedDate, setSelectedDate] = useState();
   const [byEmail, setByEmail] = useState();
   const [adjust, setAdjust] = useState(0);
+  const [mergedColumns, setMergedColumns] = useState([]);
   const editItem = (item, cellItem, current, mainHour) => {
     const { hour, comment, by: { email: byEmail = '' } = {} } = cellItem
     if (item) {
@@ -124,46 +126,49 @@ const PayrollDetails = () => {
     {
       title: 'Customer',
       dataIndex: ['parent_id', 'name'],
-      width: '10%',
+      width: 100,
     },
     {
       title: 'Position',
       dataIndex: 'position',
-      width: '10%',
+      width: 150,
     },
     {
       title: 'Employee',
       dataIndex: ['employee', 'name'],
+      width: 150
     },
     {
-      title: 'Hours',
-      dataIndex: 'email',
-      width: '200px',
+      title: `Hours`,
+      width: 400,
+      align: 'center',
       render: (text, record) => (
         <>
-          {getFormattedHours(
-            [
-              record.monday ? [record.monday[0], record.monday[1]] : "",
-              record.tuesday ? [record.tuesday[0], record.tuesday[1]] : "",
-              record.wednesday ? [record.wednesday[0], record.wednesday[1]] : "",
-              record.thursday ? [record.thursday[0], record.thursday[1]] : "",
-              record.friday ? [record.friday[0], record.friday[1]] : "",
-              record.saturday ? [record.saturday[0], record.saturday[1]] : "",
-              record.sunday ? [record.sunday[0], record.sunday[1]] : "",
-            ]
-          )}
+          {
+            `${getFormattedHours(
+              [
+                record.monday ? [record.monday[0], record.monday[1]] : "",
+                record.tuesday ? [record.tuesday[0], record.tuesday[1]] : "",
+                record.wednesday ? [record.wednesday[0], record.wednesday[1]] : "",
+                record.thursday ? [record.thursday[0], record.thursday[1]] : "",
+                record.friday ? [record.friday[0], record.friday[1]] : "",
+                record.saturday ? [record.saturday[0], record.saturday[1]] : "",
+                record.sunday ? [record.sunday[0], record.sunday[1]] : "",
+              ])}`
+
+          }
         </>
       ),
     },
     {
       title: 'HR/Week',
       dataIndex: 'hr_week',
-      width: '100',
+      width: 100,
     },
     {
       title: 'Type',
       dataIndex: ['contract', 'type'],
-      width: '100',
+      width: 100,
       render: (text) => {
         return (
           contractTypes[text]
@@ -179,13 +184,6 @@ const PayrollDetails = () => {
       title: 'Hrs/BiWeekly',
       width: '100',
       dataIndex: 'hrs_bi',
-      // render: (text, record) => {
-      //   const { contract } = record;
-      //   const { type } = contract
-      //   return (
-      //     type === 2 ? record[4] : text
-      //   );
-      // }
     },
     {
       title: 'Week Pay',
@@ -341,7 +339,7 @@ const PayrollDetails = () => {
         daysColumns.push({
           title: `${monthLable.slice(0, 1).toUpperCase()}(${day})`,
           dataIndex: `-day-${year}_${month + 1}_${day}`,
-          width: "30%",
+          width: 100,
           render: (text, record) => {
             switch (_day) {
               case 0:
@@ -440,6 +438,7 @@ const PayrollDetails = () => {
       };
       console.log(daysColumns);
       setChangedDays(daysColumns);
+      setMergedColumns([...columns, ...daysColumns])
       console.log();
       const { result: workContracts } = await request.list({ entity: "workContract" })
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" })
@@ -586,11 +585,12 @@ const PayrollDetails = () => {
       })
 
       setListItems([..._listItems, ...unassignedContracts, ...unAssingedEmployees])
-      console.log([...assignedEmployees, ...unassignedContracts, ...unAssingedEmployees], 'currentPeriod');
+
+
     }
     init()
   }, [
-    currentPeriod, saveStatus
+    currentPeriod, saveStatus, currentMonth, currentYear
   ]);
   const getServiceHours = (record) => {
     var hours = 0;
@@ -605,6 +605,10 @@ const PayrollDetails = () => {
     console.log(listItems, 'listItems')
   }, [listItems]);
 
+  useEffect(() => {
+    console.log(mergedColumns, 'mergedColumnsmergedColumns')
+
+  }, [mergedColumns])
 
   return (
 
@@ -701,9 +705,15 @@ const PayrollDetails = () => {
           bordered
           rowKey={(item) => item._id}
           key={(item) => item._id}
-          dataSource={listItems || []}
-          columns={[...columns, ...changedDays]}
+          dataSource={[...listItems] || []}
+          columns={[...mergedColumns]}
           rowClassName="editable-row"
+          ref={tableRef}
+          size='large'
+          className='payroll_details'
+          scroll={{
+            x: 3300,
+          }}
         />
 
 

@@ -27,6 +27,7 @@ const InvoiceHistory = (props) => {
   const [customerData, setCustomerData] = useState([]);
   const [projectBillingData, setProjectBillingData] = useState([]);
   const [currentPeriods, setCurrentPeriods] = useState([moment(new Date('01/1/2023')), moment(new Date('12/1/2023'))]);
+  const tableRef = useRef(null);
 
   const Columns = [
     {
@@ -42,7 +43,7 @@ const InvoiceHistory = (props) => {
     {
       title: "Notes",
       dataIndex: "notes",
-      width: '15px'
+      width: '10%'
     },
   ];
   const TopColumns = [
@@ -244,7 +245,11 @@ const InvoiceHistory = (props) => {
     ]
 
     console.log(statistics, 'statistics')
-    setStatisticsData(statistics)
+    setStatisticsData(statistics);
+    const table = tableRef.current;
+    if (table) {
+      console.log(table, '343434')
+    }
   }, [
     currentYear, currentMonth, invoices, customerData, projectBillingData, currentPeriods
   ]);
@@ -407,6 +412,7 @@ const InvoiceHistory = (props) => {
           dataSource={[...statisticsData, ...billingData] || []}
           columns={[...Columns, ...monthColumns]}
           rowClassName="editable-row"
+          ref={tableRef}
         />
       </Layout>
     </DashboardLayout>
