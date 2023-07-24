@@ -136,7 +136,7 @@ const PayrollDetails = () => {
     {
       title: 'Employee',
       dataIndex: ['employee', 'name'],
-      width: 150
+      width: 200
     },
     {
       title: `Hours`,
