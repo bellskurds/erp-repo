@@ -25,6 +25,9 @@ const Contract = (props) => {
         }, {
             value: 3,
             label: "Viaticum"
+        }, {
+            value: 4,
+            label: "Hourly"
         },
     ]
     const Columns = [
@@ -248,7 +251,7 @@ const Contract = (props) => {
 
                 >
                     <Row gutter={24}>
-                        <Col span={12}>
+                        <Col span={16}>
                             <Form.Item
                                 name="type"
                                 label="Type"
@@ -263,32 +266,32 @@ const Contract = (props) => {
 
 
                             {contractType !== 3 &&
+                                <Form.Item
+                                    name="sal_hr"
+                                    label="Sal/Hr"
+                                    rules={[
+                                        {
+                                            required: true,
+                                        },
+                                    ]}
+                                >
+                                    <InputNumber onChange={(e) => { setSalaryHour(e) }} />
+                                </Form.Item>
+                            }
 
-                                <>
+                            {(contractType !== 4 && contractType !== 3) &&
 
-                                    <Form.Item
-                                        name="sal_hr"
-                                        label="Sal/Hr"
-                                        rules={[
-                                            {
-                                                required: true,
-                                            },
-                                        ]}
-                                    >
-                                        <InputNumber onChange={(e) => { setSalaryHour(e) }} />
-                                    </Form.Item>
-                                    <Form.Item
-                                        name="hr_week"
-                                        label="Hr / Week"
-                                        rules={[
-                                            {
-                                                required: true,
-                                            },
-                                        ]}
-                                    >
-                                        <InputNumber onChange={(e) => { setHourWeek(e) }} />
-                                    </Form.Item>
-                                </>
+                                <Form.Item
+                                    name="hr_week"
+                                    label="Hr / Week"
+                                    rules={[
+                                        {
+                                            required: true,
+                                        },
+                                    ]}
+                                >
+                                    <InputNumber onChange={(e) => { setHourWeek(e) }} />
+                                </Form.Item>
                             }
                             <Form.Item
                                 name="start_date"
@@ -314,9 +317,9 @@ const Contract = (props) => {
                             </Form.Item>
 
                         </Col>
-                        <Col span={12}>
+                        <Col span={8}>
 
-                            {contractType !== 3 &&
+                            {(contractType !== 3 && contractType !== 4) &&
 
                                 <Form.Item
                                     name="sal_monthly"
@@ -331,7 +334,7 @@ const Contract = (props) => {
                                 </Form.Item>
 
                             }
-                            {contractType === 3 &&
+                            {(contractType === 3 && contractType !== 4) &&
 
                                 <Form.Item
                                     name="sal_monthly"
@@ -346,18 +349,21 @@ const Contract = (props) => {
                                 </Form.Item>
 
                             }
+                            {contractType !== 4 &&
 
-                            <Form.Item
-                                name="sal_biweekly"
-                                label="Sal/Biweekly"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
-                            >
-                                <Input readOnly style={{ background: 'lightgrey' }} />
-                            </Form.Item>
+
+                                <Form.Item
+                                    name="sal_biweekly"
+                                    label="Sal/Biweekly"
+                                    rules={[
+                                        {
+                                            required: true,
+                                        },
+                                    ]}
+                                >
+                                    <Input readOnly style={{ background: 'lightgrey' }} />
+                                </Form.Item>
+                            }
                             <Form.Item
                             // wrapperCol={{
                             //     offset: 8,
@@ -405,7 +411,7 @@ const Contract = (props) => {
 
 
             />
-        </div>
+        </div >
     );
 }
 
