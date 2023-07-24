@@ -584,18 +584,9 @@ const PayrollDetails = () => {
         if (!contract || !employee)
           unAssingedEmployees.push(otherObject);
       });
-      const sortedData = _listItems.sort((a, b) => {
-        if (a.position === '' && b.position !== '') {
-          return 1; // Move empty string to the bottom
-        } else if (a.position !== '' && b.position === '') {
-          return -1; // Move empty string to the bottom
-        } else {
-          return a.position.localeCompare(b.position); // Sort non-empty strings
-        }
-      });
-
+      const sortedLists = _listItems.sort((a, b) => b.position.localeCompare(a.position));
       console.log([..._listItems, ...unassignedContracts, ...unAssingedEmployees], '[..._listItems, ...unassignedContracts, ...unAssingedEmployees]')
-      setListItems([...sortedData, ...unassignedContracts, ...unAssingedEmployees])
+      setListItems([...sortedLists, ...unassignedContracts, ...unAssingedEmployees])
 
 
     }
