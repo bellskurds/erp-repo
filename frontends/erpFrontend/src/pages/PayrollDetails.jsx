@@ -203,25 +203,19 @@ const PayrollDetails = () => {
       title: 'Adjust($$$)',
       dataIndex: 'adjust',
       width: '100',
-      render: (_) => {
-        return _ ? _.toFixed(2) : 0
-      }
+
     },
     {
       title: 'Salary',
       dataIndex: 'salary',
       width: '100',
-      render: (_) => {
-        return _ ? _.toFixed(2) : 0
-      }
+
     },
     {
       title: 'Transferencia',
       dataIndex: 'transferencia',
       width: '100',
-      render: (_) => {
-        return _ ? _.toFixed(2) : 0
-      }
+
     },
   ];
   const getPeriods = (month, year, Q = 0) => {
@@ -547,9 +541,9 @@ const PayrollDetails = () => {
         obj.hrs_bi = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : getServiceHours(obj);
         obj.week_pay = mathCeil(obj.hrs_bi * obj.sal_hr)
         obj.adjustment = calcAdjustment(obj);
-        obj.adjust = calcAdjustment(obj) * obj.sal_hr;
-        obj.salary = (parseFloat(obj.adjust) + parseFloat(obj.week_pay)) || 0;
-        obj.transferencia = assignedContract.type === 1 ? obj.salary : obj.salary * 0.89;
+        obj.adjust = (calcAdjustment(obj) * obj.sal_hr).toFixed(2);
+        obj.salary = ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
+        obj.transferencia = assignedContract.type === 1 ? obj.salary : (obj.salary * 0.89).toFixed(2);
 
 
       });
