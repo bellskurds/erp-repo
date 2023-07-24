@@ -582,9 +582,11 @@ const PayrollDetails = () => {
       assignedEmployees.map(({ contract, employee, ...otherObject }) => {
         if (!contract || !employee)
           unAssingedEmployees.push(otherObject);
-      })
+      });
 
-      setListItems([..._listItems, ...unassignedContracts, ...unAssingedEmployees])
+      const sortedLists = _listItems.sort((a, b) => b.position.localeCompare(a.position));
+      console.log([..._listItems, ...unassignedContracts, ...unAssingedEmployees], '[..._listItems, ...unassignedContracts, ...unAssingedEmployees]')
+      setListItems([...sortedLists, ...unassignedContracts, ...unAssingedEmployees])
 
 
     }
