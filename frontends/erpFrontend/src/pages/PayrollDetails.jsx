@@ -124,22 +124,21 @@ const PayrollDetails = () => {
     {
       title: 'Customer',
       dataIndex: ['parent_id', 'name'],
-      width: '100',
+      width: '10%',
     },
     {
       title: 'Position',
       dataIndex: 'position',
-      width: '100',
+      width: '10%',
     },
     {
       title: 'Employee',
       dataIndex: ['employee', 'name'],
-      width: '100',
     },
     {
       title: 'Hours',
       dataIndex: 'email',
-      width: '200',
+      width: '200px',
       render: (text, record) => (
         <>
           {getFormattedHours(
@@ -198,21 +197,31 @@ const PayrollDetails = () => {
       dataIndex: 'adjustment',
       width: '100',
 
+
     },
     {
       title: 'Adjust($$$)',
       dataIndex: 'adjust',
       width: '100',
+      render: (_) => {
+        return _ ? _.toFixed(2) : 0
+      }
     },
     {
       title: 'Salary',
       dataIndex: 'salary',
       width: '100',
+      render: (_) => {
+        return _ ? _.toFixed(2) : 0
+      }
     },
     {
       title: 'Transferencia',
       dataIndex: 'transferencia',
       width: '100',
+      render: (_) => {
+        return _ ? _.toFixed(2) : 0
+      }
     },
   ];
   const getPeriods = (month, year, Q = 0) => {
@@ -336,8 +345,9 @@ const PayrollDetails = () => {
         const year = currentDate.year();
         const month = currentDate.month();
         daysColumns.push({
-          title: `${day}-${monthLable}`,
+          title: `${monthLable.slice(0, 1).toUpperCase()}(${day})`,
           dataIndex: `-day-${year}_${month + 1}_${day}`,
+          width: "30%",
           render: (text, record) => {
             switch (_day) {
               case 0:
@@ -604,113 +614,109 @@ const PayrollDetails = () => {
 
   return (
 
-    <Layout style={{ padding: '100px', overflow: 'auto' }}>
-      <Modal title={selectedDate} visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null}>
-        <>
-          <Form
-            ref={formRef}
-            name="basic"
-            labelCol={{
-              span: 8,
-            }}
-            wrapperCol={{
-              span: 16,
-            }}
-            initialValues={{
-              remember: true,
-            }}
-            onFinish={onFinish}
-            // onFinishFailed={onFinishFailed}
-            autoComplete="off"
-          >
-            <Form.Item
-              name="hours"
-              label="Hours"
-              rules={[
-                {
-                  required: true,
-                  validator: (_, value) => {
-                    if (selectedCellValue === 0) {
-                      if (value && value > 10) {
-                        return Promise.reject(`Value must be less than or equal to 10`);
-                      }
-                    } else {
-                      if (value && value > Math.abs(selectedCellValue)) {
-                        return Promise.reject(`Value must be less than or equal to ${Math.abs(selectedCellValue)}`);
-                      }
-                    }
-                    return Promise.resolve();
-                  }
-
-                },
-              ]}
-            >
-              <Input type='number' />
-            </Form.Item>
-            <Form.Item
-              name="comment"
-              label="Comment"
-              rules={[
-                {
-                  required: true,
-                },
-              ]}
-            >
-              <Input.TextArea />
-            </Form.Item>
-            <Form.Item
+    <DashboardLayout>
+      <Layout style={{ padding: '30px', overflow: 'auto' }}>
+        <Modal title={selectedDate} visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null}>
+          <>
+            <Form
+              ref={formRef}
+              name="basic"
+              labelCol={{
+                span: 8,
+              }}
               wrapperCol={{
-                offset: 8,
                 span: 16,
               }}
+              initialValues={{
+                remember: true,
+              }}
+              onFinish={onFinish}
+              // onFinishFailed={onFinishFailed}
+              autoComplete="off"
             >
-              {
-                isUpdate ? <Button type="primary" htmlType="submit">
-                  Update
-                </Button> :
-                  <Button type="primary" htmlType="submit">
-                    Save
-                  </Button>
+              <Form.Item
+                name="hours"
+                label="Hours"
+                rules={[
+                  {
+                    required: true,
+                    validator: (_, value) => {
+                      if (selectedCellValue === 0) {
+                        if (value && value > 10) {
+                          return Promise.reject(`Value must be less than or equal to 10`);
+                        }
+                      } else {
+                        if (value && value > Math.abs(selectedCellValue)) {
+                          return Promise.reject(`Value must be less than or equal to ${Math.abs(selectedCellValue)}`);
+                        }
+                      }
+                      return Promise.resolve();
+                    }
 
-              }
+                  },
+                ]}
+              >
+                <Input type='number' />
+              </Form.Item>
+              <Form.Item
+                name="comment"
+                label="Comment"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Input.TextArea />
+              </Form.Item>
+              <Form.Item
+                wrapperCol={{
+                  offset: 8,
+                  span: 16,
+                }}
+              >
+                {
+                  isUpdate ? <Button type="primary" htmlType="submit">
+                    Update
+                  </Button> :
+                    <Button type="primary" htmlType="submit">
+                      Save
+                    </Button>
 
-              <Button type="ghost" onClick={handleCancel}>
-                cancel
-              </Button>
-            </Form.Item>
-          </Form>
-          {byEmail && `Changed by ${byEmail}`}
-        </>
-      </Modal>
-      <Row>
-        <Col span={24}>
-          <h3 style={{ textAlign: 'center' }}>
-            <LeftOutlined onClick={prevData} />
-            QUINCENA: {currentPeriod.split("-")[0]} DE {parseInt(currentPeriod.split("-")[0]) !== 31 ? new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' }) : new Date(currentYear, currentMonth - 2).toLocaleString('default', { month: 'long' })} AL {currentPeriod.split("-")[1]} DE {new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' })} {currentYear}
-            <RightOutlined onClick={nextData} />
+                }
 
-          </h3>
-        </Col>
-      </Row>
-      <Table
+                <Button type="ghost" onClick={handleCancel}>
+                  cancel
+                </Button>
+              </Form.Item>
+            </Form>
+            {byEmail && `Changed by ${byEmail}`}
+          </>
+        </Modal>
+        <Row>
+          <Col span={24}>
+            <h3 style={{ textAlign: 'center' }}>
+              <LeftOutlined onClick={prevData} />
+              QUINCENA: {currentPeriod.split("-")[0]} DE {parseInt(currentPeriod.split("-")[0]) !== 31 ? new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' }) : new Date(currentYear, currentMonth - 2).toLocaleString('default', { month: 'long' })} AL {currentPeriod.split("-")[1]} DE {new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' })} {currentYear}
+              <RightOutlined onClick={nextData} />
 
-        // scroll={{ x: (changedDays.length + columns.length) * 100, y: 1300 }}
-        bordered
-        rowKey={(item) => item._id}
-        key={(item) => item._id}
-        dataSource={listItems || []}
-        columns={[...columns, ...changedDays]}
-        rowClassName="editable-row"
-        style={{ width: '1000px' }}
-      />
+            </h3>
+          </Col>
+        </Row>
+        <Table
+          bordered
+          rowKey={(item) => item._id}
+          key={(item) => item._id}
+          dataSource={listItems || []}
+          columns={[...columns, ...changedDays]}
+          rowClassName="editable-row"
+        />
 
 
-    </Layout>
-    // <DashboardLayout>
-    //   <Layout style={{ minHeight: '100vh' }}>
+      </Layout>
 
-    //   </Layout>
-    // </DashboardLayout>
+
+    </DashboardLayout>
   );
 };
 export default PayrollDetails;

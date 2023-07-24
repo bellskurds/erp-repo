@@ -26,30 +26,30 @@ const InvoiceHistory = (props) => {
   const [billingData, setBillingData] = useState([]);
   const [customerData, setCustomerData] = useState([]);
   const [projectBillingData, setProjectBillingData] = useState([]);
-  const [currentPeriods, setCurrentPeriods] = useState();
+  const [currentPeriods, setCurrentPeriods] = useState([moment(new Date('01/1/2023')), moment(new Date('12/1/2023'))]);
 
   const Columns = [
     {
       title: "Customer Name",
       dataIndex: 'customer_name',
-      width: '10%'
+      width: '15px'
     },
     {
       title: "Fact M Base",
       dataIndex: 'recurrent_amount',
-      width: '10%'
+      width: '15px'
     },
     {
       title: "Notes",
       dataIndex: "notes",
-      width: '10%'
+      width: '15px'
     },
   ];
   const TopColumns = [
     {
       title: "Customer Name",
       dataIndex: 'customer_name',
-      width: '30%'
+      width: '45px'
     },
 
   ];
@@ -118,7 +118,7 @@ const InvoiceHistory = (props) => {
       const column = {
         title: current.format("MMMM").slice(0, 3),
         dataIndex: current.format("MM/YYYY"),
-        width: '10%'
+        width: '24px'
       }
       sumBillingMonthly[`${current.format("MM/YYYY")}`] = 0;
       customersCount[`${current.format("MM/YYYY")}`] = 0;
@@ -222,12 +222,12 @@ const InvoiceHistory = (props) => {
     }
     const statistics = [
       {
-        customer_name: "Customers No. (Amount of customers billed on related month)",
+        customer_name: "Customers No.",
         key: new Date().valueOf(),
         ...customersCount
       },
       {
-        customer_name: "Billing Average (Total billing / customers billed  'for related month' )",
+        customer_name: "Billing Average",
         key: new Date().valueOf() + 1,
         ...averageBilling
       },
@@ -237,7 +237,7 @@ const InvoiceHistory = (props) => {
         ...growBilling
       },
       {
-        customer_name: "Monthly Billing (summatory of billing of all customers on related month)",
+        customer_name: "Monthly Billing",
         key: new Date().valueOf() + 3,
         ...sumBillingMonthly
       }
@@ -285,13 +285,13 @@ const InvoiceHistory = (props) => {
     const columns2 = [...Columns, ...monthColumns];
     // const headerRow1 = columns1.map((column) => column.title);
     // tableData.push(headerRow1);
-    const headerRow2 = columns2.map((column) => column.title);
-    tableData.push(headerRow2);
-
     statisticsData.forEach((record) => {
       const rowData = columns1.map((column) => record[column.dataIndex]);
       tableData.push(rowData);
     });
+    const headerRow2 = columns2.map((column) => column.title);
+    tableData.push(headerRow2);
+
     billingData.forEach((record) => {
       const rowData = columns2.map((column) => record[column.dataIndex]);
       tableData.push(rowData);
@@ -388,23 +388,23 @@ const InvoiceHistory = (props) => {
             <h3 style={{ color: '#22075e', marginBottom: 5 }}>Monthly Billing Report</h3>
           </Col>
           <Col span={7}>
-            <DatePicker.RangePicker picker="month" onCalendarChange={handleDateChange} />
+            <DatePicker.RangePicker picker="month" onCalendarChange={handleDateChange} value={currentPeriods} />
           </Col>
           <Col span={7}>
             <Button type='primary' onClick={exportToExcel}>Export to Excel</Button>
           </Col>
         </Row>
-        <Table
+        {/* <Table
           bordered
           dataSource={[...statisticsData] || []}
           columns={[...TopColumns, ...monthColumns]}
           rowClassName="editable-row"
           showHeader={false}
           pagination={false}
-        />
+        /> */}
         <Table
           bordered
-          dataSource={[...billingData] || []}
+          dataSource={[...statisticsData, ...billingData] || []}
           columns={[...Columns, ...monthColumns]}
           rowClassName="editable-row"
         />

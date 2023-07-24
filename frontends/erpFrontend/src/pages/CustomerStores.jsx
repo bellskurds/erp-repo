@@ -696,7 +696,7 @@ const CustomerStores = (props) => {
                             </Form.Item>
                             {insumos &&
                                 <>
-                                    <Form.Item
+                                    {/* <Form.Item
                                         name="visit_value"
                                         label="Visits"
                                         rules={[
@@ -706,7 +706,7 @@ const CustomerStores = (props) => {
                                         ]}
                                     >
                                         <Input type='number' />
-                                    </Form.Item>
+                                    </Form.Item> */}
                                     <Form.Item
                                         name="deliver"
                                         label="Monthly deliver"
