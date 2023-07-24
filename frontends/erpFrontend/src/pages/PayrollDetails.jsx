@@ -476,9 +476,6 @@ const PayrollDetails = () => {
         obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
         obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
 
-        if (index === 2) {
-          obj.position = ''
-        }
         let currentDate = moment(start_date);
 
         const end = moment(end_date);
@@ -584,9 +581,11 @@ const PayrollDetails = () => {
         if (!contract || !employee)
           unAssingedEmployees.push(otherObject);
       });
-      const sortedLists = _listItems.sort((a, b) => b.position.localeCompare(a.position));
-      console.log([..._listItems, ...unassignedContracts, ...unAssingedEmployees], '[..._listItems, ...unassignedContracts, ...unAssingedEmployees]')
-      setListItems([...sortedLists, ...unassignedContracts, ...unAssingedEmployees])
+
+      const allDatas = [..._listItems, ...unassignedContracts, ...unAssingedEmployees];
+
+      const sortedLists = allDatas.sort((a, b) => b.position.localeCompare(a.position));
+      setListItems([...sortedLists])
 
 
     }
