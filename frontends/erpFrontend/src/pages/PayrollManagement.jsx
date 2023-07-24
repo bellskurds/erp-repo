@@ -88,9 +88,9 @@ const PayrollManagement = () => {
 
   }, [payrollDetails])
   const getData = async () => {
-    const start_date = '2023/6/1';
+    const start_date = '2023/06/1';
     const end_date = new Date();
-    let currentDate = moment(start_date);
+    let currentDate = moment(new Date(start_date));
 
     const end = moment(end_date)
     const periods = []
