@@ -583,7 +583,9 @@ const PayrollDetails = () => {
       });
 
       const allDatas = [..._listItems, ...unassignedContracts, ...unAssingedEmployees];
-
+      allDatas.map(data => {
+        if (!data.position) data.position = ''
+      })
       const sortedLists = allDatas.sort((a, b) => b.position.localeCompare(a.position));
       setListItems([...sortedLists])
 
