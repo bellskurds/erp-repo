@@ -548,7 +548,7 @@ const PayrollDetails = () => {
         obj.week_pay = mathCeil(obj.hrs_bi * obj.sal_hr)
         obj.adjustment = calcAdjustment(obj);
         obj.adjust = calcAdjustment(obj) * obj.sal_hr;
-        obj.salary = parseFloat(obj.adjust) + parseFloat(obj.week_pay);
+        obj.salary = (parseFloat(obj.adjust) + parseFloat(obj.week_pay)) || 0;
         obj.transferencia = assignedContract.type === 1 ? obj.salary : obj.salary * 0.89;
 
 
