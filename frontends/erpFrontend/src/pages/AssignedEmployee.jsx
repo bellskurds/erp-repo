@@ -83,10 +83,12 @@ const AssignedEmployee = (props) => {
                             <Typography.Link onClick={() => editItem(record)}>
                                 <EditOutlined style={{ fontSize: "20px" }} />
                             </Typography.Link>
+                            {record.position &&
 
-                            <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
-                                <DeleteOutlined style={{ fontSize: "20px" }} />
-                            </Popconfirm>
+                                <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+                                    <DeleteOutlined style={{ fontSize: "20px" }} />
+                                </Popconfirm>
+                            }
                         </> : ''
                 )
 
