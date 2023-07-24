@@ -295,7 +295,7 @@ const Contract = (props) => {
                                     },
                                 ]}
                             >
-                                <Input />
+                                <Input readOnly style={{ background: 'lightgrey' }} />
                             </Form.Item>
                             <Form.Item
                                 name="sal_biweekly"
@@ -306,7 +306,7 @@ const Contract = (props) => {
                                     },
                                 ]}
                             >
-                                <Input readOnly />
+                                <Input readOnly style={{ background: 'lightgrey' }} />
                             </Form.Item>
                             <Form.Item
                             // wrapperCol={{

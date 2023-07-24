@@ -560,7 +560,7 @@ const AssignedEmployee = (props) => {
                     <h3 style={{ color: '#22075e', marginBottom: 5 }}>Positions</h3>
                 </Col>
                 <Col span={12}>
-                    <Button type="primary" onClick={editBankModal}>Assign</Button>
+                    <Button type="primary" onClick={editBankModal}>Create</Button>
                 </Col>
             </Row>
             <Table

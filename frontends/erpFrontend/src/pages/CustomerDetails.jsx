@@ -3,7 +3,6 @@ import { Form, Input, Row, Col, Tabs, Upload, Avatar, Button, message, Select, M
 
 
 import { PlusOutlined } from '@ant-design/icons';
-import countryList from 'country-list'
 import { DashboardLayout } from '@/layout';
 import { Content } from 'antd/lib/layout/layout';
 import { useParams } from 'react-router-dom/cjs/react-router-dom.min';

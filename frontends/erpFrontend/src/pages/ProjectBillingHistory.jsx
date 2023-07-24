@@ -16,6 +16,9 @@ const ProjectBillingHistory = (props) => {
         {
             title: 'Amount',
             dataIndex: 'amount',
+            render: (_) => {
+                return _ ? _.toFixed(2) : 0
+            }
         },
     ];
     const formattedDateFunc = (date) => {

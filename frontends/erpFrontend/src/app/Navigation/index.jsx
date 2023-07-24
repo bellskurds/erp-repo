@@ -79,6 +79,10 @@ export default function Navigation() {
                 <Link to={'/customer'} />
                 Customer
               </Menu.Item>
+              <Menu.Item key={'StoreList'} icon={<ControlOutlined />}>
+                <Link to={'/store'} />
+                Store
+              </Menu.Item>
               <Menu.Item key={'PayrollManagement'} icon={<MoneyCollectOutlined />}>
                 <Link to={'/payroll_management'} />
                 Payroll Management
@@ -110,14 +114,6 @@ export default function Navigation() {
               Billing Report
             </Menu.Item>
           </SubMenu>
-          {
-            role !== 3 &&
-
-            <Menu.Item key={'StoreList'} icon={<ControlOutlined />}>
-              <Link to={'/store'} />
-              Store
-            </Menu.Item>
-          }
           {!company &&
             <Menu.Item key={'Company'} icon={<TeamOutlined />}>
               <Link to={'/company'} />

@@ -10,3 +10,4 @@ setup
 server.js
 app.js
 public/uploads/
+./frontends/erpFrontend/package.json
