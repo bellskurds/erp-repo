@@ -174,7 +174,6 @@ const AssignedEmployee = (props) => {
                     store: item.store._id,
                     sal_hr: item.sal_hr,
                     hr_week: item.hr_week,
-                    contract: item.contract._id,
                     position: item.position,
                     gross_salary: item.gross_salary
                 });
