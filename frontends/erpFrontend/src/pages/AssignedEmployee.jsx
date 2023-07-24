@@ -15,7 +15,7 @@ const AssignedEmployee = (props) => {
     const currentEmployeeId = props.parentId
     const [isBankModal, setIsBankModal] = useState(false);
     const formRef = useRef(null);
-
+    const [itemLists, setItemLists] = useState([]);
     const contractType = ["", "Payroll", "Services"];
     const bankColumns = [
         {
@@ -190,6 +190,8 @@ const AssignedEmployee = (props) => {
 
         const jsonData = { parent_id: currentEmployeeId }
         console.log(id, 'idididi')
+
+        setItemLists(itemLists.filter(item => item._id !== id))
         dispatch(crud.delete({ entity, id }))
         setTimeout(() => {
             dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
@@ -235,8 +237,10 @@ const AssignedEmployee = (props) => {
         dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
         dispatch(crud.listByCustomerStores({ entity: "customerStores", jsonData: { parent_id: currentEmployeeId } }))
     }, []);
+    useEffect(() => {
+        setItemLists(Items.items || [])
 
-    const items = Items.items || [];
+    }, [Items])
 
     const [mondayValue, setMondayValue] = useState(null);
     const [tuesdayValue, setTuesdayValue] = useState(null);
@@ -568,7 +572,7 @@ const AssignedEmployee = (props) => {
                 bordered
                 rowKey={(item) => item._id}
                 key={(item) => item._id}
-                dataSource={items || []}
+                dataSource={itemLists || []}
                 columns={bankColumns}
                 rowClassName="editable-row"
 
