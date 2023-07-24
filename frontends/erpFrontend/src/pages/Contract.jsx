@@ -14,6 +14,7 @@ const Contract = (props) => {
     const currentEmployeeId = props.parentId
     const [isBankModal, setIsBankModal] = useState(false);
     const formRef = useRef(null);
+    const [salMonthly, setSalMonthly] = useState();
     const contractTypes = [
         {
             value: 1,
@@ -21,7 +22,10 @@ const Contract = (props) => {
         }, {
             value: 2,
             label: "Services"
-        }
+        }, {
+            value: 3,
+            label: "Viaticum"
+        },
     ]
     const Columns = [
         {
@@ -83,6 +87,8 @@ const Contract = (props) => {
     const [currentId, setCurrentId] = useState('');
     const [isUpdate, setIsUpdate] = useState(false);
     const [contracts, setContracts] = useState([]);
+
+    const [contractType, setContractType] = useState();
     const formattedDateFunc = (date) => {
         return new Date(date).toLocaleDateString()
     }
@@ -106,6 +112,9 @@ const Contract = (props) => {
     }
     const editItem = (item) => {
         if (item) {
+            setContractType(item.type);
+            setHourWeek(item.hr_week);
+            setSalaryHour(item.sal_hr);
             setIsBankModal(true);
             setIsUpdate(true);
             setTimeout(() => {
@@ -204,10 +213,22 @@ const Contract = (props) => {
     }, [
         salaryHour, hourWeek
     ])
+
+    useEffect(() => {
+        if (salMonthly) {
+            formRef.current.setFieldsValue({
+                sal_biweekly: parseFloat(salMonthly / 2).toFixed(2)
+            });
+        }
+
+    }, [salMonthly])
+    useEffect(() => {
+
+    }, [contractType])
     return (
 
         <div className="whiteBox shadow">
-            <Modal title="Work Contract" visible={isBankModal} onCancel={handleBankModal} footer={null} width={700}>
+            <Modal title="Work Contract" visible={isBankModal} onCancel={handleBankModal} footer={null} width={900}>
                 <Form
                     ref={formRef}
                     name="basic"
@@ -228,29 +249,47 @@ const Contract = (props) => {
                 >
                     <Row gutter={24}>
                         <Col span={12}>
+                            <Form.Item
+                                name="type"
+                                label="Type"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <Radio.Group name="radiogroup" options={contractTypes} onChange={(e) => setContractType(e.target.value)} />
+                            </Form.Item>
 
-                            <Form.Item
-                                name="sal_hr"
-                                label="Sal/Hr"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
-                            >
-                                <InputNumber onChange={(e) => { setSalaryHour(e) }} />
-                            </Form.Item>
-                            <Form.Item
-                                name="hr_week"
-                                label="Hr / Week"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
-                            >
-                                <InputNumber onChange={(e) => { setHourWeek(e) }} />
-                            </Form.Item>
+
+                            {contractType !== 3 &&
+
+                                <>
+
+                                    <Form.Item
+                                        name="sal_hr"
+                                        label="Sal/Hr"
+                                        rules={[
+                                            {
+                                                required: true,
+                                            },
+                                        ]}
+                                    >
+                                        <InputNumber onChange={(e) => { setSalaryHour(e) }} />
+                                    </Form.Item>
+                                    <Form.Item
+                                        name="hr_week"
+                                        label="Hr / Week"
+                                        rules={[
+                                            {
+                                                required: true,
+                                            },
+                                        ]}
+                                    >
+                                        <InputNumber onChange={(e) => { setHourWeek(e) }} />
+                                    </Form.Item>
+                                </>
+                            }
                             <Form.Item
                                 name="start_date"
                                 label="Start"
@@ -273,30 +312,41 @@ const Contract = (props) => {
                             >
                                 <DatePicker format={"MM/DD/YYYY"} />
                             </Form.Item>
-                            <Form.Item
-                                name="type"
-                                label="Type"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
-                            >
-                                <Radio.Group name="radiogroup" options={contractTypes} />
-                            </Form.Item>
+
                         </Col>
                         <Col span={12}>
-                            <Form.Item
-                                name="sal_monthly"
-                                label="Sal/Mon"
-                                rules={[
-                                    {
-                                        required: true,
-                                    },
-                                ]}
-                            >
-                                <Input readOnly style={{ background: 'lightgrey' }} />
-                            </Form.Item>
+
+                            {contractType !== 3 &&
+
+                                <Form.Item
+                                    name="sal_monthly"
+                                    label="Sal/Mon"
+                                    rules={[
+                                        {
+                                            required: true,
+                                        },
+                                    ]}
+                                >
+                                    <Input readOnly style={{ background: 'lightgrey' }} />
+                                </Form.Item>
+
+                            }
+                            {contractType === 3 &&
+
+                                <Form.Item
+                                    name="sal_monthly"
+                                    label="Sal/Mon"
+                                    rules={[
+                                        {
+                                            required: true,
+                                        },
+                                    ]}
+                                >
+                                    <Input onChange={(e) => setSalMonthly(e.target.value)} />
+                                </Form.Item>
+
+                            }
+
                             <Form.Item
                                 name="sal_biweekly"
                                 label="Sal/Biweekly"
