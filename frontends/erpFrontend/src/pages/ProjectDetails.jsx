@@ -112,7 +112,7 @@ const ProjectDetails = () => {
         const year = currentDate.year();
         const month = currentDate.format("MM");
         daysColumns.push({
-          title: `${day}-${monthLable}`,
+          title: `${monthLable.slice(0, 1).toUpperCase()}(${day})`,
           dataIndex: `day_${year}-${month}-${day}`,
         })
         currentDate = currentDate.add(1, 'days');
