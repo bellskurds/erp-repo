@@ -203,8 +203,134 @@ const RecurrentPaymentReport = () => {
         }
       ]
     }
+    ,
+    {
+      title: "Retentions",
+      children: [
+        {
+          title: "S.S.",
+          render: (_, record) => {
+            const { gross_salary } = record;
+            return (gross_salary * 0.0975).toFixed(2);
+          }
+        },
+        {
+          title: "S.E.",
+          render: (_, record) => {
+            const { gross_salary } = record;
+            return (gross_salary * 0.0125).toFixed(2);
+          }
+        },
+        {
+          title: "DTM",
+          render: (_) => {
+            return '-'
+          }
+        }, {
+          title: "Total RET",
+          render: (_, record) => {
+            const { gross_salary } = record;
+            return (gross_salary * (0.0975 + 0.0125)).toFixed(2)
+          }
+        }
+      ]
+    },
 
+    {
+      title: "Cuota Patronal",
+      children: [
+        {
+          title: "S.S.",
+          render: (_, record) => {
+            const { gross_salary } = record;
+            return (gross_salary * 0.1225).toFixed(2);
+          }
+        },
+        {
+          title: "S.E.",
+          render: (_, record) => {
+            const { gross_salary } = record;
+            return (gross_salary * 0.015).toFixed(2);
+          }
+        },
+        {
+          title: "R.P.",
+          render: (_, record) => {
+            const { gross_salary } = record;
+            return (gross_salary * 0.021).toFixed(2);
+          }
+        },
+        {
+          title: "DTM",
+          render: (_) => {
+            return '-'
+          }
+        },
+        {
+          title: "Total Cuota",
+          render: (_, record) => {
+            const { gross_salary } = record;
+            return (gross_salary * (0.1225 + 0.015 + 0.021)).toFixed(2)
+          }
+        }
+      ]
+    },
+    {
+      title: 'SIPE',
+      children: [
+        {
+          title: "R.P.",
+          render: (_, record) => {
+            const { gross_salary } = record;
+            return (gross_salary * 0.021).toFixed(2);
+          }
+        },
+        {
+          title: "DTM",
+          render: (_) => {
+            return '-'
+          }
+        },
+        {
+          title: "S.E.",
+          render: (_, record) => {
+            const { gross_salary } = record;
+            return (gross_salary * (0.015 + 0.0125)).toFixed(2);
+          }
+        },
+        {
+          title: "S.S.",
+          render: (_, record) => {
+            const { gross_salary } = record;
+            return (gross_salary * (0.1225 + 0.0975)).toFixed(2);
+          }
+        },
+        {
+          title: "Total SIPE",
+          render: (_, record) => {
+            const { gross_salary } = record;
+            return (gross_salary * (0.021 + 0.015 + 0.0125 + 0.1225 + 0.0975)).toFixed(2);
+          }
+        },
 
+      ]
+    },
+    {
+      title: "Acumulado",
+      children: [
+        {
+          title: "Vac. A.",
+          render: (_, record) => {
+            const { gross_salary, contract } = record;
+            if (contract.type <= 2) {
+              return (gross_salary / 11).toFixed(2)
+            } else {
+              return 0
+            }
+          }
+        }
+      ]
+    }
   ];
   const getPeriods = (month, year, Q = 0) => {
     const daysInMonth = new Date(year, month, 0).getDate();
@@ -701,7 +827,9 @@ const RecurrentPaymentReport = () => {
         dataSource={listItems || []}
         columns={[...columns]}
         rowClassName="editable-row"
-        style={{ width: '1500px' }}
+        scroll={{
+          x: 3500,
+        }}
       />
 
 
