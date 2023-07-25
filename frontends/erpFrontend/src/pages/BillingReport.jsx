@@ -33,12 +33,12 @@ const InvoiceHistory = (props) => {
     {
       title: "Customer Name",
       dataIndex: 'customer_name',
-      width: '15px'
+      width: 150
     },
     {
       title: "Fact M Base",
       dataIndex: 'recurrent_amount',
-      width: '15px'
+      width: 150
     },
     {
       title: "Notes",
@@ -98,7 +98,13 @@ const InvoiceHistory = (props) => {
   const [stores, setStores] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const { result: Invoices } = useSelector(selectListsByInvoice);
-
+  const [diffMonth, setDiffMonth] = useState();
+  const [tableWidth, setTableWidth] = useState();
+  useEffect(() => {
+    if (diffMonth) {
+      setTableWidth(diffMonth * 100 + 300)
+    }
+  }, [diffMonth])
 
 
   useEffect(() => {
@@ -108,6 +114,8 @@ const InvoiceHistory = (props) => {
     if (currentPeriods) {
       current = moment(currentPeriods[0]);
       end = currentPeriods[1];
+      const diffInMonths = end.diff(current, 'months');
+      setDiffMonth(diffInMonths)
     }
     const monthlyColumns = [];
     const sumBillingMonthly = {};
@@ -413,6 +421,9 @@ const InvoiceHistory = (props) => {
           columns={[...Columns, ...monthColumns]}
           rowClassName="editable-row"
           ref={tableRef}
+          scroll={{
+            x: tableWidth
+          }}
         />
       </Layout>
     </DashboardLayout>
