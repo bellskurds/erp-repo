@@ -114,81 +114,97 @@ const RecurrentPaymentReport = () => {
   }
   const columns = [
     {
-      title: "Order",
-      dataIndex: "key"
-    },
-    {
-      title: "Period",
-      dataIndex: "period",
-      render: () => {
-        return moment(new Date(currentYear, currentMonth - 1, 1)).format("MMMM YYYY")
-      }
-    },
-    {
-      title: "Quincena",
-      dataIndex: "quincena",
-      render: () => {
-        const current = moment(new Date(currentYear, currentMonth - 1, 1));
-        const Q = Math.round(currentQ + 1);
-        return `${current.format("MMMM")} Q${Q} ${current.format("YYYY")}`
-      }
-    },
+      title: "Payroll Contro",
+      children: [
+        {
+          title: "Order",
+          dataIndex: "key"
+        },
+        {
+          title: "Period",
+          dataIndex: "period",
+          render: () => {
+            return moment(new Date(currentYear, currentMonth - 1, 1)).format("MMMM YYYY")
+          }
+        },
+        {
+          title: "Quincena",
+          dataIndex: "quincena",
+          render: () => {
+            const current = moment(new Date(currentYear, currentMonth - 1, 1));
+            const Q = Math.round(currentQ + 1);
+            return `${current.format("MMMM")} Q${Q} ${current.format("YYYY")}`
+          }
+        },
 
-    {
-      title: 'ID',
-      dataIndex: ['employee', 'personal_id'],
-      width: '100',
-      align: "center"
-    },
-    {
-      title: 'Employee ',
-      dataIndex: ['employee', 'name'],
-      width: '100',
-      align: "center",
-    },
-    {
-      title: 'Ruta',
-      dataIndex: ['bank', 'ruta'],
-      width: '100',
-      align: "center",
-    },
-    {
-      title: 'CTA de Banco',
-      dataIndex: ['bank', 'name'],
-      width: '100',
-      align: "center",
-    },
-    {
-      title: 'Tipo de cuenta',
-      dataIndex: ['bank', 'account_type'],
-      width: '100',
-      align: "center",
-    },
-    {
-      title: 'Categoría',
-      width: '100',
-      dataIndex: 'category'
-    },
-    {
-      title: 'Type',
-      width: '100',
-      dataIndex: ['contract', 'type'],
-      render: (type) => {
-        return type ? contractTypes[type] : ''
-      }
-    },
-    {
-      title: "Gross Salary",
-      dataIndex: "gross_salary"
-    },
-    {
-      title: "Deductions",
-      dataIndex: "deductions"
-    },
-    {
-      title: "Net salary",
-      dataIndex: "net_salary"
+        {
+          title: 'ID',
+          dataIndex: ['employee', 'personal_id'],
+          width: '100',
+          align: "center"
+        },
+        {
+          title: 'Employee ',
+          dataIndex: ['employee', 'name'],
+          width: '100',
+          align: "center",
+        },
+        {
+          title: 'Ruta',
+          dataIndex: ['bank', 'ruta'],
+          width: '100',
+          align: "center",
+        },
+        {
+          title: 'CTA de Banco',
+          dataIndex: ['bank', 'name'],
+          width: '100',
+          align: "center",
+        },
+        {
+          title: 'Tipo de cuenta',
+          dataIndex: ['bank', 'account_type'],
+          width: '100',
+          align: "center",
+        },
+        {
+          title: 'Categoría',
+          width: '100',
+          dataIndex: 'category'
+        },
+        {
+          title: 'Type',
+          width: '100',
+          dataIndex: ['contract', 'type'],
+          render: (type) => {
+            return type ? contractTypes[type] : ''
+          }
+        },
+        {
+          title: "Gross Salary",
+          dataIndex: "gross_salary"
+        },
+        {
+          title: "Deductions",
+          dataIndex: "deductions"
+        },
+        {
+          title: "Net salary",
+          dataIndex: "net_salary",
+        },
+        {
+          title: "Transfer",
+          dataIndex: "Transfer",
+          render: (_, record) => {
+            const { net_salary, deductions } = record;
+
+            return (net_salary - deductions).toFixed(2)
+          }
+        }
+      ]
     }
+
+
   ];
   const getPeriods = (month, year, Q = 0) => {
     const daysInMonth = new Date(year, month, 0).getDate();
@@ -518,6 +534,7 @@ const RecurrentPaymentReport = () => {
         obj.transferencia = assignedContract.type === 1 ? obj.salary : obj.salary * 0.89;
         obj.deductions = (obj.gross_salary - obj.transferencia).toFixed(2);
         obj.gross_salary = (obj.gross_salary || 0).toFixed(2);
+        obj.net_salary = assignedContract.type === 1 ? (obj.gross_salary * 0.89).toFixed(2) : obj.gross_salary;
       });
 
       assignedEmployees.map(obj => {
