@@ -1,7 +1,7 @@
 import { crud } from "@/redux/crud/actions";
 import { selectListsByAssignedEmployee, selectListsByContract, selectListsByCustomerStores, } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined, } from "@ant-design/icons";
-import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Table, TimePicker, Typography } from "antd";
+import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Table, TimePicker, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import SelectAsync from "@/components/SelectAsync";
@@ -17,6 +17,9 @@ const AssignedEmployee = (props) => {
     const formRef = useRef(null);
     const [itemLists, setItemLists] = useState([]);
     const contractType = ["", "Payroll", "Services"];
+    const [currentEmployee, setCurrentEmployee] = useState(false);
+    const [currentContract, setCurrentContract] = useState(false);
+    const [assignStatus, setAssignStatus] = useState(true);
     const bankColumns = [
         {
             title: 'Position',
@@ -132,6 +135,9 @@ const AssignedEmployee = (props) => {
         if (item) {
             setIsBankModal(true);
             setIsUpdate(true);
+            setCurrentContract(item.contract);
+            setCurrentEmployee(item.employee);
+
             if (formRef.current) formRef.current.resetFields();
             setTimeout(() => {
                 if (item.monday) { setMondayValue(true) }
@@ -162,8 +168,6 @@ const AssignedEmployee = (props) => {
                 else {
                     setSundayValue(false)
                 }
-
-                console.log(item, 'fffffffffffffffffffsssffffff')
                 if (formRef.current) formRef.current.setFieldsValue({
                     monday: item.monday ? [moment(item.monday[0]), moment(item.monday[1])] : null,
                     tuesday: item.tuesday ? [moment(item.tuesday[0]), moment(item.tuesday[1])] : null,
@@ -177,8 +181,14 @@ const AssignedEmployee = (props) => {
                     sal_hr: item.sal_hr,
                     hr_week: item.hr_week,
                     position: item.position,
-                    gross_salary: item.gross_salary
+                    gross_salary: item.gross_salary,
                 });
+
+                setTimeout(() => {
+                    formRef.current.setFieldsValue({
+                        contract: item.contract ? item.contract._id : undefined
+                    })
+                }, 200);
                 setCurrentId(item._id);
             }, 200);
 
@@ -304,7 +314,26 @@ const AssignedEmployee = (props) => {
             setWorkContract(undefined);
         }
 
-    }, [Contracts])
+    }, [Contracts]);
+    useEffect(() => {
+
+        console.log(currentContract, currentEmployee, 'currentContract , currentEmployee')
+        if (currentContract && currentEmployee) {
+            setAssignStatus(false);
+        } else {
+
+            console.log()
+            setAssignStatus(true);
+        }
+    }, [currentContract, currentEmployee]);
+
+    const [isWorkDate, setIsWorkDate] = useState(false);
+    const cancelWorkDate = () => {
+        setIsWorkDate(false);
+    }
+    const handleUnAssign = () => {
+        setIsWorkDate(true);
+    }
     return (
 
         <div className="whiteBox shadow">
@@ -533,6 +562,19 @@ const AssignedEmployee = (props) => {
                             >
                                 <Input type='number' />
                             </Form.Item>
+                            {!assignStatus &&
+
+                                <Form.Item
+                                    wrapperCol={{
+                                        offset: 8,
+                                        span: 16,
+                                    }}
+                                >
+                                    <Button type="ghost" onClick={handleUnAssign}>
+                                        UnAssign
+                                    </Button>
+                                </Form.Item>
+                            }
                         </Col>
                     </Row>
                     <Form.Item
@@ -559,6 +601,17 @@ const AssignedEmployee = (props) => {
                 </Form>
                 <>
                 </>
+            </Modal>
+            <Modal title="Last day worked" visible={isWorkDate} onCancel={cancelWorkDate}>
+                <Form>
+                    <Form.Item
+                        name={"last_workdate"}
+                        label="Last Date"
+                    >
+                        <DatePicker />
+                    </Form.Item>
+
+                </Form>
             </Modal>
             <Row>
                 <Col span={3}>

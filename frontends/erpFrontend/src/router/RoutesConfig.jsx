@@ -135,6 +135,10 @@ var routes = [
     path: '/routes',
     component: 'Routes',
   },
+  {
+    path: '/recurrent_payment_report',
+    component: 'RecurrentPaymentReport',
+  },
 ]
 
 

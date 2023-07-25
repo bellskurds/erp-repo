@@ -113,6 +113,10 @@ export default function Navigation() {
               <Link to={'/billing_report'} />
               Billing Report
             </Menu.Item>
+            <Menu.Item key={'RecurrentPaymentReport'}>
+              <Link to={'/recurrent_payment_report'} />
+              Recurrent Payment Report
+            </Menu.Item>
           </SubMenu>
           {!company &&
             <Menu.Item key={'Company'} icon={<TeamOutlined />}>
