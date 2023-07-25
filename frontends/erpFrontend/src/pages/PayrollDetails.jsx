@@ -11,7 +11,6 @@ import moment from 'moment';
 import { useParams } from 'react-router-dom/cjs/react-router-dom.min';
 import { request } from '@/request';
 import { selectCurrentAdmin } from '@/redux/auth/selectors';
-import { useEffectOnce } from 'react-use';
 const contractTypes = [
   "", "Payroll", "Services"
 ]
@@ -581,8 +580,8 @@ const PayrollDetails = () => {
         if (!contract || !employee)
           unAssingedEmployees.push(otherObject);
       });
-
       const allDatas = [..._listItems, ...unassignedContracts, ...unAssingedEmployees];
+      console.log(allDatas, 'allDatas')
       allDatas.map(data => {
         if (!data.position) data.position = ''
       })
