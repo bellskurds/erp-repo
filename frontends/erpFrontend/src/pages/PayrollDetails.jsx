@@ -293,7 +293,7 @@ const PayrollDetails = () => {
   const dateValue = (date) => {
     return new Date(date).valueOf();
   }
-  const changedCellValue = (hours, date, record) => {
+  const changedCellValue = (hours, date, record, origin_value) => {
     const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id } } = record;
     const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
     if (item) {
@@ -489,7 +489,7 @@ const PayrollDetails = () => {
           const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
           switch (_day) {
             case 0:
-              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr;
+              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.sunday_hr) || obj.sunday_hr;
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr) - obj.sunday_hr
               break;
 
@@ -581,7 +581,7 @@ const PayrollDetails = () => {
           unAssingedEmployees.push(otherObject);
       });
       const allDatas = [..._listItems, ...unassignedContracts];
-      console.log(allDatas, 'allDatas')
+      console.log(changedDays, 'allDatas')
       allDatas.map(data => {
         if (!data.position) data.position = ''
       })
