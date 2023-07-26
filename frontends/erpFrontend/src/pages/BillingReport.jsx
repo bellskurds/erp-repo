@@ -233,22 +233,26 @@ const InvoiceHistory = (props) => {
       {
         customer_name: "Customers No.",
         key: new Date().valueOf(),
-        ...customersCount
+        ...customersCount,
+        other: true
       },
       {
         customer_name: "Billing Average",
         key: new Date().valueOf() + 1,
-        ...averageBilling
+        ...averageBilling,
+        other: true
       },
       {
         customer_name: "Monthly Grow",
         key: new Date().valueOf() + 2,
-        ...growBilling
+        ...growBilling,
+        other: true
       },
       {
         customer_name: "Monthly Billing",
         key: new Date().valueOf() + 3,
-        ...sumBillingMonthly
+        ...sumBillingMonthly,
+        other: true
       }
     ]
 
@@ -317,6 +321,12 @@ const InvoiceHistory = (props) => {
   }
   const handleDateChange = (e) => {
     setCurrentPeriods(e);
+  }
+  const getRowClassName = (record, index) => {
+    const { other } = record
+    if (other) {
+      return "billing_report"
+    }
   }
   return (
     <DashboardLayout>
@@ -419,7 +429,7 @@ const InvoiceHistory = (props) => {
           bordered
           dataSource={[...statisticsData, ...billingData] || []}
           columns={[...Columns, ...monthColumns]}
-          rowClassName="editable-row"
+          rowClassName={getRowClassName}
           ref={tableRef}
           scroll={{
             x: tableWidth

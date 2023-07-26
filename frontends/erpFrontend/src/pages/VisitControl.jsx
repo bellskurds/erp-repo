@@ -102,6 +102,7 @@ const VisitControl = () => {
   const [visitTypeValue, setVisitTypeValue] = useState(3);
   const [isClientStore, setIsClientStore] = useState(false);
   const [customerStore, setCustomerStore] = useState([]);
+  const [rowClass, setRowClass] = useState("inspection_background")
   const dataSource = [
     {
       item_label: "Limpieza general de instalaciones",
@@ -370,12 +371,12 @@ const VisitControl = () => {
     {
       title: "........................................",
       width: "40%",
-      dataIndex: "report_title",
+      dataIndex: "report_title"
     },
     {
       title: "....",
       width: "15%",
-      dataIndex: 'report_value',
+      dataIndex: 'report_value'
     },
     {
       title: "..."
@@ -620,6 +621,7 @@ const VisitControl = () => {
               report_title: "Proyección del Mes",
               report_value: totalInspectionOnStores
             },);
+          setRowClass("inspection_background");
           break;
         case 2:
           initReportData.push({
@@ -639,6 +641,7 @@ const VisitControl = () => {
               report_title: "Proyección del Mes",
               report_value: parseInt(totalMonthlyDeliver)
             },);
+          setRowClass("insumo_background");
           break;
         case 1:
           initReportData.push(
@@ -649,6 +652,7 @@ const VisitControl = () => {
               report_value: parseInt(totalVisits)
             }
           )
+          setRowClass("visit_background");
           break;
         default:
           break;
@@ -1152,8 +1156,9 @@ const VisitControl = () => {
               style={{ overflow: 'auto' }}
               bordered
               dataSource={reportData}
-              columns={[...topColumn, ...changedMonth]}
-              rowClassName="editable-row"
+              columns={parseInt(tabsStatus) === 1 ? [...changedMonth] : [...topColumn, ...changedMonth]}
+              rowClassName={rowClass}
+
             />
           </Form>
           <Form form={form} component={false}>
