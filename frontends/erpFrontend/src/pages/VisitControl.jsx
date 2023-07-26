@@ -388,9 +388,19 @@ const VisitControl = () => {
       title: "..%...",
       width: "20"
     },
-
   ]
-
+  const visitColumn = [
+    {
+      title: "........................................",
+      width: "40%",
+      dataIndex: "report_title"
+    },
+    {
+      title: "....",
+      width: "15%",
+      dataIndex: 'report_value'
+    },
+  ]
   const onFinish = async (values) => {
 
 
@@ -1156,7 +1166,7 @@ const VisitControl = () => {
               style={{ overflow: 'auto' }}
               bordered
               dataSource={reportData}
-              columns={parseInt(tabsStatus) === 1 ? [...changedMonth] : [...topColumn, ...changedMonth]}
+              columns={parseInt(tabsStatus) === 1 ? [...visitColumn, ...changedMonth] : [...topColumn, ...changedMonth]}
               rowClassName={rowClass}
 
             />

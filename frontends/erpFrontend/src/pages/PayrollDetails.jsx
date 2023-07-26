@@ -1,5 +1,5 @@
 import { DashboardLayout, DefaultLayout } from '@/layout';
-import { DeleteOutlined, EditOutlined, EyeOutlined, LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, EyeOutlined, LeftOutlined, PlusOutlined, RightOutlined, TeamOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Input, InputNumber, Layout, Modal, Popconfirm, Row, Space, Table, Tag, Typography } from 'antd';
 import Search from 'antd/lib/transfer/search';
 import React, { useEffect, useRef, useState } from 'react';
@@ -311,7 +311,17 @@ const PayrollDetails = () => {
       return false;
     }
   }
-
+  const setColor = (new_value, origin_value) => {
+    console.log(new_value, origin_value, 'new_value, origin_value')
+    if (new_value > origin_value) {
+      return <p style={{ backgroundColor: 'green' }}>{new_value}</p>
+    } else if (new_value < origin_value) {
+      return <p style={{ backgroundColor: 'yellow' }}>{new_value}</p>
+    }
+    else if (!new_value) {
+      return origin_value
+    }
+  }
 
   useEffect(() => {
     async function init() {
@@ -350,7 +360,7 @@ const PayrollDetails = () => {
                     </Typography.Text>
                     :
                     <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.sunday_hr }, `${year}/${month + 1}/${day}`, record.sunday_hr)}>
-                      {parseFloat(text) || 0}
+                      {(text) || 0}
                     </Typography.Text>
                 );
                 break;
@@ -362,7 +372,7 @@ const PayrollDetails = () => {
                     </Typography.Text>
                     :
                     <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.monday_hr }, `${year}/${month + 1}/${day}`, record.monday_hr)}>
-                      {parseFloat(text) || 0}
+                      {(text) || 0}
                     </Typography.Text>
                 );
                 break;
@@ -374,7 +384,7 @@ const PayrollDetails = () => {
                     </Typography.Text>
                     :
                     <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.tuesday_hr }, `${year}/${month + 1}/${day}`, record.tuesday_hr)}>
-                      {parseFloat(text) || 0}
+                      {(text) || 0}
                     </Typography.Text>
                 );
                 break;
@@ -386,7 +396,7 @@ const PayrollDetails = () => {
                     </Typography.Text>
                     :
                     <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.wednesday_hr }, `${year}/${month + 1}/${day}`, record.wednesday_hr)}>
-                      {parseFloat(text) || 0}
+                      {(text) || 0}
                     </Typography.Text>
                 );
                 break;
@@ -398,7 +408,7 @@ const PayrollDetails = () => {
                     </Typography.Text>
                     :
                     <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.thursday_hr }, `${year}/${month + 1}/${day}`, record.thursday_hr)}>
-                      {parseFloat(text) || 0}
+                      {(text) || 0}
                     </Typography.Text>
                 );
                 break;
@@ -410,7 +420,7 @@ const PayrollDetails = () => {
                     </Typography.Text>
                     :
                     <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.friday_hr }, `${year}/${month + 1}/${day}`, record.friday_hr)}>
-                      {parseFloat(text) || 0}
+                      {(text) || 0}
                     </Typography.Text>
                 );
                 break;
@@ -422,7 +432,7 @@ const PayrollDetails = () => {
                     </Typography.Text>
                     :
                     <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.saturday_hr }, `${year}/${month + 1}/${day}`, record.saturday_hr)}>
-                      {parseFloat(text) || 0}
+                      {(text) || 0}
                     </Typography.Text>
                 );
                 break;
@@ -435,7 +445,6 @@ const PayrollDetails = () => {
 
         currentDate = currentDate.add(1, 'days');
       };
-      console.log(daysColumns);
       setChangedDays(daysColumns);
       setMergedColumns([...columns, ...daysColumns])
       console.log();
@@ -474,7 +483,6 @@ const PayrollDetails = () => {
         obj.thursday_hr = obj.thursday ? getHours(obj.thursday) : 0;
         obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
         obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
-
         let currentDate = moment(start_date);
 
         const end = moment(end_date);
@@ -489,7 +497,7 @@ const PayrollDetails = () => {
           const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
           switch (_day) {
             case 0:
-              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.sunday_hr) || obj.sunday_hr;
+              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr) - obj.sunday_hr
               break;
 
@@ -543,6 +551,7 @@ const PayrollDetails = () => {
 
 
       });
+
       assignedEmployees.map(obj => {
         const { contract: assignedContract } = obj;
         assignedContracts.push(assignedContract);
@@ -581,12 +590,13 @@ const PayrollDetails = () => {
           unAssingedEmployees.push(otherObject);
       });
       const allDatas = [..._listItems, ...unassignedContracts];
-      console.log(changedDays, 'allDatas')
+
       allDatas.map(data => {
         if (!data.position) data.position = ''
       })
       const sortedLists = allDatas.sort((a, b) => b.position.localeCompare(a.position));
       setListItems([...sortedLists])
+      console.log(allDatas, daysColumns, '_listItems');
 
 
     }
@@ -603,10 +613,6 @@ const PayrollDetails = () => {
     }
     return hours;
   }
-  useEffect(() => {
-    console.log(listItems, 'listItems')
-  }, [listItems]);
-
   useEffect(() => {
     console.log(mergedColumns, 'mergedColumnsmergedColumns')
 
