@@ -23,7 +23,7 @@ const ProjectDetails = () => {
     },
     {
       title: 'Billing ID',
-      dataIndex: 'billing_id',
+      dataIndex: 'invoice_id',
       width: '100',
     },
     {
@@ -121,7 +121,7 @@ const ProjectDetails = () => {
       const { result: projects } = await request.list({ entity: "project" });
       const { result: employeeItems } = await request.list({ entity: "employee" });
       const projectListItems = projects.filter(({ periods, status }) =>
-        status === 1
+        status === 3
         // &&
         // (
         //   (

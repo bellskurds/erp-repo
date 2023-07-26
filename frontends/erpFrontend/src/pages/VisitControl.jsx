@@ -370,12 +370,12 @@ const VisitControl = () => {
     {
       title: "........................................",
       width: "40%",
-      dataIndex: "report_title"
+      dataIndex: "report_title",
     },
     {
       title: "....",
       width: "15%",
-      dataIndex: 'report_value'
+      dataIndex: 'report_value',
     },
     {
       title: "..."

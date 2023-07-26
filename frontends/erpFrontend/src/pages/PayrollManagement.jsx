@@ -315,7 +315,7 @@ const PayrollManagement = () => {
     [..._listItems, ...unassignedContracts].map(obj => {
       const { contract } = obj;
       if (contract.type === payType) {
-        calValue += (parseFloat(obj.transferencia))
+        calValue += (parseFloat(obj.week_pay))
       }
     })
     return calValue;

@@ -312,7 +312,7 @@ const CustomerStores = (props) => {
             const { contract, store, employee, hr_week } = item;
             const obj = {
                 key: index,
-                name: employee.name,
+                name: employee ? employee.name : '',
                 hours: getFormattedHours(
                     [
                         store.monday ? [store.monday[0], store.monday[1]] : "",
@@ -324,8 +324,8 @@ const CustomerStores = (props) => {
                         store.sunday ? [store.sunday[0], store.sunday[1]] : "",
                     ]
                 ),
-                salary: contract.sal_monthly,
-                contract: `${contract.start_date}-${contract.end_date}`,
+                salary: contract ? contract.sal_monthly : 0,
+                contract: contract ? `${contract.start_date}-${contract.end_date}` : '',
                 hr_week: getTotalWeekHours(
                     [
                         store.monday ? [new Date(store.monday[0]).getHours(), new Date(store.monday[1]).getHours()] : [0, 0],

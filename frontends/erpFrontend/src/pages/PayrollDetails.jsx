@@ -208,12 +208,12 @@ const PayrollDetails = () => {
       width: '100',
 
     },
-    {
-      title: 'Transferencia',
-      dataIndex: 'transferencia',
-      width: '100',
+    // {
+    //   title: 'Transferencia',
+    //   dataIndex: 'transferencia',
+    //   width: '100',
 
-    },
+    // },
   ];
   const getPeriods = (month, year, Q = 0) => {
     const daysInMonth = new Date(year, month, 0).getDate();
@@ -580,7 +580,7 @@ const PayrollDetails = () => {
         if (!contract || !employee)
           unAssingedEmployees.push(otherObject);
       });
-      const allDatas = [..._listItems, ...unassignedContracts, ...unAssingedEmployees];
+      const allDatas = [..._listItems, ...unassignedContracts];
       console.log(allDatas, 'allDatas')
       allDatas.map(data => {
         if (!data.position) data.position = ''

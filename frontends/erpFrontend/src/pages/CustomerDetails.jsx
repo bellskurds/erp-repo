@@ -234,6 +234,17 @@ export default function Details() {
                 <Input />
               </Form.Item>
               <Form.Item
+                name="address"
+                label="Address"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
                 wrapperCol={{
                   offset: 8,
                   span: 16,
@@ -288,6 +299,7 @@ export default function Details() {
                 <p>Legal Name : {currentItem ? currentItem.legal_name : ""}</p>
                 <p>RUC : {currentItem ? currentItem.ruc : ""}</p>
                 <p>Billing Details : {currentItem ? currentItem.billing_details : ""}</p>
+                <p>Address : {currentItem ? currentItem.address : ""}</p>
               </Col>
               <Col span={6}>
 

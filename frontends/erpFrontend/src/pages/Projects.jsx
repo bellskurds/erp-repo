@@ -248,6 +248,9 @@ const Projects = () => {
       title: 'Customer',
       dataIndex: ['customer', 'name'],
       width: '15%',
+      render: (text, record) => {
+        return <label onClick={() => editItem(record)}>{text}</label>
+      }
     },
     {
       title: 'Reference',
@@ -255,7 +258,8 @@ const Projects = () => {
       width: '15%',
     },
     {
-      title: "Billing ID"
+      title: "Billing ID",
+      dataIndex: "invoice_id"
     },
     {
       title: 'Date',
