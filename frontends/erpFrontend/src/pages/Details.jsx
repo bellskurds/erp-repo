@@ -513,7 +513,6 @@ export default function Details() {
           </Content>
           <BankAccount parentId={currentEmployeeId} />
           <RelatedPeople parentId={currentEmployeeId} />
-          <EmergencyContact parentId={currentEmployeeId} />
           <MedicalDetail parentId={currentEmployeeId} />
           <Contract parentId={currentEmployeeId} />
         </Tabs.TabPane>

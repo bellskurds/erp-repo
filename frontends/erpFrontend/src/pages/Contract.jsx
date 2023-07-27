@@ -1,5 +1,6 @@
 import { crud } from "@/redux/crud/actions";
 import { selectFilteredItemsByParent, selectListItems, selectListsByContract, selectListsByEmergency, selectListsByMedical, selectReadItem } from "@/redux/crud/selectors";
+import { request } from "@/request";
 import { CheckOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, NumberOutlined } from "@ant-design/icons";
 import { Button, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Table, Tag, Typography } from "antd";
 import moment from "moment";
@@ -15,6 +16,7 @@ const Contract = (props) => {
     const [isBankModal, setIsBankModal] = useState(false);
     const formRef = useRef(null);
     const [salMonthly, setSalMonthly] = useState();
+    const [positionData, setPositionData] = useState();
     const contractTypes = [
         {
             value: 1,
@@ -71,14 +73,16 @@ const Contract = (props) => {
                     role === 0 ?
                         <>
                             <Typography.Link onClick={() => editItem(record)}>
-                                <EditOutlined style={{ fontSize: "20px" }} />
+                                <EditOutlined style={{ fontSize: "20px", paddingLeft: "5px" }} />
                             </Typography.Link>
+                            {checkCancelStatus(record) &&
 
-                            <Popconfirm title="Sure to cancel?" onConfirm={() => updateStatus('canceled', record._id)}>
-                                <CloseCircleOutlined style={{ fontSize: "20px" }} />
-                            </Popconfirm>
+                                <Popconfirm title="Sure to cancel?" onConfirm={() => updateStatus('canceled', record._id)}>
+                                    <CloseCircleOutlined style={{ fontSize: "20px", paddingLeft: "5px" }} />
+                                </Popconfirm>
+                            }
                             <Popconfirm title="Sure to end?" onConfirm={() => updateStatus('terminated', record._id)}>
-                                <CheckOutlined style={{ fontSize: "20px" }} />
+                                <CheckOutlined style={{ fontSize: "20px", paddingLeft: "5px" }} />
                             </Popconfirm>
 
                         </> : ''
@@ -90,10 +94,25 @@ const Contract = (props) => {
     const [currentId, setCurrentId] = useState('');
     const [isUpdate, setIsUpdate] = useState(false);
     const [contracts, setContracts] = useState([]);
-
     const [contractType, setContractType] = useState();
     const formattedDateFunc = (date) => {
         return new Date(date).toLocaleDateString()
+    }
+    const checkCancelStatus = (record) => {
+        const { _id, parent_id } = record;
+        const filterItem = positionData.filter(position => {
+            const { employee, contract } = position;
+            if (_id === contract._id && parent_id._id === employee._id) {
+                return position
+            } else {
+                return false;
+            }
+        })
+        if (filterItem.length) {
+            return false;
+        } else {
+            return true;
+        }
     }
     const updateStatus = (statusValue, _id) => {
         const id = currentId || _id;
@@ -188,6 +207,11 @@ const Contract = (props) => {
         const id = currentEmployeeId;
         const jsonData = { parent_id: id }
         dispatch(crud.listByContract({ entity, jsonData }));
+        const init = async () => {
+            const { result } = await request.listById({ entity: "assignedEmployee", jsonData: { employee: id } });
+            setPositionData(result);
+        }
+        init();
     }, []);
 
     useEffect(() => {
