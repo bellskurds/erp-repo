@@ -547,7 +547,7 @@ const VisitControl = () => {
       )
       storeData.map((obj, index) => {
         const { store, customer } = obj;
-        const { visit_value, deliver, inspection } = store;
+        const { deliver, inspection } = store;
 
         switch (parseInt(tabsStatus)) {
           case 1:
@@ -563,7 +563,6 @@ const VisitControl = () => {
           default:
             break;
         }
-        // obj['store_visit_value'] = visit_value || 0;
         obj['visit_value'] = 0;
         obj['key'] = index;
         fillteredData.map(data => {
@@ -858,7 +857,7 @@ const VisitControl = () => {
   ]
 
   useEffect(() => {
-    console.log(typeValue, 'typeValuetypeValue');
+    setIsModalVisible(false);
   }, [typeValue]);
 
   const [inspectionOfficer, setInspectionOfficer] = useState();
@@ -960,17 +959,18 @@ const VisitControl = () => {
                       name='radioGroup'
                       options={[
                         {
-                          value: 1,
-                          label: "Visit"
+                          value: 3,
+                          label: "Inspection"
                         },
                         {
                           value: 2,
                           label: "Products"
                         },
                         {
-                          value: 3,
-                          label: "Inspection"
-                        }]}
+                          value: 1,
+                          label: "Visit"
+                        },
+                      ]}
                       onChange={(e) => setTypeValue(e.target.value)}
                     />
                   </Form.Item>
