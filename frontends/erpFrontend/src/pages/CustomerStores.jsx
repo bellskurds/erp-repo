@@ -31,6 +31,7 @@ const CustomerStores = (props) => {
     const [otherBilling, setOtherBilling] = useState(0);
     const [listItems, setListItems] = useState([]);
     const [employeeDatas, setEmployeeDatas] = useState([]);
+    const [assignedEmployees, setAssignedEmployees] = useState([])
     useEffect(() => {
         console.log(labourBilling + productBilling + otherBilling);
         if (formRef.current) {
@@ -307,9 +308,11 @@ const CustomerStores = (props) => {
     const { result: Items } = useSelector(selectListsByCustomerStores);
     const showEmployees = (data) => {
         setIsModal(true)
+
+        console.log(data, assignedEmployees)
         const lists = []
         data.map((item, index) => {
-            const { contract, store, employee, hr_week } = item;
+            const { contract, store, employee } = item;
             const obj = {
                 key: index,
                 name: employee ? employee.name : '',
@@ -326,23 +329,29 @@ const CustomerStores = (props) => {
                 ),
                 salary: contract ? contract.sal_monthly : 0,
                 contract: contract ? `${contract.start_date}-${contract.end_date}` : '',
-                hr_week: getTotalWeekHours(
-                    [
-                        store.monday ? [new Date(store.monday[0]).getHours(), new Date(store.monday[1]).getHours()] : [0, 0],
-                        store.tuesday ? [new Date(store.tuesday[0]).getHours(), new Date(store.tuesday[1]).getHours()] : [0, 0],
-                        store.wednesday ? [new Date(store.wednesday[0]).getHours(), new Date(store.wednesday[1]).getHours()] : [0, 0],
-                        store.thursday ? [new Date(store.thursday[0]).getHours(), new Date(store.thursday[1]).getHours()] : [0, 0],
-                        store.friday ? [new Date(store.friday[0]).getHours(), new Date(store.friday[1]).getHours()] : [0, 0],
-                        store.saturday ? [new Date(store.saturday[0]).getHours(), new Date(store.saturday[1]).getHours()] : [0, 0],
-                        store.sunday ? [new Date(store.sunday[0]).getHours(), new Date(store.sunday[1]).getHours()] : [0, 0],
-                    ]
-                )
+                // hr_week: getTotalWeekHours(
+                //     [
+                //         store.monday ? [new Date(store.monday[0]).getHours(), new Date(store.monday[1]).getHours()] : [0, 0],
+                //         store.tuesday ? [new Date(store.tuesday[0]).getHours(), new Date(store.tuesday[1]).getHours()] : [0, 0],
+                //         store.wednesday ? [new Date(store.wednesday[0]).getHours(), new Date(store.wednesday[1]).getHours()] : [0, 0],
+                //         store.thursday ? [new Date(store.thursday[0]).getHours(), new Date(store.thursday[1]).getHours()] : [0, 0],
+                //         store.friday ? [new Date(store.friday[0]).getHours(), new Date(store.friday[1]).getHours()] : [0, 0],
+                //         store.saturday ? [new Date(store.saturday[0]).getHours(), new Date(store.saturday[1]).getHours()] : [0, 0],
+                //         store.sunday ? [new Date(store.sunday[0]).getHours(), new Date(store.sunday[1]).getHours()] : [0, 0],
+                //     ]
+                // )
+            }
+            if (assignedEmployees) {
+                assignedEmployees.map(position => {
+                    const { contract: p_contract, employee: p_employee, store: p_store } = position;
+                    if (contract && employee && store && p_contract && p_employee && p_store && contract._id === p_contract._id && employee._id === p_employee._id && store._id === p_store._id) {
+                        obj.hr_week = position.hr_week || 0;
+                    }
+                })
             }
             lists.push(obj);
         })
         setEmployeeDatas(lists)
-
-        console.log(data);
     }
     useEffect(() => {
 
@@ -371,10 +380,8 @@ const CustomerStores = (props) => {
                 })
                 item['employees'] = item['employees_'].length
             })
-
-            console.log(items, assignedEmployees, 'assignedEmployees');
-
-            setListItems(items)
+            setListItems(items);
+            setAssignedEmployees(assignedEmployees);
         }
 
         init();
