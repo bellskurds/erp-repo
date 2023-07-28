@@ -23,6 +23,9 @@ const PayrollSchema = new mongoose.Schema({
   employee: {
     type: String,
   },
+  history: {
+    type: String,
+  },
   removed: {
     type: Boolean,
     default: false,

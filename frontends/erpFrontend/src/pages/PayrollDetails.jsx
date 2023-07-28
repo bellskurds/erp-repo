@@ -43,11 +43,6 @@ const PayrollDetails = () => {
   const tableRef = useRef(null);
 
   const [isUpdate, setIsUpdate] = useState(false);
-  const showModal = () => {
-    setIsModalVisible(true);
-    setIsUpdate(false);
-    if (formRef.current) formRef.current.resetFields();
-  };
   const dispatch = useDispatch();
 
   const handleOk = () => {
@@ -76,9 +71,17 @@ const PayrollDetails = () => {
   const [byEmail, setByEmail] = useState();
   const [adjust, setAdjust] = useState(0);
   const [mergedColumns, setMergedColumns] = useState([]);
+  const [prevHour, setPrevHour] = useState();
+  const [currentHistory, setCurrentHistory] = useState();
+  const [userData, setUserData] = useState();
   const editItem = (item, cellItem, current, mainHour) => {
-    const { hour, comment, by: { email: byEmail = '' } = {} } = cellItem
+
+    const { hour, comment, by: { email: byEmail = '' } = {} } = cellItem;
+
+    setCurrentHistory(cellItem)
+    console.log(cellItem, 'cellItem')
     if (item) {
+      setPrevHour(hour);
       setTimeout(() => {
         if (formRef.current) formRef.current.setFieldsValue({
           hours: hour,
@@ -93,24 +96,6 @@ const PayrollDetails = () => {
       setIsModalVisible(true);
       setIsUpdate(true);
     }
-  }
-  const deleteItem = (item) => {
-    const id = item._id;
-    dispatch(crud.delete({ entity, id }))
-    setTimeout(() => {
-      dispatch(crud.list({ entity }));
-    }, 1000)
-  }
-
-  const navigateBiWeeks = (date, direction) => {
-    const newDate = new Date(date);
-    if (direction === 'previous') {
-      newDate.setDate(newDate.getDate() - 15);
-    } else if (direction === 'next') {
-      newDate.setDate(newDate.getDate() + 15);
-    }
-    setCurrentBiweek(newDate);
-    return newDate;
   }
   const calcAdjustment = (record) => {
     var adjust = 0;
@@ -271,13 +256,19 @@ const PayrollDetails = () => {
   useEffect(() => {
     setCurrentPeriod(getPeriods(currentMonth, currentYear, currentQ))
   }, [currentMonth, currentQ, currentYear])
-  const AdminId = useSelector(selectCurrentAdmin);
   const Auth = JSON.parse(localStorage.getItem('auth'));
   const onFinish = (values) => {
+
     const { comment, hours } = values;
+
+    const historyObj = { auth_id: Auth.id, prevHour: prevHour, created: moment().format("mm/dd/yyyy : h:m:s"), new_hour: hours };
+    const historys = JSON.parse(currentHistory.history || '[]');
+    historys.push(historyObj);
+
+
     const { contract, employee, parent_id } = currentItem
-    const jsonData = { by: Auth.id, hour: hours, date: selectedDate, comment: comment, contract: contract._id, employee: employee._id, customer: parent_id._id }
-    console.log(allHours, 'allHoursallHours');
+    const jsonData = { by: Auth.id, hour: hours, date: selectedDate, comment: comment, contract: contract._id, employee: employee._id, customer: parent_id._id, history: JSON.stringify(historys) }
+    console.log(jsonData, 'allHoursallHours');
 
     const item = allHours.filter(obj => obj.contract === contract._id && obj.employee === employee._id && obj.customer === parent_id._id && obj.date === selectedDate)
     if (item.length) {
@@ -449,7 +440,9 @@ const PayrollDetails = () => {
       setMergedColumns([...columns, ...daysColumns])
       console.log();
       const { result: workContracts } = await request.list({ entity: "workContract" })
-      const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" })
+      const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" });
+      const { result: userData } = await request.list({ entity: "Admin" });
+      setUserData(userData)
       const unassignedContracts = [];
       const assignedContracts = [];
 
@@ -617,7 +610,29 @@ const PayrollDetails = () => {
     console.log(mergedColumns, 'mergedColumnsmergedColumns')
 
   }, [mergedColumns])
-
+  const [isChangeHistory, setIsChangeHistory] = useState(false);
+  const [historyData, setHistoryData] = useState();
+  const handleCancelHistory = () => {
+    setIsChangeHistory(false);
+  }
+  const showHistory = () => {
+    setIsChangeHistory(true)
+    if (currentHistory) {
+      const { history } = currentHistory;
+      console.log(userData, 'userData')
+      const historyDatas = JSON.parse(history || '[]');
+      for (var i = 0; i < historyDatas.length; i++) {
+        var history_ = historyDatas[i];
+        for (var j = 0; j < userData.length; j++) {
+          var user = userData[j];
+          if (history_.auth_id === user._id) {
+            history_['auth_id'] = user.name
+          }
+        }
+      }
+      setHistoryData(historyDatas);
+    }
+  }
   return (
 
     <Layout style={{ padding: '30px', overflow: 'auto' }}>
@@ -680,23 +695,37 @@ const PayrollDetails = () => {
                 span: 16,
               }}
             >
-              {
-                isUpdate ? <Button type="primary" htmlType="submit">
-                  Update
-                </Button> :
-                  <Button type="primary" htmlType="submit">
-                    Save
-                  </Button>
-
-              }
-
+              <Button type="default" onClick={showHistory}>
+                History                </Button>
+              <Button type="primary" htmlType="submit">
+                Save
+              </Button>
               <Button type="ghost" onClick={handleCancel}>
                 cancel
               </Button>
             </Form.Item>
           </Form>
-          {byEmail && `Changed by ${byEmail}`}
         </>
+      </Modal>
+      <Modal title="Change History" visible={isChangeHistory} onCancel={handleCancelHistory} footer={null} width={700}>
+        <Table
+          columns={[
+            {
+              title: "Date/Time",
+              dataIndex: "created"
+            }, {
+              title: "By",
+              dataIndex: 'auth_id'
+            }, {
+              title: "Prev Hour",
+              dataIndex: 'prevHour'
+            }, {
+              title: "New Hour",
+              dataIndex: 'new_hour'
+            }
+          ]}
+          dataSource={historyData || []}
+        />
       </Modal>
       <Row>
         <Col span={24}>
