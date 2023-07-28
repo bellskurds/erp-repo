@@ -265,7 +265,7 @@ const PayrollDetails = () => {
 
     const { comment, hours } = values;
 
-    const historyObj = { auth_id: Auth.id, prevHour: prevHour, created: moment().format("mm/dd/yyyy : h:m:s"), new_hour: hours };
+    const historyObj = { auth_id: Auth.id, prevHour: prevHour, created: moment().format("mm/dd/yyyy : h:m:s"), new_hour: hours, comment: comment };
     const historys = JSON.parse(currentHistory.history || '[]');
     historys.push(historyObj);
 
@@ -633,6 +633,7 @@ const PayrollDetails = () => {
             history_['auth_id'] = user.name
           }
         }
+        history_['key'] = i;
       }
       setHistoryData(historyDatas);
     }
@@ -717,7 +718,12 @@ const PayrollDetails = () => {
             {
               title: "Date/Time",
               dataIndex: "created"
-            }, {
+            },
+            {
+              title: "Comment",
+              dataIndex: "comment"
+            },
+            {
               title: "By",
               dataIndex: 'auth_id'
             }, {
