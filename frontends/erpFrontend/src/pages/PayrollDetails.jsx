@@ -123,13 +123,13 @@ const PayrollDetails = () => {
   }
   const columns = [
     {
-      title: 'Customer',
-      dataIndex: ['parent_id', 'name'],
+      title: 'Store',
+      dataIndex: ['store', 'store'],
       width: 100,
     },
     {
-      title: 'Position',
-      dataIndex: 'position',
+      title: 'Personal ID',
+      dataIndex: ['employee', 'personal_id'],
       width: 150,
     },
     {
@@ -596,7 +596,7 @@ const PayrollDetails = () => {
       })
       const sortedLists = allDatas.sort((a, b) => b.position.localeCompare(a.position));
       setListItems([...sortedLists])
-      console.log(allDatas, daysColumns, '_listItems');
+      console.log(sortedLists, '_listItems');
 
 
     }
