@@ -547,8 +547,23 @@ const VisitControl = () => {
       )
       storeData.map((obj, index) => {
         const { store, customer } = obj;
-        const { visit_value } = store;
-        obj['store_visit_value'] = visit_value || 0;
+        const { visit_value, deliver, inspection } = store;
+
+        switch (parseInt(tabsStatus)) {
+          case 1:
+            obj['store_visit_value'] = 0;
+            break;
+          case 2:
+            obj['store_visit_value'] = deliver || 0;
+
+            break;
+          case 3:
+            obj['store_visit_value'] = inspection || 0;
+            break;
+          default:
+            break;
+        }
+        // obj['store_visit_value'] = visit_value || 0;
         obj['visit_value'] = 0;
         obj['key'] = index;
         fillteredData.map(data => {
@@ -557,11 +572,24 @@ const VisitControl = () => {
             if (status && type === parseInt(tabsStatus)) {
               obj[`day_${getDate(visit_date)}`] = visitType[type]
               obj['visit_value']++;
+
             }
           }
         })
       })
-      const storeDataHasValue = storeData.filter(store => store.store_visit_value > 0)
+      var storeDataHasValue = [];
+      switch (parseInt(tabsStatus)) {
+        case 2:
+          storeDataHasValue = storeData.filter(store => store.visit_value > 0 || store.store.inspection)
+          break;
+        case 3:
+          storeDataHasValue = storeData.filter(store => store.visit_value > 0 || store.store.deliver)
+          break;
+        default:
+          storeDataHasValue = storeData.filter(store => store.visit_value > 0)
+          break;
+      }
+      console.log(storeDataHasValue, 'storeDataHasValue');
       setFilterData(storeDataHasValue)
       setGlobalData(storeDataHasValue)
 
