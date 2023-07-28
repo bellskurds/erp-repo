@@ -19,26 +19,26 @@ const ProjectDetails = () => {
     {
       title: 'Customer Name',
       dataIndex: ['customer', 'name'],
-      width: '100',
+      width: 100,
     },
     {
       title: 'Billing ID',
       dataIndex: 'invoice_id',
-      width: '100',
+      width: 100,
     },
     {
       title: 'Employee',
       dataIndex: 'employee',
-      width: '100',
+      width: 100,
     },
     {
       title: 'Project ID',
       dataIndex: 'project_id',
-      width: '200',
+      width: 100,
     },
     {
       title: 'Category',
-      width: '100',
+      width: 100,
       render: () => {
         return "Project"
       }
@@ -46,7 +46,7 @@ const ProjectDetails = () => {
     {
       title: 'Payment',
       dataIndex: 'quincena',
-      width: '100',
+      width: 100,
     },
   ];
   const getPeriods = (month, year, Q = 0) => {
@@ -112,8 +112,9 @@ const ProjectDetails = () => {
         const year = currentDate.year();
         const month = currentDate.format("MM");
         daysColumns.push({
-          title: `${monthLable.slice(0, 1).toUpperCase()}(${day})`,
+          title: `${currentDate.format("dddd").slice(0, 1).toUpperCase()} ${day}`,
           dataIndex: `day_${year}-${month}-${day}`,
+          width: 30
         })
         currentDate = currentDate.add(1, 'days');
       };
@@ -208,12 +209,13 @@ const ProjectDetails = () => {
         <Button type="primary" icon={<DownloadOutlined />} onClick={exportToExcel} >Export to excel</Button>
       </Row>
       <Table
-        style={{ overflow: 'auto' }}
         bordered
         dataSource={listItems || []}
         columns={[...columns, ...changedDays]}
         rowClassName="editable-row"
-      // style={{ width: '1000px' }}
+        scroll={{
+          x: 3300
+        }}
       />
     </Layout>
   );

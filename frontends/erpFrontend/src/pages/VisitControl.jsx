@@ -331,7 +331,7 @@ const VisitControl = () => {
     {
       title: 'Client(Branch)',
       dataIndex: ['customer', 'name'],
-      width: '15%',
+      width: 150,
       render: (text, { store, ...otherObj }) => {
         return (<label style={{ cursor: 'pointer' }} onClick={() => editItem({ store, ...otherObj })}>{text}({store.store})</label>)
       }
@@ -339,17 +339,17 @@ const VisitControl = () => {
     {
       title: 'T',
       dataIndex: 'store_visit_value',
-      width: '15%',
+      width: 150,
     },
     {
       title: 'R',
       dataIndex: 'visit_value',
-      width: '15%',
+      width: 150,
     },
     {
       title: 'P',
       dataIndex: 'difference',
-      width: '15%',
+      width: 150,
       render: (text, record) => {
         return ((parseFloat(record.store_visit_value) || 0) - (parseFloat(record.visit_value) || 0));
       }
@@ -370,34 +370,36 @@ const VisitControl = () => {
   const topColumn = [
     {
       title: "........................................",
-      width: "40%",
+      width: 100,
       dataIndex: "report_title"
     },
     {
       title: "....",
-      width: "15%",
+      width: 100,
       dataIndex: 'report_value'
     },
     {
-      title: "..."
+      title: "...",
+      width: 100,
     },
     {
-      title: "..."
+      title: "...",
+      width: 100,
     },
     {
       title: "..%...",
-      width: "20"
+      width: 100,
     },
   ]
   const visitColumn = [
     {
       title: "........................................",
-      width: "40%",
+      width: 100,
       dataIndex: "report_title"
     },
     {
       title: "....",
-      width: "15%",
+      width: 150,
       dataIndex: 'report_value'
     },
   ]
@@ -507,8 +509,9 @@ const VisitControl = () => {
         const year = currentDate.year();
         const month = currentDate.format("MM");
         daysColumns.push({
-          title: `${monthLable.slice(0, 1).toUpperCase()}(${day})`,
+          title: `${currentDate.format("dddd").slice(0, 1).toUpperCase()} ${day}`,
           dataIndex: `day_${year}-${month}-${day}`,
+          width: 100
         })
         inspectionPerDate[`day_${year}-${month}-${day}`] = 0;
         inspectionPerDate_[`day_${year}-${month}-${day}`] = 0;
@@ -912,6 +915,34 @@ const VisitControl = () => {
 
                 <Col span={24}>
                   <Form.Item
+                    name='type'
+                    label='Type'
+                    required={[
+                      {
+                        required: true
+                      }
+                    ]}
+                  >
+                    <Radio.Group
+                      name='radioGroup'
+                      options={[
+                        {
+                          value: 3,
+                          label: "Inspection"
+                        },
+                        {
+                          value: 2,
+                          label: "Products"
+                        },
+                        {
+                          value: 1,
+                          label: "Visit"
+                        },
+                      ]}
+                      onChange={(e) => setTypeValue(e.target.value)}
+                    />
+                  </Form.Item>
+                  <Form.Item
                     name="customer"
                     label="Customer"
                     rules={[
@@ -946,34 +977,7 @@ const VisitControl = () => {
                   ]}>
                     <DatePicker />
                   </Form.Item>
-                  <Form.Item
-                    name='type'
-                    label='Type'
-                    required={[
-                      {
-                        required: true
-                      }
-                    ]}
-                  >
-                    <Radio.Group
-                      name='radioGroup'
-                      options={[
-                        {
-                          value: 3,
-                          label: "Inspection"
-                        },
-                        {
-                          value: 2,
-                          label: "Products"
-                        },
-                        {
-                          value: 1,
-                          label: "Visit"
-                        },
-                      ]}
-                      onChange={(e) => setTypeValue(e.target.value)}
-                    />
-                  </Form.Item>
+
                   <Form.Item
                     name="comments"
                     label="Comments"
@@ -1191,12 +1195,14 @@ const VisitControl = () => {
           </Row>
           <Form form={form} component={false}>
             <Table
-              style={{ overflow: 'auto' }}
               bordered
               dataSource={reportData}
               columns={parseInt(tabsStatus) === 1 ? [...visitColumn, ...changedMonth] : [...topColumn, ...changedMonth]}
               rowClassName={rowClass}
-
+              scroll={{
+                x: 3300
+              }}
+              pagination={false}
             />
           </Form>
           <Form form={form} component={false}>
@@ -1209,6 +1215,9 @@ const VisitControl = () => {
               pagination={paginations}
               onChange={handelDataTableLoad}
               footer={Footer}
+              scroll={{
+                x: 3300
+              }}
             />
           </Form>
         </Layout>

@@ -12,7 +12,11 @@ import { useParams } from 'react-router-dom/cjs/react-router-dom.min';
 import { request } from '@/request';
 import { selectCurrentAdmin } from '@/redux/auth/selectors';
 const contractTypes = [
-  "", "Payroll", "Services"
+  "",
+  "Payroll",
+  "Services",
+  "Viaticum",
+  "Hourly"
 ]
 const getFormattedHours = (days) => {
   const dayLabels = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
@@ -337,7 +341,7 @@ const PayrollDetails = () => {
         const year = currentDate.year();
         const month = currentDate.month();
         daysColumns.push({
-          title: `${monthLable.slice(0, 1).toUpperCase()}(${day})`,
+          title: `${currentDate.format("dddd").slice(0, 1).toUpperCase()} ${day}`,
           dataIndex: `-day-${year}_${month + 1}_${day}`,
           width: 100,
           render: (text, record) => {
