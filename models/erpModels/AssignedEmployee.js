@@ -6,6 +6,8 @@ const AssignedEmployeeSchema = new mongoose.Schema({
     { type: mongoose.Schema.ObjectId, ref: 'Employee', autopopulate: true },
   contract:
     { type: mongoose.Schema.ObjectId, ref: 'WorkContract', autopopulate: true },
+  viaticum:
+    { type: mongoose.Schema.ObjectId, ref: 'WorkContract', autopopulate: true },
   store:
     { type: mongoose.Schema.ObjectId, ref: 'CustomerStores', autopopulate: true },
   monday: {

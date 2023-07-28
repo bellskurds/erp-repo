@@ -1,12 +1,18 @@
 import { crud } from "@/redux/crud/actions";
 import { selectListsByAssignedEmployee, selectListsByContract, selectListsByCustomerStores, } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined, } from "@ant-design/icons";
-import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Table, TimePicker, Typography } from "antd";
+import { Button, Checkbox, Col, DatePicker, Form, Input, Modal, Popconfirm, Row, Select, Table, TimePicker, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import SelectAsync from "@/components/SelectAsync";
 import moment from "moment";
-
+const contractTypes = [
+    "",
+    "Payroll",
+    "Services",
+    "Viaticum",
+    "Hourly"
+]
 const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
 
 const AssignedEmployee = (props) => {
@@ -133,6 +139,7 @@ const AssignedEmployee = (props) => {
     }
     const editItem = (item) => {
         if (item) {
+            console.log(item, 'item');
             setIsBankModal(true);
             setIsUpdate(true);
             setCurrentContract(item.contract);
@@ -186,7 +193,8 @@ const AssignedEmployee = (props) => {
 
                 setTimeout(() => {
                     formRef.current.setFieldsValue({
-                        contract: item.contract ? item.contract._id : undefined
+                        contract: item.contract ? item.contract._id : undefined,
+                        viaticum: item.viaticum ? item.viaticum._id : undefined
                     })
                 }, 200);
                 setCurrentId(item._id);
@@ -211,8 +219,6 @@ const AssignedEmployee = (props) => {
         setIsBankModal(false)
     }
     const saveBankDetails = (values) => {
-
-
         const parentId = currentEmployeeId;
         if (currentId && parentId && isUpdate) {
             const id = currentId;
@@ -261,6 +267,7 @@ const AssignedEmployee = (props) => {
     const [sundayValue, setSundayValue] = useState(null);
 
     const [workContract, setWorkContract] = useState([]);
+    const [viaticumContract, setViaticumContract] = useState([]);
     const [stores, setStores] = useState([]);
     const { result: Contracts } = useSelector(selectListsByContract);
 
@@ -268,7 +275,8 @@ const AssignedEmployee = (props) => {
         formRef.current.setFieldsValue({
             contract: undefined
         })
-        setWorkContract([])
+        setWorkContract([]);
+
         if (value) {
             const entity = 'workContract';
             const jsonData = { parent_id: value }
@@ -300,18 +308,31 @@ const AssignedEmployee = (props) => {
         const contractOptions = Contracts.items || [];
         if (contractOptions) {
             const contracts = contractOptions.map(item => {
-                if (item.status === "active") {
+                if (item.status === "active" && item.type !== 3) {
                     return {
                         value: item._id,
-                        label: `${item.sal_hr}~${item.sal_monthly}`
+                        label: `${contractTypes[item.type]} Sal/hr ${item.sal_hr} | Sal/Mon ${item.sal_monthly}`
+                    }
+                } else {
+                    return {}
+                }
+            })
+            const _viaticumContract = contractOptions.map(item => {
+                if (item.status === "active" && item.type === 3) {
+                    return {
+                        value: item._id,
+                        label: `${contractTypes[item.type]} | Sal/Mon ${item.sal_monthly}`
                     }
                 } else {
                     return {}
                 }
             })
             setWorkContract(contracts);
+            setViaticumContract(_viaticumContract);
+
         } else {
             setWorkContract(undefined);
+            setViaticumContract(undefined);
         }
 
     }, [Contracts]);
@@ -381,11 +402,6 @@ const AssignedEmployee = (props) => {
                             <Form.Item
                                 name="contract"
                                 label="Contract"
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //     },
-                            // ]}
                             >
                                 <Select
                                     showSearch
@@ -397,6 +413,22 @@ const AssignedEmployee = (props) => {
                                         (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                                     }
                                     options={workContract}
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                name="viaticum"
+                                label="Viaticum"
+                            >
+                                <Select
+                                    showSearch
+                                    placeholder="Select a contract"
+                                    optionFilterProp="children"
+                                    // onChange={onChange}
+                                    // onSearch={onSearch}
+                                    filterOption={(input, option) =>
+                                        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                    }
+                                    options={viaticumContract}
                                 />
                             </Form.Item>
 
