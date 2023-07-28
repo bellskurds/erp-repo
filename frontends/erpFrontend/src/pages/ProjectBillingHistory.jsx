@@ -1,10 +1,12 @@
 import * as XLSX from 'xlsx';
-import { Col, Row, Table, } from "antd";
+import { Col, Modal, Row, Table, } from "antd";
 import { useEffect, useState } from "react";
 import { request } from '@/request';
 const ProjectBillingHistory = (props) => {
     const currentEmployeeId = props.parentId
     const [dataSource, setDataSource] = useState();
+    const [projectDetail, setProjectDetail] = useState();
+    const [isProducts, setIsProducts] = useState();
     const Columns = [
         {
             title: 'Date',
@@ -13,6 +15,18 @@ const ProjectBillingHistory = (props) => {
                 return (formattedDateFunc(text));
             }
         },
+        {
+            title: "Billing ID",
+            dataIndex: 'invoice_id',
+            render: (text, record) => {
+                return <span onClick={() => viewProjectDetail(record)}>{text}</span>
+            }
+        },
+        {
+            title: "Reference",
+            dataIndex: 'ref'
+        }
+        ,
         {
             title: 'Amount',
             dataIndex: 'amount',
@@ -24,13 +38,24 @@ const ProjectBillingHistory = (props) => {
     const formattedDateFunc = (date) => {
         return new Date(date).toLocaleDateString()
     }
+
+    const viewProjectDetail = (record) => {
+        if (record) {
+            const { project_details } = record;
+            setProjectDetail(project_details)
+            setIsProducts(true)
+        }
+
+    }
     useEffect(() => {
         const init = async () => {
             const { result } = await request.listById({ entity: "project", jsonData: { customer: currentEmployeeId } });
+            console.log(result, 'result');
             const projectHistory = result.map((item, index) => ({
                 start_date: item.created,
                 amount: item.billing,
-                key: index
+                key: index,
+                ...item
             }));
             setDataSource(projectHistory);
 
@@ -48,8 +73,15 @@ const ProjectBillingHistory = (props) => {
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
         XLSX.writeFile(workbook, 'table.xlsx');
     }
+    const handleProducts = () => {
+        setIsProducts(false)
+    }
     return (
         <div className="whiteBox shadow">
+            <Modal title="Products" visible={isProducts} onCancel={handleProducts} footer={null}>
+                <h3>{projectDetail}</h3>
+            </Modal>
+
             <Row>
                 <Col span={3}>
                     <h3 style={{ color: '#22075e', marginBottom: 5 }}>Project Billing History</h3>

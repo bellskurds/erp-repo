@@ -561,7 +561,7 @@ const VisitControl = () => {
           }
         })
       })
-      const storeDataHasValue = storeData.filter(store => store.visit_value > 0)
+      const storeDataHasValue = storeData.filter(store => store.store_visit_value > 0)
       setFilterData(storeDataHasValue)
       setGlobalData(storeDataHasValue)
 

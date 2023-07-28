@@ -99,19 +99,23 @@ const Contract = (props) => {
         return new Date(date).toLocaleDateString()
     }
     const checkCancelStatus = (record) => {
-        const { _id, parent_id } = record;
-        const filterItem = positionData.filter(position => {
-            const { employee, contract } = position;
-            if (_id === contract._id && parent_id._id === employee._id) {
-                return position
-            } else {
+        if (positionData && record) {
+            const { _id, parent_id } = record;
+            const filterItem = positionData.filter(position => {
+                const { employee, contract } = position;
+                if (_id === contract._id && parent_id._id === employee._id) {
+                    return position
+                } else {
+                    return false;
+                }
+            })
+            if (filterItem.length) {
                 return false;
+            } else {
+                return true;
             }
-        })
-        if (filterItem.length) {
-            return false;
         } else {
-            return true;
+            return false;
         }
     }
     const updateStatus = (statusValue, _id) => {
