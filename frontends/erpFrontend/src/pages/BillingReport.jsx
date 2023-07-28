@@ -33,7 +33,7 @@ const InvoiceHistory = (props) => {
     {
       title: "Customer Name",
       dataIndex: 'customer_name',
-      width: 150
+      width: 450
     },
     {
       title: "Fact M Base",
@@ -187,29 +187,119 @@ const InvoiceHistory = (props) => {
           customer[date_key] += amount || 0
         }
       })
-      if (!recurrent_count) {
-        customer.recurrent_amount = 'N/A';
-        projectBillingData.map(project => {
-          const { customer: customer_project, billing, created, } = project;
-          if (customer_project) {
-            const { _id } = customer_project;
-            if (customer_id === _id) {
-              const date_key = moment(new Date(created)).format("MM/YYYY");
-              customer[date_key] += billing || 0
-            }
-          }
-        })
+      // for (var key in sumBillingMonthly) {
+      //   sumBillingMonthly[key] += customer[key] || 0;
+      // }
+      // for (var key1 in customersCount) {
+
+      //   if (recurrent_count && (customer[key1] === 0 || customer[key1])) {
+      //     customersCount[key1]++;
+      //   }
+      // }
+    });
+
+    const extraData = [
+      {
+        customer_name: "Suma Proyectos Clientes Sin Contrato Recurrente",
+        key: new Date().valueOf() + new Date().valueOf()
+      },
+      {
+        customer_name: "Suma Proyectos Clientes Con Contrato Recurrente",
+        key: new Date().valueOf() + new Date().valueOf() + new Date().valueOf()
       }
+    ]
+    extraData.map(data => {
       for (var key in sumBillingMonthly) {
-        sumBillingMonthly[key] += customer[key] || 0;
+        data[key] = 0;
       }
+    })
+    const hasNotBillings = billingData.map(data => {
+      if (!data.recurrent_count) {
+        var obj = {};
+        for (var key in customersCount) {
+          obj[key] = 0;
+        }
+        obj.customer_id = data.customer_id
+        return obj;
+      }
+    }).filter(data => data !== undefined)
+    const hasBillings = billingData.map(data => {
+      if (data.recurrent_count) {
+        var obj = {};
+        for (var key in customersCount) {
+          obj[key] = 0;
+        }
+        obj.customer_id = data.customer_id
+        return obj;
+      }
+    }).filter(data => data !== undefined)
+    hasNotBillings.map(billingObj => {
+      const { customer_id } = billingObj;
+      projectBillingData.map(project => {
+        const { customer: customer_project, billing, created, } = project;
+        if (customer_project) {
+          const { _id } = customer_project;
+          if (customer_id === _id) {
+            const date_key = moment(new Date(created)).format("MM/YYYY");
+            billingObj[date_key] += billing || 0
+          }
+        }
+      })
+    })
+    hasBillings.map(billingObj => {
+      const { customer_id } = billingObj;
+      projectBillingData.map(project => {
+        const { customer: customer_project, billing, created, } = project;
+        if (customer_project) {
+          const { _id } = customer_project;
+          if (customer_id === _id) {
+            const date_key = moment(new Date(created)).format("MM/YYYY");
+            billingObj[date_key] += billing || 0
+          }
+        }
+      })
+    })
+    const hasNotRecurrent = extraData[0];
+    const hasRecurrent = extraData[1];
+    for (var _key in hasNotRecurrent) {
+      if (_key !== 'key' && _key !== 'customer_name') {
+
+        for (var i = 0; i < hasNotBillings.length; i++) {
+          hasNotRecurrent[_key] += hasNotBillings[i][_key];
+        }
+      }
+    }
+    for (var _n_key in hasRecurrent) {
+      if (_n_key !== 'key' && _n_key !== 'customer_name') {
+        for (var j = 0; j < hasBillings.length; j++) {
+          hasRecurrent[_n_key] += hasBillings[j][_n_key];
+        }
+      }
+    }
+    const allData = [...billingData, ...extraData]
+
+    allData.map(data => {
+      const { recurrent_count } = data;
+      for (var key in sumBillingMonthly) {
+        sumBillingMonthly[key] += data[key] || 0;
+      }
+
       for (var key1 in customersCount) {
 
-        if (recurrent_count && (customer[key1] === 0 || customer[key1])) {
+        if (recurrent_count && (data[key1] === 0 || data[key1])) {
           customersCount[key1]++;
         }
       }
-    });
+    })
+    console.log(projectBillingData, 'allData');
+
+
+    setBillingData(allData);
+
+
+
+
+
     for (var key in sumBillingMonthly) {
       if (customerData) {
 
@@ -217,7 +307,6 @@ const InvoiceHistory = (props) => {
         averageBilling[key] = (averageBilling[key]).toFixed(2)
       }
     }
-    setBillingData(billingData);
 
     for (var key2 in growBilling) {
       const beforeKey = moment(new Date(`${key2.split("/")[0]}/1/${key2.split("/")[1]}`)).subtract(1, 'months').format("MM/YYYY");
@@ -256,12 +345,7 @@ const InvoiceHistory = (props) => {
       }
     ]
 
-    console.log(statistics, 'statistics')
     setStatisticsData(statistics);
-    const table = tableRef.current;
-    if (table) {
-      console.log(table, '343434')
-    }
   }, [
     currentYear, currentMonth, invoices, customerData, projectBillingData, currentPeriods
   ]);
@@ -434,6 +518,7 @@ const InvoiceHistory = (props) => {
           scroll={{
             x: tableWidth
           }}
+          pagination={false}
         />
       </Layout>
     </DashboardLayout>
