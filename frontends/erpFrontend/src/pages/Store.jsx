@@ -86,6 +86,7 @@ const Store = () => {
   const [rangeDate, setRangeDate] = useState();
   const [isModal, setIsModal] = useState(false);
   const [employeeDatas, setEmployeeDatas] = useState([]);
+  const [assignedEmployeeLists, setAssignedEmployeeLists] = useState();
   const [globalData, setGlobalData] = useState([]);
 
   useEffect(() => {
@@ -128,36 +129,63 @@ const Store = () => {
   const [status, setStatus] = useState();
   const [summatoryCost, setSummatoryCost] = useState();
   const isEditing = (record) => record._id === editingKey;
+  const [customerContacts, setCustomerContacts] = useState();
   const columns = [
     {
       title: 'Store',
       dataIndex: 'store',
-      width: '15%',
+      width: 100,
     },
+    // {
+    //   title: 'Customer',
+    //   dataIndex: ['parent_id', 'name'],
+    //   width: '15%',
+    // },
     {
-      title: 'Customer',
-      dataIndex: ['parent_id', 'name'],
-      width: '15%',
+      title: 'Contact name',
+      dataIndex: 'contact_name',
+      width: 60,
     },
-    {
-      title: 'Routes',
-      dataIndex: ['routes', 'routes'],
-      width: '15%',
-    },
+    // {
+    //   title: 'Routes',
+    //   dataIndex: ['routes', 'routes'],
+    //   width: '15%',
+    // },
     {
       title: 'Email',
       dataIndex: ['parent_id', 'email'],
-      width: '15%',
+      width: 50,
     },
     {
       title: 'Phone',
       dataIndex: ['parent_id', 'phone'],
-      width: '15%',
+      width: 100,
+    },
+    {
+      title: "Store Hours",
+      width: 300,
+      render: (text, record) => {
+        return <>
+          {
+            `${getFormattedHours(
+              [
+                record.monday ? [record.monday[0], record.monday[1]] : "",
+                record.tuesday ? [record.tuesday[0], record.tuesday[1]] : "",
+                record.wednesday ? [record.wednesday[0], record.wednesday[1]] : "",
+                record.thursday ? [record.thursday[0], record.thursday[1]] : "",
+                record.friday ? [record.friday[0], record.friday[1]] : "",
+                record.saturday ? [record.saturday[0], record.saturday[1]] : "",
+                record.sunday ? [record.sunday[0], record.sunday[1]] : "",
+              ])}`
+
+          }
+        </>
+      }
     },
     {
       title: 'Products',
       dataIndex: 'products',
-      width: '15%',
+      width: 100,
       render: (text, record) => {
         const { products } = record
         return text && <EyeOutlined onClick={() => setCurrentProducts(products)} style={{ fontSize: "20px" }} />
@@ -166,7 +194,7 @@ const Store = () => {
     {
       title: 'Employees',
       dataIndex: 'employees',
-      width: '15%',
+      width: 100,
       render: (_, record) => {
         const { employees_ } = record
         return <label onClick={() => showEmployees(employees_)}>{_}</label>
@@ -175,7 +203,7 @@ const Store = () => {
     {
       title: 'Waze',
       dataIndex: 'waze_location',
-      width: '15%',
+      width: 100,
       render: (_) => {
         return <a target="_blank" rel='noreferrer' href={`https://waze.com/ul?ll=${_}&navigate=yes"`}>
           <AliwangwangOutlined style={{ fontSize: "20px" }} />
@@ -206,17 +234,14 @@ const Store = () => {
         ),
         salary: contract ? contract.sal_monthly : 0,
         contract: contract ? `${contract.start_date}-${contract.end_date}` : '',
-        hr_week: getTotalWeekHours(
-          [
-            store.monday ? [new Date(store.monday[0]).getHours(), new Date(store.monday[1]).getHours()] : [0, 0],
-            store.tuesday ? [new Date(store.tuesday[0]).getHours(), new Date(store.tuesday[1]).getHours()] : [0, 0],
-            store.wednesday ? [new Date(store.wednesday[0]).getHours(), new Date(store.wednesday[1]).getHours()] : [0, 0],
-            store.thursday ? [new Date(store.thursday[0]).getHours(), new Date(store.thursday[1]).getHours()] : [0, 0],
-            store.friday ? [new Date(store.friday[0]).getHours(), new Date(store.friday[1]).getHours()] : [0, 0],
-            store.saturday ? [new Date(store.saturday[0]).getHours(), new Date(store.saturday[1]).getHours()] : [0, 0],
-            store.sunday ? [new Date(store.sunday[0]).getHours(), new Date(store.sunday[1]).getHours()] : [0, 0],
-          ]
-        )
+      }
+      if (assignedEmployeeLists) {
+        assignedEmployeeLists.map(position => {
+          const { contract: p_contract, employee: p_employee, store: p_store } = position;
+          if (contract && employee && store && p_contract && p_employee && p_store && contract._id === p_contract._id && employee._id === p_employee._id && store._id === p_store._id) {
+            obj.hr_week = position.hr_week || 0;
+          }
+        })
       }
       lists.push(obj);
     })
@@ -225,20 +250,24 @@ const Store = () => {
     console.log(data);
   }
 
-  const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
+  const { result: listResult } = useSelector(selectListItems);
   const { pagination, items } = listResult;
   const formRef = useRef(null);
 
   useEffect(() => {
     dispatch(crud.resetState());
     dispatch(crud.list({ entity }));
-
+    (async () => {
+      const { result } = await request.list({ entity: "customerContacts" })
+      setCustomerContacts(result);
+    })()
   }, []);
   useEffect(() => {
 
     async function init() {
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" });
       const { result: recurrentCustomers } = await request.list({ entity: "recurrentInvoice" });
+      setAssignedEmployeeLists(assignedEmployees)
       items.map(item => {
         const { _id: store_id, parent_id: customer } = item
         item['employees_'] = [];
@@ -248,23 +277,34 @@ const Store = () => {
           if (customer && parent_id._id === customer._id) {
             item['status'] = 1;
           }
-        })
-        assignedEmployees.map(obj => {
-          const { store } = obj
-          const { _id: store_id1 } = store;
-          if (store_id === store_id1) {
-            item['employees_'].push(obj)
-          }
-        })
-        item['employees'] = item['employees_'].length
+        });
+        if (assignedEmployees) {
+
+          assignedEmployees.map(obj => {
+            const { store } = obj;
+            const { _id: store_id1 } = store;
+            if (store_id === store_id1) {
+              item['employees_'].push(obj)
+            }
+          })
+        }
+        item['employees'] = item['employees_'].length;
+        if (customerContacts) {
+
+          customerContacts.map(contact => {
+            if (customer._id === contact.parent_id && contact.primary) {
+              item['contact_name'] = contact.name;
+            }
+          })
+        }
       })
-      console.log(items, recurrentCustomers, 'items1111');
+      console.log(items, customerContacts, 'items1111');
       setFilterData(items);
       setGlobalData(items);
       setPaginations(pagination)
     }
     init();
-  }, [items, pagination])
+  }, [items, pagination, customerContacts])
 
   useEffect(() => {
     const filteredData = globalData.filter((record) => {
@@ -356,7 +396,9 @@ const Store = () => {
               pagination={paginations}
               onChange={handelDataTableLoad}
               footer={Footer}
-
+              scroll={{
+                x: 2200
+              }}
 
             />
           </Form>
