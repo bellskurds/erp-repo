@@ -308,13 +308,15 @@ const PayrollDetails = () => {
   }
   const setColor = (new_value, origin_value) => {
     console.log(new_value, origin_value, 'new_value, origin_value')
-    if (new_value > origin_value) {
+    if (!new_value) {
+      return <p>{origin_value}</p>
+    }
+    else if (new_value > origin_value) {
       return <p style={{ backgroundColor: 'green' }}>{new_value}</p>
     } else if (new_value < origin_value) {
       return <p style={{ backgroundColor: 'yellow' }}>{new_value}</p>
-    }
-    else if (!new_value) {
-      return origin_value
+    } else {
+      return <p>{origin_value}</p>
     }
   }
 
@@ -335,7 +337,6 @@ const PayrollDetails = () => {
 
       const daysColumns = [];
       while (currentDate.isSameOrBefore(end)) {
-        const monthLable = currentDate.format("MMMM");
         const day = currentDate.date();
         const _day = currentDate.day();
         const year = currentDate.year();
@@ -345,11 +346,12 @@ const PayrollDetails = () => {
           dataIndex: `-day-${year}_${month + 1}_${day}`,
           width: 100,
           render: (text, record) => {
+            const { contract } = record;
             switch (_day) {
               case 0:
                 return (
 
-                  record.hasOwnProperty('type') ?
+                  !(contract && Object(contract).hasOwnProperty('type')) ?
                     <Typography.Text>
                       {0}
                     </Typography.Text>
@@ -358,10 +360,9 @@ const PayrollDetails = () => {
                       {(text) || 0}
                     </Typography.Text>
                 );
-                break;
               case 1:
                 return (
-                  record.hasOwnProperty('type') ?
+                  !(contract && Object(contract).hasOwnProperty('type')) ?
                     <Typography.Text>
                       {0}
                     </Typography.Text>
@@ -370,10 +371,9 @@ const PayrollDetails = () => {
                       {(text) || 0}
                     </Typography.Text>
                 );
-                break;
               case 2:
                 return (
-                  record.hasOwnProperty('type') ?
+                  !(contract && Object(contract).hasOwnProperty('type')) ?
                     <Typography.Text>
                       {0}
                     </Typography.Text>
@@ -382,10 +382,9 @@ const PayrollDetails = () => {
                       {(text) || 0}
                     </Typography.Text>
                 );
-                break;
               case 3:
                 return (
-                  record.hasOwnProperty('type') ?
+                  !(contract && Object(contract).hasOwnProperty('type')) ?
                     <Typography.Text>
                       {0}
                     </Typography.Text>
@@ -394,10 +393,9 @@ const PayrollDetails = () => {
                       {(text) || 0}
                     </Typography.Text>
                 );
-                break;
               case 4:
                 return (
-                  record.hasOwnProperty('type') ?
+                  !(contract && Object(contract).hasOwnProperty('type')) ?
                     <Typography.Text>
                       {0}
                     </Typography.Text>
@@ -406,10 +404,9 @@ const PayrollDetails = () => {
                       {(text) || 0}
                     </Typography.Text>
                 );
-                break;
               case 5:
                 return (
-                  record.hasOwnProperty('type') ?
+                  !(contract && Object(contract).hasOwnProperty('type')) ?
                     <Typography.Text>
                       {0}
                     </Typography.Text>
@@ -418,10 +415,9 @@ const PayrollDetails = () => {
                       {(text) || 0}
                     </Typography.Text>
                 );
-                break;
               case 6:
                 return (
-                  record.hasOwnProperty('type') ?
+                  !(contract && Object(contract).hasOwnProperty('type')) ?
                     <Typography.Text>
                       {0}
                     </Typography.Text>
@@ -430,7 +426,6 @@ const PayrollDetails = () => {
                       {(text) || 0}
                     </Typography.Text>
                 );
-                break;
 
               default:
                 break;
@@ -485,53 +480,56 @@ const PayrollDetails = () => {
         const end = moment(end_date);
 
         while (currentDate.isSameOrBefore(end)) {
-          const monthLable = currentDate.format("MMMM");
           const day = currentDate.date();
           const _day = currentDate.day();
           const year = currentDate.year();
           const month = currentDate.month();
           const dataIndex = `-day-${year}_${month + 1}_${day}`;
+          const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
           const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
           switch (_day) {
             case 0:
-              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr
+              obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.sunday_hr);
+              obj[dataIndex2] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr;
+
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr) - obj.sunday_hr
               break;
 
             case 1:
-              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr;
-              obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr) - obj.monday_hr
+              obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.monday_hr);
+              obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr) - obj.monday_hr;
+              obj[dataIndex2] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr;
 
               break;
 
             case 2:
-              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr;
+              obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.tuesday_hr);
 
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr) - obj.tuesday_hr
-
+              obj[dataIndex2] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr;
               break;
 
             case 3:
-              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr;
+              obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.wednesday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr) - obj.wednesday_hr
-
+              obj[dataIndex2] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr;
               break;
 
             case 4:
-              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr;
+              obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.thursday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr) - obj.thursday_hr
-
+              obj[dataIndex2] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr;
               break;
             case 5:
-              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr;
+              obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.friday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr) - obj.friday_hr
 
-
+              obj[dataIndex2] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr;
               break;
             case 6:
-              obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr;
+              obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.saturday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr) - obj.saturday_hr
-
+              obj[dataIndex2] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr;
               break;
 
             default:
@@ -586,14 +584,14 @@ const PayrollDetails = () => {
         if (!contract || !employee)
           unAssingedEmployees.push(otherObject);
       });
-      const allDatas = [..._listItems, ...unassignedContracts];
 
+      const allDatas = [..._listItems, ...unassignedContracts];
+      console.log(allDatas, 'allDatasallDatasallDatas');
       allDatas.map(data => {
         if (!data.position) data.position = ''
       })
       const sortedLists = allDatas.sort((a, b) => b.position.localeCompare(a.position));
       setListItems([...sortedLists])
-      console.log(sortedLists, '_listItems');
 
 
     }
@@ -602,9 +600,10 @@ const PayrollDetails = () => {
     currentPeriod, saveStatus, currentMonth, currentYear
   ]);
   const getServiceHours = (record) => {
+    console.log(record, 'record')
     var hours = 0;
     for (var key in record) {
-      if (key.includes('-day-')) {
+      if (key.includes('services-day-')) {
         hours += record[key];
       }
     }
@@ -665,18 +664,18 @@ const PayrollDetails = () => {
               rules={[
                 {
                   required: true,
-                  validator: (_, value) => {
-                    if (selectedCellValue === 0) {
-                      if (value && value > 10) {
-                        return Promise.reject(`Value must be less than or equal to 10`);
-                      }
-                    } else {
-                      if (value && value > Math.abs(selectedCellValue)) {
-                        return Promise.reject(`Value must be less than or equal to ${Math.abs(selectedCellValue)}`);
-                      }
-                    }
-                    return Promise.resolve();
-                  }
+                  // validator: (_, value) => {
+                  //   if (selectedCellValue === 0) {
+                  //     if (value && value > 10) {
+                  //       return Promise.reject(`Value must be less than or equal to 10`);
+                  //     }
+                  //   } else {
+                  //     if (value && value > Math.abs(selectedCellValue)) {
+                  //       return Promise.reject(`Value must be less than or equal to ${Math.abs(selectedCellValue)}`);
+                  //     }
+                  //   }
+                  //   return Promise.resolve();
+                  // }
 
                 },
               ]}
