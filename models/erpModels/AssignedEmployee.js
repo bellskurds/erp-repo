@@ -58,6 +58,14 @@ const AssignedEmployeeSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  start_date: {
+    type: Date,
+    default: Date.now,
+  },
+  end_date: {
+    type: Date,
+    default: Date.now,
+  },
 });
 AssignedEmployeeSchema.plugin(require('mongoose-autopopulate'));
 // AssignedEmployeeSchema.index({

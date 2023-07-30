@@ -106,11 +106,11 @@ const AssignedEmployee = (props) => {
     ];
     const [currentId, setCurrentId] = useState('');
     const [isUpdate, setIsUpdate] = useState(false);
-
+    const [currentItem, selectCurrentItem] = useState();
     const editBankModal = () => {
         setIsBankModal(true);
         setIsUpdate(false);
-
+        setIsEmployee(false)
         setMondayValue(false);
         setTuesdayValue(false);
         setWednesdayValue(false);
@@ -140,11 +140,13 @@ const AssignedEmployee = (props) => {
     const editItem = (item) => {
         if (item) {
             console.log(item, 'item');
+
+            setIsEmployee(false)
             setIsBankModal(true);
             setIsUpdate(true);
             setCurrentContract(item.contract);
             setCurrentEmployee(item.employee);
-
+            selectCurrentItem(item);
             if (formRef.current) formRef.current.resetFields();
             setTimeout(() => {
                 if (item.monday) { setMondayValue(true) }
@@ -189,6 +191,7 @@ const AssignedEmployee = (props) => {
                     hr_week: item.hr_week,
                     position: item.position,
                     gross_salary: item.gross_salary,
+                    start_date: item.start_date ? moment(new Date(item.start_date)) : null
                 });
 
                 setTimeout(() => {
@@ -270,7 +273,7 @@ const AssignedEmployee = (props) => {
     const [viaticumContract, setViaticumContract] = useState([]);
     const [stores, setStores] = useState([]);
     const { result: Contracts } = useSelector(selectListsByContract);
-
+    const [isEmployee, setIsEmployee] = useState(false);
     const changeEmployee = (value) => {
         formRef.current.setFieldsValue({
             contract: undefined
@@ -278,11 +281,13 @@ const AssignedEmployee = (props) => {
         setWorkContract([]);
 
         if (value) {
+            setIsEmployee(true)
             const entity = 'workContract';
             const jsonData = { parent_id: value }
             // dispatch(crud.resetState());
             dispatch(crud.listByContract({ entity, jsonData }));
-
+        } else {
+            setIsEmployee(false)
         }
     }
 
@@ -301,7 +306,7 @@ const AssignedEmployee = (props) => {
             setStores([]);
         }
 
-    }, [Stores])
+    }, [Stores]);
     useEffect(() => {
 
         console.log(Contracts, 'ContractsContracts')
@@ -338,7 +343,7 @@ const AssignedEmployee = (props) => {
     }, [Contracts]);
     useEffect(() => {
 
-        console.log(currentContract, currentEmployee, 'currentContract , currentEmployee')
+        console.log(currentEmployee, 'currentContract , currentEmployee')
         if (currentContract && currentEmployee) {
             setAssignStatus(false);
         } else {
@@ -354,6 +359,10 @@ const AssignedEmployee = (props) => {
     }
     const handleUnAssign = () => {
         setIsWorkDate(true);
+    }
+    const handleLastWork = (values) => {
+
+        console.log(values, currentItem, 'values, currentItem')
     }
     return (
 
@@ -594,6 +603,17 @@ const AssignedEmployee = (props) => {
                             >
                                 <Input type='number' />
                             </Form.Item>
+                            {isEmployee && <Form.Item
+                                name={"start_date"}
+                                label="Start Date"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <DatePicker />
+                            </Form.Item>}
                             {!assignStatus &&
 
                                 <Form.Item
@@ -635,7 +655,7 @@ const AssignedEmployee = (props) => {
                 </>
             </Modal>
             <Modal title="Last day worked" visible={isWorkDate} onCancel={cancelWorkDate}>
-                <Form>
+                <Form onFinish={handleLastWork}>
                     <Form.Item
                         name={"last_workdate"}
                         label="Last Date"
