@@ -26,6 +26,7 @@ const AssignedEmployee = (props) => {
     const [currentEmployee, setCurrentEmployee] = useState(false);
     const [currentContract, setCurrentContract] = useState(false);
     const [assignStatus, setAssignStatus] = useState(true);
+    const [unAssignStatus, setUnAssignStatus] = useState(false);
     const bankColumns = [
         {
             title: 'Position',
@@ -118,6 +119,7 @@ const AssignedEmployee = (props) => {
         setFridayValue(false);
         setSaturdayValue(false);
         setSundayValue(false);
+        setUnAssignStatus(false);
         if (formRef.current) { formRef.current.resetFields(); }
     }
 
@@ -147,6 +149,7 @@ const AssignedEmployee = (props) => {
             setCurrentContract(item.contract);
             setCurrentEmployee(item.employee);
             selectCurrentItem(item);
+            setUnAssignStatus(false);
             if (formRef.current) formRef.current.resetFields();
             setTimeout(() => {
                 if (item.monday) { setMondayValue(true) }
@@ -358,7 +361,17 @@ const AssignedEmployee = (props) => {
         setIsWorkDate(false);
     }
     const handleUnAssign = () => {
-        setIsWorkDate(true);
+        setUnAssignStatus(true);
+
+        const unAssignForm = formRef.current;
+        setIsUpdate(false);
+        if (unAssignForm && unAssignStatus) {
+            unAssignForm.resetFields(['employee', 'contract']);
+            unAssignForm.setFieldsValue({
+                employee: null,
+                contract: null
+            })
+        }
     }
     const handleLastWork = (values) => {
 
@@ -614,6 +627,21 @@ const AssignedEmployee = (props) => {
                             >
                                 <DatePicker />
                             </Form.Item>}
+
+                            {
+                                unAssignStatus &&
+                                <Form.Item
+                                    name={"end_date"}
+                                    label="Last Date"
+                                    rules={[
+                                        {
+                                            required: true,
+                                        },
+                                    ]}
+                                >
+                                    <DatePicker />
+                                </Form.Item>
+                            }
                             {!assignStatus &&
 
                                 <Form.Item
@@ -654,15 +682,30 @@ const AssignedEmployee = (props) => {
                 <>
                 </>
             </Modal>
-            <Modal title="Last day worked" visible={isWorkDate} onCancel={cancelWorkDate}>
+            <Modal title="Last day worked" visible={isWorkDate} footer={false}>
                 <Form onFinish={handleLastWork}>
-                    <Form.Item
-                        name={"last_workdate"}
-                        label="Last Date"
-                    >
-                        <DatePicker />
-                    </Form.Item>
 
+                    <Form.Item
+                        wrapperCol={{
+                            offset: 8,
+                            span: 16,
+                        }}
+                    >
+                        {
+                            isUpdate ?
+                                <Button type="primary" htmlType="submit">
+                                    Update
+                                </Button>
+                                : <Button type="primary" htmlType="submit">
+                                    Save
+                                </Button>
+
+                        }
+
+                        <Button type="ghost" onClick={cancelWorkDate}>
+                            cancel
+                        </Button>
+                    </Form.Item>
                 </Form>
             </Modal>
             <Row>

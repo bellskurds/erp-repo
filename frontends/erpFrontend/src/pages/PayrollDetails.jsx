@@ -585,7 +585,7 @@ const PayrollDetails = () => {
           unAssingedEmployees.push(otherObject);
       });
 
-      const allDatas = [..._listItems, ...unassignedContracts];
+      const allDatas = [..._listItems, ...unassignedContracts, ...unAssingedEmployees];
       console.log(allDatas, 'allDatasallDatasallDatas');
       allDatas.map(data => {
         if (!data.position) data.position = ''
