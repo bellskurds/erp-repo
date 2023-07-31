@@ -365,6 +365,7 @@ const AssignedEmployee = (props) => {
 
         const unAssignForm = formRef.current;
         setIsUpdate(false);
+
         if (unAssignForm && unAssignStatus) {
             unAssignForm.resetFields(['employee', 'contract']);
             unAssignForm.setFieldsValue({

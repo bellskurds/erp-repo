@@ -1,7 +1,7 @@
 import { DashboardLayout, DefaultLayout } from '@/layout';
 import { DeleteOutlined, EditOutlined, EyeOutlined, LeftOutlined, PlusOutlined, RightOutlined, TeamOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Input, InputNumber, Layout, Modal, Popconfirm, Row, Space, Table, Tag, Typography } from 'antd';
-import Search from 'antd/lib/transfer/search';
+import * as XLSX from 'xlsx';
 import React, { useEffect, useRef, useState } from 'react';
 import CustomModal from 'modules/CustomModal'
 import { useDispatch, useSelector } from 'react-redux';
@@ -128,6 +128,7 @@ const PayrollDetails = () => {
     },
     {
       title: `Hours`,
+      dataIndex: 'hours',
       width: 400,
       align: 'center',
       render: (text, record) => (
@@ -307,7 +308,6 @@ const PayrollDetails = () => {
     }
   }
   const setColor = (new_value, origin_value) => {
-    console.log(new_value, origin_value, 'new_value, origin_value')
     if (!new_value) {
       return <p>{origin_value}</p>
     }
@@ -465,7 +465,7 @@ const PayrollDetails = () => {
             dateValue(contract.end_date) >= dateValue(end_date)
           )
         )
-      )
+      );
       _listItems.map((obj, index) => {
         const { contract: assignedContract } = obj;
         obj.sunday_hr = obj.sunday ? getHours(obj.sunday) : 0;
@@ -476,7 +476,6 @@ const PayrollDetails = () => {
         obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
         obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
         let currentDate = moment(start_date);
-
         const end = moment(end_date);
 
         while (currentDate.isSameOrBefore(end)) {
@@ -609,10 +608,6 @@ const PayrollDetails = () => {
     }
     return hours;
   }
-  useEffect(() => {
-    console.log(mergedColumns, 'mergedColumnsmergedColumns')
-
-  }, [mergedColumns])
   const [isChangeHistory, setIsChangeHistory] = useState(false);
   const [historyData, setHistoryData] = useState();
   const handleCancelHistory = () => {
@@ -637,6 +632,52 @@ const PayrollDetails = () => {
       setHistoryData(historyDatas);
     }
   }
+
+  const exportToExcel = () => {
+    const tableData = [];
+    const columns1 = [...mergedColumns];
+    const headerRow1 = columns1.map((column) => column.title);
+    tableData.push(headerRow1);
+    listItems.forEach((record) => {
+      const rowData = columns1.map((column) => {
+        if (column.dataIndex && column.dataIndex.includes('-day-')) {
+          return record[`services${column.dataIndex}`] || 0;
+        }
+        else if (column.dataIndex && column.dataIndex.includes('store') && record['store']) {
+          return record['store']['store']
+        }
+        else if (column.dataIndex && column.dataIndex.includes('personal_id') && record['employee']) {
+          return record['employee']['personal_id']
+        }
+        else if (column.dataIndex && column.dataIndex.includes('name') && record['employee']) {
+          return record['employee']['name']
+        }
+        else if (column.dataIndex && column.dataIndex.includes('hours')) {
+          return `${getFormattedHours(
+            [
+              record.monday ? [record.monday[0], record.monday[1]] : "",
+              record.tuesday ? [record.tuesday[0], record.tuesday[1]] : "",
+              record.wednesday ? [record.wednesday[0], record.wednesday[1]] : "",
+              record.thursday ? [record.thursday[0], record.thursday[1]] : "",
+              record.friday ? [record.friday[0], record.friday[1]] : "",
+              record.saturday ? [record.saturday[0], record.saturday[1]] : "",
+              record.sunday ? [record.sunday[0], record.sunday[1]] : "",
+            ])}`
+        }
+        else if (column.dataIndex && column.dataIndex.includes('type') && record['contract']) {
+          return contractTypes[record['contract']['type']]
+        }
+        return record[`${column.dataIndex}`]
+      });
+      tableData.push(rowData);
+    });
+    const worksheet = XLSX.utils.json_to_sheet(tableData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    XLSX.writeFile(workbook, `Payroll${new Date().valueOf()}.xlsx`);
+
+  }
+
   return (
 
     <Layout style={{ padding: '30px', overflow: 'auto' }}>
@@ -742,8 +783,10 @@ const PayrollDetails = () => {
             <LeftOutlined onClick={prevData} />
             QUINCENA: {currentPeriod.split("-")[0]} DE {parseInt(currentPeriod.split("-")[0]) !== 31 ? new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' }) : new Date(currentYear, currentMonth - 2).toLocaleString('default', { month: 'long' })} AL {currentPeriod.split("-")[1]} DE {new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' })} {currentYear}
             <RightOutlined onClick={nextData} />
-
           </h3>
+        </Col>
+        <Col span={7}>
+          <Button type='primary' onClick={exportToExcel}>Export to Excel</Button>
         </Col>
       </Row>
       <Table
