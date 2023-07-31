@@ -1,5 +1,5 @@
 import { DashboardLayout, DefaultLayout } from '@/layout';
-import { DeleteOutlined, EditOutlined, EyeOutlined, LeftOutlined, PlusOutlined, RightOutlined, TeamOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, EyeOutlined, LeftOutlined, PlusOutlined, RightOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Input, InputNumber, Layout, Modal, Popconfirm, Row, Space, Table, Tag, Typography } from 'antd';
 import * as XLSX from 'xlsx';
 import React, { useEffect, useRef, useState } from 'react';
@@ -78,6 +78,10 @@ const PayrollDetails = () => {
   const [prevHour, setPrevHour] = useState();
   const [currentHistory, setCurrentHistory] = useState();
   const [userData, setUserData] = useState();
+  const [searchText, setSearchText] = useState('');
+  const [globalItems, setGlobalItems] = useState();
+  const [paginations, setPaginations] = useState([])
+
   const editItem = (item, cellItem, current, mainHour) => {
 
     const { hour, comment, by: { email: byEmail = '' } = {} } = cellItem;
@@ -223,7 +227,6 @@ const PayrollDetails = () => {
 
   const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
 
-  const { pagination, items } = listResult;
   const [listItems, setListItems] = useState([]);
   const formRef = useRef(null);
   const getHours = (dates) => {
@@ -590,7 +593,9 @@ const PayrollDetails = () => {
         if (!data.position) data.position = ''
       })
       const sortedLists = allDatas.sort((a, b) => b.position.localeCompare(a.position));
-      setListItems([...sortedLists])
+      setListItems([...sortedLists]);
+      setGlobalItems([...sortedLists]);
+
 
 
     }
@@ -678,6 +683,32 @@ const PayrollDetails = () => {
   }
   const isertReplacement = () => {
 
+  }
+  useEffect(() => {
+    if (globalItems) {
+      const filteredData = globalItems.filter((record) => {
+        const { store, employee } = record;
+
+        return (
+          (!searchText || (employee && employee['name'].toString().toLowerCase().includes(searchText.toLowerCase())) ||
+            (store && store['store'].toString().toLowerCase().includes(searchText.toLowerCase())))
+        );
+      })
+      setListItems(filteredData);
+      setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
+    }
+  }, [searchText, globalItems]);
+  const Footer = () => {
+    const pages = paginations
+    const { current, count, total, page } = pages
+    const currentPage = current || page;
+    const totalSize = total || count;
+
+    return (
+      <>
+        Mostrando registros del {listItems.length ? ((currentPage - 1) * 10 + 1) : 0} al {currentPage * 10 > (totalSize) ? (totalSize) : currentPage * 10} de un total de {totalSize} registros
+      </>
+    );
   }
 
   return (
@@ -788,8 +819,12 @@ const PayrollDetails = () => {
           </h3>
         </Col>
         <Col span={5}>
-          <Input type='primary' placeholder='Search' />
-        </Col>
+          <Input
+            placeholder='Search'
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />        </Col>
         <Col span={7}>
           <Button type='primary' onClick={isertReplacement}>Insert Replacement</Button>
         </Col>
@@ -810,6 +845,9 @@ const PayrollDetails = () => {
         scroll={{
           x: 3300,
         }}
+        pagination={paginations}
+        footer={Footer}
+
       />
     </Layout>
   );
