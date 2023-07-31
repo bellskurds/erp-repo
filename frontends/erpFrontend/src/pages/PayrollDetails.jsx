@@ -312,9 +312,9 @@ const PayrollDetails = () => {
       return <p>{origin_value}</p>
     }
     else if (new_value > origin_value) {
-      return <p style={{ backgroundColor: 'green' }}>{new_value}</p>
+      return <p style={{ backgroundColor: 'green' }} className='parent_green'>{new_value}</p>
     } else if (new_value < origin_value) {
-      return <p style={{ backgroundColor: 'yellow' }}>{new_value}</p>
+      return <p style={{ backgroundColor: 'yellow' }} className='parent_yellow'>{new_value}</p>
     } else {
       return <p>{origin_value}</p>
     }
@@ -675,6 +675,8 @@ const PayrollDetails = () => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
     XLSX.writeFile(workbook, `Payroll${new Date().valueOf()}.xlsx`);
+  }
+  const isertReplacement = () => {
 
   }
 
@@ -777,13 +779,19 @@ const PayrollDetails = () => {
           dataSource={historyData || []}
         />
       </Modal>
-      <Row>
+      <Row style={{ textAlign: 'right' }}>
         <Col span={24}>
           <h3 style={{ textAlign: 'center' }}>
             <LeftOutlined onClick={prevData} />
             QUINCENA: {currentPeriod.split("-")[0]} DE {parseInt(currentPeriod.split("-")[0]) !== 31 ? new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' }) : new Date(currentYear, currentMonth - 2).toLocaleString('default', { month: 'long' })} AL {currentPeriod.split("-")[1]} DE {new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' })} {currentYear}
             <RightOutlined onClick={nextData} />
           </h3>
+        </Col>
+        <Col span={5}>
+          <Input type='primary' placeholder='Search' />
+        </Col>
+        <Col span={7}>
+          <Button type='primary' onClick={isertReplacement}>Insert Replacement</Button>
         </Col>
         <Col span={7}>
           <Button type='primary' onClick={exportToExcel}>Export to Excel</Button>
