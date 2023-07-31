@@ -11,6 +11,7 @@ import moment from 'moment';
 import { useParams } from 'react-router-dom/cjs/react-router-dom.min';
 import { request } from '@/request';
 import { selectCurrentAdmin } from '@/redux/auth/selectors';
+import SelectAsync from '@/components/SelectAsync';
 const contractTypes = [
   "",
   "Payroll",
@@ -80,7 +81,8 @@ const PayrollDetails = () => {
   const [userData, setUserData] = useState();
   const [searchText, setSearchText] = useState('');
   const [globalItems, setGlobalItems] = useState();
-  const [paginations, setPaginations] = useState([])
+  const [paginations, setPaginations] = useState([]);
+  const [isReplacement, setIsReplacement] = useState(false);
 
   const editItem = (item, cellItem, current, mainHour) => {
 
@@ -682,7 +684,7 @@ const PayrollDetails = () => {
     XLSX.writeFile(workbook, `Payroll${new Date().valueOf()}.xlsx`);
   }
   const isertReplacement = () => {
-
+    setIsReplacement(true)
   }
   useEffect(() => {
     if (globalItems) {
@@ -709,6 +711,9 @@ const PayrollDetails = () => {
         Mostrando registros del {listItems.length ? ((currentPage - 1) * 10 + 1) : 0} al {currentPage * 10 > (totalSize) ? (totalSize) : currentPage * 10} de un total de {totalSize} registros
       </>
     );
+  }
+  const handleCancelReplacement = () => {
+    setIsReplacement(false);
   }
 
   return (
@@ -809,6 +814,41 @@ const PayrollDetails = () => {
           ]}
           dataSource={historyData || []}
         />
+      </Modal>
+      <Modal title="Replacement" visible={isReplacement} footer={null} onCancel={handleCancelReplacement}>
+        <Form>
+          <Form.Item
+            name={"employee"}
+            label="Employee"
+          >
+            <SelectAsync entity={"employee"} displayLabels={["name"]} />
+          </Form.Item>
+          <Form.Item name={"replacement"} label="Replacement">
+            <SelectAsync entity={"employee"} displayLabels={["name"]} />
+          </Form.Item>
+          <Form.Item
+            wrapperCol={{
+              offset: 8,
+              span: 16,
+            }}
+          >
+
+
+            {
+              isUpdate ? <Button type="primary" htmlType="submit">
+                Update
+              </Button> :
+                <Button type="primary" htmlType="submit">
+                  Replace
+                </Button>
+
+            }
+
+            <Button type="ghost" onClick={handleCancelReplacement}>
+              cancel
+            </Button>
+          </Form.Item>
+        </Form>
       </Modal>
       <Row style={{ textAlign: 'right' }}>
         <Col span={24}>
