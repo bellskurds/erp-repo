@@ -209,6 +209,7 @@ const PayrollDetails = () => {
   const [isReplacement, setIsReplacement] = useState(false);
   const [currentEmployees, setCurrentEmployees] = useState([]);
   const [employeeLists, setEmployeeList] = useState([]);
+  const [globalEmployeeLists, setGlobalEmployeeLists] = useState();
   const [editingKey, setEditingKey] = useState('');
 
   const isEditing = (record) => record.key === editingKey;
@@ -601,6 +602,7 @@ const PayrollDetails = () => {
         }
       })
       setEmployeeList(_employees);
+      setGlobalEmployeeLists(_employees)
       const unassignedContracts = [];
       const assignedContracts = [];
 
@@ -888,9 +890,11 @@ const PayrollDetails = () => {
   const changeCurrentEmployee = (employee_id) => {
 
     if (employee_id) {
+      employee_id = employee_id.split('-')[0]
       console.log(employee_id, 'employee_id');
-      const filter = employeeLists.filter(list => list.value !== employee_id);
-      setEmployeeList(filter)
+      const filter = globalEmployeeLists.filter(list => list.value !== employee_id);
+      setEmployeeList(filter);
+
     }
   }
   const components = {
