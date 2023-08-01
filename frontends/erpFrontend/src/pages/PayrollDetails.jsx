@@ -1,8 +1,8 @@
 import { DashboardLayout, DefaultLayout } from '@/layout';
 import { DeleteOutlined, EditOutlined, EyeOutlined, LeftOutlined, PlusOutlined, RightOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons';
-import { Button, Col, Form, Input, InputNumber, Layout, Modal, Popconfirm, Row, Space, Table, Tag, Typography } from 'antd';
+import { Button, Col, Form, Input, InputNumber, Layout, Modal, Popconfirm, Radio, Row, Select, Space, Table, Tag, Typography } from 'antd';
 import * as XLSX from 'xlsx';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import CustomModal from 'modules/CustomModal'
 import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
@@ -10,8 +10,132 @@ import { selectListItems } from '@/redux/crud/selectors';
 import moment from 'moment';
 import { useParams } from 'react-router-dom/cjs/react-router-dom.min';
 import { request } from '@/request';
-import { selectCurrentAdmin } from '@/redux/auth/selectors';
-import SelectAsync from '@/components/SelectAsync';
+const EditableContext = React.createContext(null);
+
+const EditableRow = ({ index, ...props }) => {
+  const [form] = Form.useForm();
+  return (
+    <Form form={form} component={false}>
+      <EditableContext.Provider value={form}>
+        <tr {...props} />
+      </EditableContext.Provider>
+    </Form>
+  );
+};
+const EditableCell = ({
+  title,
+  editable,
+  children,
+  dataIndex,
+  record,
+  handleSave,
+  handleSave_,
+  ...restProps
+}) => {
+
+  const [editing, setEditing] = useState(false);
+  const inputRef = useRef(null);
+  const form = useContext(EditableContext);
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [editing]);
+  const toggleEdit = () => {
+    setEditing(!editing);
+    form.setFieldsValue({
+      [dataIndex]: record[dataIndex],
+    });
+  };
+  const save = async () => {
+    try {
+      const values = await form.validateFields();
+
+      toggleEdit();
+      if (handleSave_) {
+        handleSave_({
+          ...record,
+          ...values,
+        }, values);
+      } else {
+        handleSave({
+          ...record,
+          ...values,
+        }, values);
+      }
+
+
+    } catch (errInfo) {
+      console.log('Save failed:', errInfo);
+    }
+  };
+  const handleKeyDown = e => {
+
+    if (e.key === "Tab") {
+      e.preventDefault();
+
+      const currentCell = e.target.closest("td");
+      const parentElement = currentCell.parentNode;
+
+      var nextCell = null, prevCell = null;
+      if (!currentCell.nextElementSibling) {
+        nextCell = parentElement.nextElementSibling ? parentElement.nextElementSibling.children[parentElement.nextElementSibling.childElementCount === 2 ? 0 : 2] : currentCell
+      } else {
+        nextCell = currentCell.nextElementSibling
+      }
+      if (!currentCell.previousSibling) {
+        prevCell = parentElement.previousSibling ? parentElement.previousSibling.children[parentElement.previousSibling.childElementCount === 2 ? 1 : 2] : currentCell
+      }
+      else if (currentCell.previousSibling && !currentCell.previousSibling.querySelector(".editable-cell-value-wrap")) {
+        prevCell = parentElement.previousSibling ? parentElement.previousSibling.children[parentElement.previousSibling.childElementCount - 1] : currentCell
+      }
+      else {
+        prevCell = currentCell.previousSibling
+      }
+
+      const Cell = e.shiftKey
+        ? prevCell
+        : nextCell;
+      if (Cell) {
+        const input = Cell.querySelector("input");
+        if (input) {
+          input.focus();
+        } else {
+          const editableCell = Cell.querySelector(".editable-cell-value-wrap");
+          if (editableCell) {
+            editableCell.click(); // Call toggleEdit function of nextCell
+          }
+        }
+      }
+
+    }
+  };
+
+  let childNode = children;
+  if (editable) {
+    childNode = editing ? (
+      <Form.Item
+        style={{
+          margin: 0,
+        }}
+        name={dataIndex}
+      >
+        <Input ref={inputRef} onKeyDown={handleKeyDown} onPressEnter={save} onBlur={save} />
+      </Form.Item>
+    ) : (
+      <div
+        className="editable-cell-value-wrap"
+        style={{
+          paddingRight: 24,
+        }}
+        onClick={toggleEdit}
+      >
+        {children}
+      </div>
+    );
+  }
+  return <td {...restProps} onDoubleClick={toggleEdit}>{childNode}</td>;
+};
 const contractTypes = [
   "",
   "Payroll",
@@ -83,6 +207,11 @@ const PayrollDetails = () => {
   const [globalItems, setGlobalItems] = useState();
   const [paginations, setPaginations] = useState([]);
   const [isReplacement, setIsReplacement] = useState(false);
+  const [currentEmployees, setCurrentEmployees] = useState([]);
+  const [employeeLists, setEmployeeList] = useState([]);
+  const [editingKey, setEditingKey] = useState('');
+
+  const isEditing = (record) => record.key === editingKey;
 
   const editItem = (item, cellItem, current, mainHour) => {
 
@@ -231,6 +360,7 @@ const PayrollDetails = () => {
 
   const [listItems, setListItems] = useState([]);
   const formRef = useRef(null);
+  const replaceRef = useRef(null);
   const getHours = (dates) => {
     const hours = dates.map(date => moment(date).hour());
     const maxHour = Math.max(...hours);
@@ -324,12 +454,12 @@ const PayrollDetails = () => {
       return <p>{origin_value}</p>
     }
   }
-
+  const [periodsColumn, setPeriodsColumn] = useState();
+  const [periodsData, setPeriodsData] = useState([]);
   useEffect(() => {
     async function init() {
       const { result: allHours } = await request.list({ entity });
       setAllHours(allHours)
-      console.log(allHours, '1qwqwq');
       const startDay = parseInt(currentPeriod.split("-")[0]);
       const endDay = parseInt(currentPeriod.split("-")[1]);
       const start_date = new Date(currentYear, startDay === 31 ? (currentMonth - 2) : (currentMonth - 1), startDay);
@@ -341,11 +471,24 @@ const PayrollDetails = () => {
       const end = moment(end_date);
 
       const daysColumns = [];
+      const periodsColumns = [];
+      const initPeriodsData = {};
       while (currentDate.isSameOrBefore(end)) {
         const day = currentDate.date();
         const _day = currentDate.day();
         const year = currentDate.year();
         const month = currentDate.month();
+        periodsColumns.push(
+
+          {
+            title: currentDate.format("MMM/DD"),
+            dataIndex: `day_${currentDate.format("YYYY-MM-DD")}`,
+            editable: true
+          }
+        )
+
+        initPeriodsData[`day_${currentDate.format("YYYY-MM-DD")}`] = 0;
+        initPeriodsData['key'] = currentDate.valueOf();
         daysColumns.push({
           title: `${currentDate.format("dddd").slice(0, 1).toUpperCase()} ${day}`,
           dataIndex: `-day-${year}_${month + 1}_${day}`,
@@ -440,13 +583,24 @@ const PayrollDetails = () => {
 
         currentDate = currentDate.add(1, 'days');
       };
+      console.log(initPeriodsData, 'initPeriodsData');
+      setPeriodsColumn(periodsColumns)
+      setPeriodsData([initPeriodsData]);
       setChangedDays(daysColumns);
       setMergedColumns([...columns, ...daysColumns])
       console.log();
       const { result: workContracts } = await request.list({ entity: "workContract" })
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" });
+      const { result: allEmployees } = await request.list({ entity: "employee" });
       const { result: userData } = await request.list({ entity: "Admin" });
-      setUserData(userData)
+      setUserData(userData);
+      const _employees = allEmployees.map(employee => {
+        return {
+          value: employee._id,
+          label: employee.name
+        }
+      })
+      setEmployeeList(_employees);
       const unassignedContracts = [];
       const assignedContracts = [];
 
@@ -454,9 +608,23 @@ const PayrollDetails = () => {
         obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
         obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
       })
+      const viaticumArr = [];
+      assignedEmployees.map(position => {
+        const { viaticum, contract, ...otherObj } = position;
+        if (viaticum && contract) {
+          otherObj.contract = viaticum
+          viaticumArr.push(otherObj);
+          assignedEmployees.push(otherObj);
+        } else if (viaticum && !contract) {
+          position.contract = viaticum;
+        }
+      })
+      // const assignedEmployeeLists = JSON.parse(JSON.stringify(assignedEmployees));
 
 
-      const _listItems = assignedEmployees.filter(({ contract }) =>
+
+      // console.log(start_date, assignedEmployeeLists, 'start_date,end_date');
+      const _listItems = assignedEmployees.filter(({ contract, viaticum }) =>
         Object(contract).hasOwnProperty('status') && contract.status === "active" &&
         (
           (
@@ -469,8 +637,15 @@ const PayrollDetails = () => {
             dateValue(contract.start_date) < dateValue(end_date) &&
             dateValue(contract.end_date) >= dateValue(end_date)
           )
+          // ||
+          // (
+          //   dateValue(contract.start_date) < dateValue(start_date) &&
+          //   dateValue(contract.end_date) < dateValue(end_date)
+          // )
         )
       );
+
+      console.log(assignedEmployees, _listItems, '_listItems');
       _listItems.map((obj, index) => {
         const { contract: assignedContract } = obj;
         obj.sunday_hr = obj.sunday ? getHours(obj.sunday) : 0;
@@ -541,62 +716,34 @@ const PayrollDetails = () => {
           }
           currentDate = currentDate.add(1, 'days');
         };
+        obj.hr_week = assignedContract.hr_week;
+        obj.sal_hr = assignedContract.sal_hr;
         obj.hrs_bi = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : getServiceHours(obj);
-        obj.week_pay = mathCeil(obj.hrs_bi * obj.sal_hr)
+        obj.week_pay = (assignedContract && assignedContract.type) ? mathCeil(obj.hrs_bi * assignedContract.sal_hr || 0) : mathCeil(obj.hrs_bi * obj.sal_hr)
         obj.adjustment = calcAdjustment(obj);
-        obj.adjust = (calcAdjustment(obj) * obj.sal_hr).toFixed(2);
-        obj.salary = ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
+        obj.adjust = (calcAdjustment(obj) * obj.sal_hr || 0).toFixed(2);
+        obj.salary = assignedContract.type === 3 ? assignedContract.sal_monthly / 2 : ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
         obj.transferencia = assignedContract.type === 1 ? obj.salary : (obj.salary * 0.89).toFixed(2);
-
-
       });
 
       assignedEmployees.map(obj => {
         const { contract: assignedContract } = obj;
         assignedContracts.push(assignedContract);
       })
-      const filteredWorkContracts = workContracts.filter(obj =>
-        obj.status === "active" &&
-        (
-          (
-            dateValue(obj.start_date) <= dateValue(start_date) &&
-            dateValue(obj.end_date) >= dateValue(end_date)
-          )
-          ||
-          (
-            dateValue(obj.start_date) > dateValue(start_date) &&
-            dateValue(obj.start_date) < dateValue(end_date) &&
-            dateValue(obj.end_date) >= dateValue(end_date)
-          )
-        )
-      )
-      filteredWorkContracts.map(contract => {
-        const item = assignedContracts.filter(obj => (Object(obj).hasOwnProperty('_id') && obj._id === contract._id));
-        if (!item.length) {
-          contract.employee = contract.parent_id
-          delete contract.parent_id
-          contract.contract = { type: contract.type };
-          contract.adjustment = 0;
-          contract.adjust = 0;
-          contract.salary = contract.week_pay;
-          contract.transferencia = contract.type === 1 ? contract.salary : contract.salary * 0.89
-          unassignedContracts.push(contract)
-        }
-      })
       const unAssingedEmployees = [];
       assignedEmployees.map(({ contract, employee, ...otherObject }) => {
         if (!contract || !employee)
           unAssingedEmployees.push(otherObject);
       });
-
-      const allDatas = [..._listItems, ...unassignedContracts, ...unAssingedEmployees];
-      console.log(allDatas, 'allDatasallDatasallDatas');
-      allDatas.map(data => {
+      _listItems.map(data => {
         if (!data.position) data.position = ''
       })
-      const sortedLists = allDatas.sort((a, b) => b.position.localeCompare(a.position));
-      setListItems([...sortedLists]);
-      setGlobalItems([...sortedLists]);
+      const sortedListItems = _listItems.sort((a, b) => b.position.localeCompare(a.position));
+      const allDatas = [...sortedListItems, ...unAssingedEmployees];
+      allDatas.map((data, index) => data['key'] = index)
+      // const sortedLists = allDatas.sort((a, b) => b.position.localeCompare(a.position));
+      setListItems([...allDatas]);
+      setGlobalItems([...allDatas]);
 
 
 
@@ -700,6 +847,29 @@ const PayrollDetails = () => {
       setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
     }
   }, [searchText, globalItems]);
+  useEffect(() => {
+    if (globalItems) {
+      const filter = globalItems.map((item, index) => {
+        const { employee, store } = item;
+        if (employee && store) {
+          return {
+            value: `${employee._id}-${store._id}`,
+            label: `${employee.name}(${store.store})`
+          }
+        }
+      }).filter(data => data !== undefined).reduce((acc, item) => {
+        const existingItem = acc.find(i => i.value === item.value);
+        if (!existingItem) {
+          acc.push(item);
+        }
+        return acc;
+      }, []);
+      setCurrentEmployees(filter);
+      console.log(filter, 'globalItems')
+    }
+  }, [
+    globalItems
+  ])
   const Footer = () => {
     const pages = paginations
     const { current, count, total, page } = pages
@@ -715,7 +885,55 @@ const PayrollDetails = () => {
   const handleCancelReplacement = () => {
     setIsReplacement(false);
   }
+  const changeCurrentEmployee = (employee_id) => {
 
+    if (employee_id) {
+      console.log(employee_id, 'employee_id');
+      const filter = employeeLists.filter(list => list.value !== employee_id);
+      setEmployeeList(filter)
+    }
+  }
+  const components = {
+    body: {
+      row: EditableRow,
+      cell: EditableCell,
+    },
+  };
+  const handleSave_ = (row, values) => {
+    const newData = [...periodsData];
+    const index = newData.findIndex((item) => row.key === item.key);
+    const item = newData[index];
+    newData.splice(index, 1, {
+      ...item,
+      ...row,
+    });
+    setPeriodsData(newData);
+  };
+  const [initPeriodsColumn, setInitPeriodsColumn] = useState([]);
+  useEffect(() => {
+    if (periodsColumn) {
+      console.log(periodsColumn, 'periodsColumn');
+      const _columns = periodsColumn.map((col) => {
+        if (!col.editable) {
+          return col;
+        }
+        return {
+          ...col,
+          onCell: (record) => ({
+            record,
+            editable: col.editable,
+            dataIndex: col.dataIndex,
+            title: col.title,
+            handleSave_,
+            editing: isEditing(record).toString(),
+          }),
+        };
+      })
+      setInitPeriodsColumn(_columns)
+    }
+  }, [
+    periodsColumn
+  ])
   return (
 
     <Layout style={{ padding: '30px', overflow: 'auto' }}>
@@ -815,17 +1033,65 @@ const PayrollDetails = () => {
           dataSource={historyData || []}
         />
       </Modal>
-      <Modal title="Replacement" visible={isReplacement} footer={null} onCancel={handleCancelReplacement}>
-        <Form>
+      <Modal title="Replacement" visible={isReplacement} footer={null} onCancel={handleCancelReplacement} width={1300}>
+        <Form
+          ref={replaceRef}
+        >
           <Form.Item
             name={"employee"}
             label="Employee"
+            rules={[
+              {
+                required: true,
+              },
+            ]}
           >
-            <SelectAsync entity={"employee"} displayLabels={["name"]} />
+            <Select options={currentEmployees} onChange={changeCurrentEmployee} />
           </Form.Item>
-          <Form.Item name={"replacement"} label="Replacement">
-            <SelectAsync entity={"employee"} displayLabels={["name"]} />
+          <Form.Item name={"replacement"} label="Replacement"
+            rules={[
+              {
+                required: true,
+              },
+            ]}>
+            <Select options={employeeLists} />
           </Form.Item>
+
+          <Form.Item name={"sal_hr"} label="Sal/Hr"
+            rules={[
+              {
+                required: true,
+                max: 500
+              },
+            ]}
+          >
+            <Input type='number' />
+          </Form.Item>
+          <Form.Item
+            name={"contract_type"}
+            label="Contract Type"
+            rules={[
+              {
+                required: true,
+              },
+            ]}
+          >
+            <Radio.Group options={[
+              {
+                label: "Payroll",
+                value: 1
+              },
+              {
+                label: "Services",
+                value: 2
+              },
+              {
+                label: "Hourly",
+                value: 3
+              }
+            ]} />
+          </Form.Item>
+          <Table columns={initPeriodsColumn || []} dataSource={periodsData || []} components={components} />
           <Form.Item
             wrapperCol={{
               offset: 8,
@@ -874,8 +1140,6 @@ const PayrollDetails = () => {
       </Row>
       <Table
         bordered
-        rowKey={(item) => item._id}
-        key={(item) => item._id}
         dataSource={[...listItems] || []}
         columns={[...mergedColumns]}
         rowClassName="editable-row"

@@ -103,7 +103,7 @@ const Contract = (props) => {
             const { _id, parent_id } = record;
             const filterItem = positionData.filter(position => {
                 const { employee, contract } = position;
-                if (_id === contract._id && parent_id._id === employee._id) {
+                if (contract && employee && _id === contract._id && parent_id._id === employee._id) {
                     return position
                 } else {
                     return false;

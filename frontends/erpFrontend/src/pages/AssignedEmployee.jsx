@@ -22,7 +22,6 @@ const AssignedEmployee = (props) => {
     const [isBankModal, setIsBankModal] = useState(false);
     const formRef = useRef(null);
     const [itemLists, setItemLists] = useState([]);
-    const contractType = ["", "Payroll", "Services"];
     const [currentEmployee, setCurrentEmployee] = useState(false);
     const [currentContract, setCurrentContract] = useState(false);
     const [assignStatus, setAssignStatus] = useState(true);
@@ -67,11 +66,16 @@ const AssignedEmployee = (props) => {
         {
             title: 'Type',
             dataIndex: ['contract', 'type'],
-            render: (text, record) => (
-                <>
-                    {contractType[text]}
-                </>
-            )
+            render: (text, record) => {
+                const { viaticum, contract } = record;
+                if (viaticum && contract) {
+                    return `${contractTypes[text]},${contractTypes[viaticum.type]}`
+                } else if (contract) {
+                    return `${contractTypes[text]}`
+                } else {
+                    return `${contractTypes[viaticum.type]}`
+                }
+            }
         },
         {
             title: 'Sal/Hr',
@@ -261,7 +265,7 @@ const AssignedEmployee = (props) => {
     }, []);
     useEffect(() => {
         setItemLists(Items.items || [])
-
+        console.log(Items.items, 'Items.items');
     }, [Items])
 
     const [mondayValue, setMondayValue] = useState(null);
@@ -316,10 +320,15 @@ const AssignedEmployee = (props) => {
         const contractOptions = Contracts.items || [];
         if (contractOptions) {
             const contracts = contractOptions.map(item => {
-                if (item.status === "active" && item.type !== 3) {
+                if (item.status === "active" && item.type < 3) {
                     return {
                         value: item._id,
                         label: `${contractTypes[item.type]} Sal/hr ${item.sal_hr} | Sal/Mon ${item.sal_monthly}`
+                    }
+                } else if (item.status === "active" && item.type === 4) {
+                    return {
+                        value: item._id,
+                        label: `${contractTypes[item.type]} Sal/hr ${item.sal_hr}`
                     }
                 } else {
                     return {}

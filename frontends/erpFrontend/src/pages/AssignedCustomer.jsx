@@ -15,7 +15,13 @@ const AssignedCustomer = (props) => {
     const [isBankModal, setIsBankModal] = useState(false);
     const formRef = useRef(null);
 
-    const contractType = ["", "Payroll", "Services"];
+    const contractType = [
+        "",
+        "Payroll",
+        "Services",
+        "Viaticum",
+        "Hourly"
+    ]
     const bankColumns = [
         {
             title: 'Customer',
