@@ -19,6 +19,7 @@ import Contract from './Contract';
 import AssignedCustomer from './AssignedCustomer';
 import { Avatar_url } from '@/config/serverApiConfig';
 import EmployeeDocumentManage from './EmployeeDocumentManage';
+import Schedule from './Schedule';
 
 
 export default function Details() {
@@ -50,40 +51,7 @@ export default function Details() {
       dataIndex: ['client', 'company'],
     },
   ];
-  const scheduleColumns = [
-    {
-      title: 'Hours',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Monday',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Tuesday',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Wednesday',
-      dataIndex: 'number',
-    },
-    {
-      title: 'Tursday',
-      dataIndex: ['client', 'company'],
-    },
-    {
-      title: 'Friday',
-      dataIndex: ['client', 'company'],
-    },
-    {
-      title: 'Saturday',
-      dataIndex: ['client', 'company'],
-    },
-    {
-      title: 'Sunday',
-      dataIndex: ['client', 'company'],
-    },
-  ];
+
   const paymentColumns = [
     {
       title: 'Date',
@@ -518,12 +486,8 @@ export default function Details() {
         </Tabs.TabPane>
         <Tabs.TabPane tab="Work" key="2">
           <AssignedCustomer parentId={currentEmployeeId} />
-          <div className="whiteBox shadow">
-            <div className="pad20">
-              <h3 style={{ color: '#22075e', marginBottom: 5 }}>Schedule</h3>
-            </div>
-            <RecentTable entity={'quote'} dataTableColumns={scheduleColumns} />
-          </div>
+          <Schedule parentId={currentEmployeeId} />
+
           <div className="whiteBox shadow">
             <div className="pad20">
               <h3 style={{ color: '#22075e', marginBottom: 5 }}>Payment history</h3>

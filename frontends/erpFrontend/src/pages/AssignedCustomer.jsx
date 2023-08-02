@@ -177,12 +177,10 @@ const AssignedCustomer = (props) => {
             obj['key'] = index
             if (obj.employee && obj.employee._id === currentEmployeeId) {
                 return obj;
-            } else {
-                return {}
             }
-        })
+        }).filter(data => data !== undefined)
+        console.log(items, 'items')
         setItems(items);
-        console.log(Items.items, 'itemsitemsitemsitems')
 
     }, [Items, Employees])
     const [mondayValue, setMondayValue] = useState(null);

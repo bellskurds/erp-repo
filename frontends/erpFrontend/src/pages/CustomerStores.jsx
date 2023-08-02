@@ -329,17 +329,6 @@ const CustomerStores = (props) => {
                 ),
                 salary: contract ? contract.sal_monthly : 0,
                 contract: contract ? `${contract.start_date}-${contract.end_date}` : '',
-                // hr_week: getTotalWeekHours(
-                //     [
-                //         store.monday ? [new Date(store.monday[0]).getHours(), new Date(store.monday[1]).getHours()] : [0, 0],
-                //         store.tuesday ? [new Date(store.tuesday[0]).getHours(), new Date(store.tuesday[1]).getHours()] : [0, 0],
-                //         store.wednesday ? [new Date(store.wednesday[0]).getHours(), new Date(store.wednesday[1]).getHours()] : [0, 0],
-                //         store.thursday ? [new Date(store.thursday[0]).getHours(), new Date(store.thursday[1]).getHours()] : [0, 0],
-                //         store.friday ? [new Date(store.friday[0]).getHours(), new Date(store.friday[1]).getHours()] : [0, 0],
-                //         store.saturday ? [new Date(store.saturday[0]).getHours(), new Date(store.saturday[1]).getHours()] : [0, 0],
-                //         store.sunday ? [new Date(store.sunday[0]).getHours(), new Date(store.sunday[1]).getHours()] : [0, 0],
-                //     ]
-                // )
             }
             if (assignedEmployees) {
                 assignedEmployees.map(position => {

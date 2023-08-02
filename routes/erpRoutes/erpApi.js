@@ -46,6 +46,7 @@ const visitControlController = require('@/controllers/erpControllers/visitContro
 const companyController = require('@/controllers/erpControllers/companyController');
 const positionController = require('@/controllers/erpControllers/positionController');
 const routesController = require('@/controllers/erpControllers/routesController');
+const replacementController = require('@/controllers/erpControllers/replacementController');
 
 const baseFilePath = 'public/uploads/admin/'
 // //_______________________________ Admin management_______________________________
@@ -433,6 +434,19 @@ router.route('/bankAccount/search').get(catchErrors(bankAccountController.search
 router.route('/bankAccount/list').get(catchErrors(bankAccountController.list));
 router.route('/bankAccount/filter').get(catchErrors(bankAccountController.filter));
 router.route('/bankAccount/byParentId').post(catchErrors(bankAccountController.getByParentId));
+
+
+
+
+// //____________________________________________ API for Bank Account of Employee _________________
+router.route('/replacement/create').post(catchErrors(replacementController.create));
+router.route('/replacement/read/:id').get(catchErrors(replacementController.read));
+router.route('/replacement/update/:id').patch(catchErrors(replacementController.update));
+router.route('/replacement/delete/:id').delete(catchErrors(replacementController.delete));
+router.route('/replacement/search').get(catchErrors(replacementController.search));
+router.route('/replacement/list').get(catchErrors(replacementController.list));
+router.route('/replacement/filter').get(catchErrors(replacementController.filter));
+router.route('/replacement/byParentId').post(catchErrors(replacementController.getByParentId));
 
 
 

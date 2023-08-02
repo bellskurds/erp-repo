@@ -183,7 +183,6 @@ const PayrollDetails = () => {
     setIsModalVisible(false);
   };
 
-  const [form] = Form.useForm();
   const [currentId, setCurrentId] = useState('');
   const [currentItem, setCurrentItem] = useState({});
   const [allHours, setAllHours] = useState([]);
@@ -191,7 +190,6 @@ const PayrollDetails = () => {
   const [currentMonth, setCurrentMonth] = useState(parseInt(url.split("-")[1]));
   const [currentYear, setCurrentYear] = useState(parseInt(url.split("-")[0]));
   const [currentQ, setCurrentQ] = useState(parseInt(url.split("-")[2]));
-  const [currentBiWeek, setCurrentBiweek] = useState(new Date())
   const [currentPeriod, setCurrentPeriod] = useState('1-15')
   const [changedDays, setChangedDays] = useState([]);
   const [biWeek, setBiWeek] = useState(0);
@@ -211,7 +209,7 @@ const PayrollDetails = () => {
   const [employeeLists, setEmployeeList] = useState([]);
   const [globalEmployeeLists, setGlobalEmployeeLists] = useState();
   const [editingKey, setEditingKey] = useState('');
-
+  const [changeStatus, setChangeStatus] = useState(false);
   const isEditing = (record) => record.key === editingKey;
 
   const editItem = (item, cellItem, current, mainHour) => {
@@ -589,11 +587,14 @@ const PayrollDetails = () => {
       setPeriodsData([initPeriodsData]);
       setChangedDays(daysColumns);
       setMergedColumns([...columns, ...daysColumns])
-      console.log();
+      const { result: replacementData } = await request.list({ entity: "replacement" });
       const { result: workContracts } = await request.list({ entity: "workContract" })
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" });
       const { result: allEmployees } = await request.list({ entity: "employee" });
       const { result: userData } = await request.list({ entity: "Admin" });
+
+      const filteredReplacements = replacementData.filter(data => dateValue(data.start_date) === dateValue(start_date) && dateValue(data.end_date) === dateValue(end_date))
+      console.log(filteredReplacements, 'replacementData');
       setUserData(userData);
       const _employees = allEmployees.map(employee => {
         return {
@@ -621,11 +622,6 @@ const PayrollDetails = () => {
           position.contract = viaticum;
         }
       })
-      // const assignedEmployeeLists = JSON.parse(JSON.stringify(assignedEmployees));
-
-
-
-      // console.log(start_date, assignedEmployeeLists, 'start_date,end_date');
       const _listItems = assignedEmployees.filter(({ contract, viaticum }) =>
         Object(contract).hasOwnProperty('status') && contract.status === "active" &&
         (
@@ -752,7 +748,7 @@ const PayrollDetails = () => {
     }
     init()
   }, [
-    currentPeriod, saveStatus, currentMonth, currentYear
+    currentPeriod, saveStatus, currentMonth, currentYear, changeStatus
   ]);
   const getServiceHours = (record) => {
     console.log(record, 'record')
@@ -937,7 +933,23 @@ const PayrollDetails = () => {
     }
   }, [
     periodsColumn
-  ])
+  ]);
+  const handleReplacement = (values) => {
+    const jsonObj = { ...values, };
+    jsonObj.store = jsonObj.employee.split('-')[1];
+    jsonObj.employee = jsonObj.employee.split('-')[0];
+    jsonObj.hours = JSON.stringify(periodsData)
+    const startDay = parseInt(currentPeriod.split("-")[0]);
+    const endDay = parseInt(currentPeriod.split("-")[1]);
+    const start_date = new Date(currentYear, startDay === 31 ? (currentMonth - 2) : (currentMonth - 1), startDay);
+    const end_date = new Date(currentYear, currentMonth - 1, endDay);
+    jsonObj.start_date = start_date;
+    jsonObj.end_date = end_date;
+
+    dispatch(crud.create({ entity: 'replacement', jsonData: jsonObj }));
+    setIsReplacement(false);
+    setChangeStatus(!changeStatus);
+  }
   return (
 
     <Layout style={{ padding: '30px', overflow: 'auto' }}>
@@ -1040,6 +1052,7 @@ const PayrollDetails = () => {
       <Modal title="Replacement" visible={isReplacement} footer={null} onCancel={handleCancelReplacement} width={1300}>
         <Form
           ref={replaceRef}
+          onFinish={handleReplacement}
         >
           <Form.Item
             name={"employee"}
