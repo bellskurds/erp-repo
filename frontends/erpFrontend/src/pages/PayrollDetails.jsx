@@ -474,6 +474,32 @@ const PayrollDetails = () => {
     }
 
   }
+  const getCellValue = (hours, date, record, origin_value) => {
+
+    const { workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = record;
+    if (contract) {
+
+      let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
+      let positionEnd = contract.type === 3 ? moment(new Date(viaticum_end_date), 'MM-DD-YYYY') : moment(new Date(end_date), 'MM-DD-YYYY');
+
+
+      let startWorkDay = positionStart || moment(workDays[0], 'MM-DD-YYYY');
+      let endWorkDay = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
+      startWorkDay = startWorkDay.subtract(1, 'day')
+      const targetDay = moment(new Date(date), 'MM-DD-YYYY');
+
+      if (contract.type === 3) {
+
+        console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
+      }
+      if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
+        return origin_value;
+      } else {
+        return 0;
+      }
+    }
+
+  }
   const changedCellItem = (hours, date, record) => {
     const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id } } = record;
     const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
@@ -725,7 +751,7 @@ const PayrollDetails = () => {
           switch (_day) {
             case 0:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.sunday_hr);
-              obj[dataIndex2] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) === 0 ? 0 : changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr;
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.sunday_hr);
 
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr) - obj.sunday_hr
               break;
@@ -733,7 +759,7 @@ const PayrollDetails = () => {
             case 1:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.monday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr) - obj.monday_hr;
-              obj[dataIndex2] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) === 0 ? 0 : changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr;
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.monday_hr);
 
               break;
 
@@ -741,30 +767,30 @@ const PayrollDetails = () => {
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.tuesday_hr);
 
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr) - obj.tuesday_hr
-              obj[dataIndex2] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) === 0 ? 0 : changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr;
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.tuesday_hr);
               break;
 
             case 3:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.wednesday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr) - obj.wednesday_hr
-              obj[dataIndex2] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) === 0 ? 0 : changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr;
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.wednesday_hr);
               break;
 
             case 4:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.thursday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr) - obj.thursday_hr
-              obj[dataIndex2] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) === 0 ? 0 : changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr;
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.thursday_hr);
               break;
             case 5:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.friday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr) - obj.friday_hr
 
-              obj[dataIndex2] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) === 0 ? 0 : changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr;
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.friday_hr);
               break;
             case 6:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.saturday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr) - obj.saturday_hr
-              obj[dataIndex2] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) === 0 ? 0 : changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr;
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.saturday_hr);
               break;
 
             default:
@@ -775,11 +801,25 @@ const PayrollDetails = () => {
         obj.hr_week = assignedContract.hr_week;
         obj.sal_hr = assignedContract.sal_hr;
         obj.hrs_bi = getServiceHours(obj);
-        obj.week_pay = (assignedContract && assignedContract.type) ? mathCeil(obj.hrs_bi * assignedContract.sal_hr || 0) : mathCeil(obj.hrs_bi * obj.sal_hr)
+        obj.week_pay =
+          (assignedContract && assignedContract.type) ?
+            (
+              assignedContract.type === 3 ?
+                assignedContract.sal_monthly / 2
+                :
+                mathCeil(obj.hrs_bi * assignedContract.sal_hr || 0)
+            )
+
+            : mathCeil(obj.hrs_bi * obj.sal_hr)
         obj.adjustment = calcAdjustment(obj);
-        obj.adjust = (calcAdjustment(obj) * obj.sal_hr || 0).toFixed(2);
-        obj.salary = assignedContract.type === 3 ? assignedContract.sal_monthly / 2 : ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
-        obj.transferencia = assignedContract.type === 1 ? obj.salary : (obj.salary * 0.89).toFixed(2);
+        obj.adjust =
+
+          assignedContract.type === 3 ?
+            ((obj.adjustment / obj.hrs_bi) * obj.week_pay).toFixed(2)
+            : (calcAdjustment(obj) * obj.sal_hr || 0).toFixed(2);
+
+
+        obj.salary = ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
       });
 
       assignedEmployees.map(obj => {
