@@ -125,7 +125,9 @@ const AssignedEmployee = (props) => {
         setSaturdayValue(false);
         setSundayValue(false);
         setUnAssignStatus(false);
-        setCantUpdate(false)
+        setAssignStatus(true);
+        setCantUpdate(false);
+        setIsViaticum(false);
         if (formRef.current) { formRef.current.resetFields(); }
     }
 
@@ -158,6 +160,7 @@ const AssignedEmployee = (props) => {
             setCurrentViaticum(item.viaticum);
             selectCurrentItem(item);
             setUnAssignStatus(false);
+            setIsViaticum(false)
             if (formRef.current) formRef.current.resetFields();
             setTimeout(() => {
                 if (item.monday) { setMondayValue(true) }
@@ -195,6 +198,21 @@ const AssignedEmployee = (props) => {
                     setUnAssignStatus(false);
                     setCantUpdate(false);
                 }
+                if (item.viaticum_start_date) {
+                    setIsViaticum(true)
+                } else {
+                    setIsViaticum(false)
+                }
+                if (!item.viaticum) {
+                    setIsViaticum(false)
+                } else if (!item.employee) {
+                    setIsEmployee(false)
+                }
+                if (item.contract) {
+                    setIsContract(true)
+                } else {
+                    setIsContract(false)
+                }
                 if (formRef.current) formRef.current.setFieldsValue({
                     monday: item.monday ? [moment(item.monday[0]), moment(item.monday[1])] : null,
                     tuesday: item.tuesday ? [moment(item.tuesday[0]), moment(item.tuesday[1])] : null,
@@ -210,6 +228,8 @@ const AssignedEmployee = (props) => {
                     position: item.position,
                     gross_salary: item.gross_salary,
                     start_date: item.start_date ? moment(new Date(item.start_date)) : null,
+                    viaticum_start_date: item.viaticum_start_date ? moment(new Date(item.viaticum_start_date)) : null,
+                    viaticum_end_date: item.viaticum_end_date ? moment(new Date(item.viaticum_end_date)) : null,
                     end_date: item.end_date ? moment(new Date(item.end_date)) : null,
                 });
 
@@ -254,7 +274,7 @@ const AssignedEmployee = (props) => {
 
 
             setTimeout(() => {
-                const { contract, viaticum, start_date, end_date, ...otherObj } = values
+                const { contract, viaticum, employee, start_date, end_date, ...otherObj } = values
                 dispatch(crud.create({ entity, jsonData: otherObj }));
                 setIsBankModal(false)
                 dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
@@ -313,14 +333,16 @@ const AssignedEmployee = (props) => {
     const [stores, setStores] = useState([]);
     const { result: Contracts } = useSelector(selectListsByContract);
     const [isEmployee, setIsEmployee] = useState(false);
-
+    const [isViaticum, setIsViaticum] = useState(false);
+    const [isContract, setIsContract] = useState(false);
     const [workContracts, setWorkContracts] = useState();
     const changeEmployee = (value) => {
         formRef.current.setFieldsValue({
-            contract: undefined
+            contract: undefined,
+            viaticum: undefined
         })
         setWorkContract([]);
-
+        setViaticumContract([])
         if (value) {
             setIsEmployee(true)
             const entity = 'workContract';
@@ -329,6 +351,22 @@ const AssignedEmployee = (props) => {
             dispatch(crud.listByContract({ entity, jsonData }));
         } else {
             setIsEmployee(false)
+        }
+    }
+    const changeViaticum = (e) => {
+        console.log(e, 'test');
+        if (e) {
+            setIsViaticum(true)
+        } else {
+            setIsViaticum(false)
+        }
+    }
+    const changeContract = (e) => {
+        console.log(e, 'test');
+        if (e) {
+            setIsContract(true)
+        } else {
+            setIsContract(false)
         }
     }
     useEffect(() => {
@@ -411,7 +449,7 @@ const AssignedEmployee = (props) => {
     const handleUnAssign = () => {
         setUnAssignStatus(true);
 
-
+        console.log(isEmployee, isContract, isViaticum, 'isEmployee,isContract,isViaticum');
 
 
         const unAssignForm = formRef.current;
@@ -435,7 +473,7 @@ const AssignedEmployee = (props) => {
 
         console.log(values, currentItem, 'values, currentItem')
     }
-    const checkValidate = (e) => {
+    const checkValidate = (e, type) => {
         if (formRef.current) {
             const { contract, viaticum } = formRef.current.getFieldsValue(['contract', 'viaticum'])
 
@@ -448,16 +486,21 @@ const AssignedEmployee = (props) => {
             viaticumStart = moment(viaticumStart, 'MM-DD-YYYY');
             contractEnd = moment(contractEnd, 'MM-DD-YYYY');
             viaticumEnd = moment(viaticumEnd, 'MM-DD-YYYY');
-            let minEnd = moment.min(contractEnd, viaticumEnd);
-            let maxDate = moment.max(contractStart, viaticumStart);
             let selectedDate = moment(e, 'MM-DD-YYYY');
-            if (selectedDate.isSameOrBefore(maxDate) || !selectedDate.isSameOrBefore(minEnd)) {
-                formRef.current.resetFields(['start_date']);
-                message.error("position start date cant be before employee contract start date")
+            if (type === 'contract') {
+                if (selectedDate.isSameOrBefore(contractStart) || !selectedDate.isSameOrBefore(contractEnd)) {
+                    formRef.current.resetFields(['start_date']);
+                    message.error("position start date cant be before employee contract start date")
+                }
+            } else {
+                if (selectedDate.isSameOrBefore(viaticumStart) || !selectedDate.isSameOrBefore(viaticumEnd)) {
+                    formRef.current.resetFields(['viaticum_start_date']);
+                    message.error("position start date cant be before employee viaticum start date")
+                }
             }
         }
     }
-    const endValidate = (e) => {
+    const endValidate = (e, type) => {
         if (formRef.current) {
             const { contract, viaticum } = formRef.current.getFieldsValue(['contract', 'viaticum'])
 
@@ -468,11 +511,35 @@ const AssignedEmployee = (props) => {
             let { end_date: viaticumEnd } = currentViaticum[0] || { start_date: new Date('01-01-1999'), end_date: new Date('01-01-2999') };
             contractEnd = moment(contractEnd, 'MM-DD-YYYY');
             viaticumEnd = moment(viaticumEnd, 'MM-DD-YYYY');
-            let minEnd = moment.min(contractEnd, viaticumEnd);
             let selectedDate = moment(e, 'MM-DD-YYYY');
-            if (!selectedDate.isSameOrBefore(minEnd)) {
-                formRef.current.resetFields(['end_date']);
-                message.error("position end date cant be before employee contract end date")
+
+            if (formRef.current) {
+                let { start_date } = formRef.current.getFieldsValue();
+                let startDate = moment(start_date, 'MM-DD-YYYY');
+
+                if (selectedDate.isAfter(startDate)) {
+                    console.log('yes');
+                    if (type === 'contract') {
+
+                        if (!selectedDate.isSameOrBefore(contractEnd)) {
+                            formRef.current.resetFields(['end_date']);
+                            message.error("position end date cant be before employee contract end date")
+                        }
+                    } else {
+                        if (!selectedDate.isSameOrBefore(viaticumEnd)) {
+                            formRef.current.resetFields(['viaticum_end_date']);
+                            message.error("position end date cant be before employee viaticum_end_date end date")
+                        }
+                    }
+                } else {
+                    if (type === 'contract') {
+                        formRef.current.resetFields(['end_date']);
+                        message.error('should be after than start date')
+                    } else {
+                        formRef.current.resetFields(['viaticum_end_date']);
+                        message.error('should be after than start date')
+                    }
+                }
             }
         }
     }
@@ -534,6 +601,7 @@ const AssignedEmployee = (props) => {
                                         (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                                     }
                                     options={workContract}
+                                    onChange={changeContract}
                                 />
                             </Form.Item>
                             <Form.Item
@@ -550,7 +618,9 @@ const AssignedEmployee = (props) => {
                                         (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                                     }
                                     options={viaticumContract}
+                                    onChange={changeViaticum}
                                 />
+
                             </Form.Item>
 
                             <Form.Item
@@ -715,7 +785,7 @@ const AssignedEmployee = (props) => {
                             >
                                 <Input type='number' />
                             </Form.Item>
-                            {isEmployee && <Form.Item
+                            {(isEmployee && isContract) && <Form.Item
                                 name={"start_date"}
                                 label="Start Date"
                                 rules={[
@@ -724,22 +794,49 @@ const AssignedEmployee = (props) => {
                                     },
                                 ]}
                             >
-                                <DatePicker onChange={checkValidate} />
+                                <DatePicker onChange={(e) => checkValidate(e, 'contract')} />
+                            </Form.Item>}
+                            {isViaticum && <Form.Item
+                                name={"viaticum_start_date"}
+                                label="Viaticum Start"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <DatePicker onChange={(e) => checkValidate(e, 'viaticum')} />
                             </Form.Item>}
 
                             {
                                 unAssignStatus &&
-                                <Form.Item
-                                    name={"end_date"}
-                                    label="Last Date"
-                                    rules={[
-                                        {
-                                            required: true,
-                                        },
-                                    ]}
-                                >
-                                    <DatePicker onChange={endValidate} />
-                                </Form.Item>
+
+                                <>
+
+                                    {(isEmployee && isContract) && <Form.Item
+                                        name={"end_date"}
+                                        label="Last Date"
+                                        rules={[
+                                            {
+                                                required: true,
+                                            },
+                                        ]}
+                                    >
+                                        <DatePicker onChange={(e) => endValidate(e, 'contract')} />
+                                    </Form.Item>}
+                                    {(isEmployee && isViaticum) &&
+                                        <Form.Item
+                                            name={"viaticum_end_date"}
+                                            label="Viaticum Last"
+                                            rules={[
+                                                {
+                                                    required: true,
+                                                },
+                                            ]}
+                                        >
+                                            <DatePicker onChange={(e) => endValidate(e, 'viaticum')} />
+                                        </Form.Item>}
+                                </>
                             }
                             {!assignStatus &&
 

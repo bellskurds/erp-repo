@@ -219,32 +219,40 @@ const PayrollDetails = () => {
     setCurrentHistory(cellItem)
     console.log(cellItem, current, 'cellItem')
     if (item) {
-      const { workDays } = item;
-      let workStart = moment(workDays[0], 'MM-DD-YYYY');
-      let workEnd = moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
-      let targetDate = moment(new Date(current), 'MM-DD-YYYY');
-      workStart = workStart.subtract(1, 'day')
-      workEnd = workEnd.add(1, 'day')
+      const { workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = item;
 
-      console.log(targetDate.isBetween(workStart, workEnd), targetDate.isSame(workEnd), targetDate.isSame(workStart))
+      if (contract) {
 
-      if (!targetDate.isBetween(workStart, workEnd)) {
-        return message.error(`can't edit hour because `)
+        let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
+        let positionEnd = contract.type === 3 ? moment(new Date(viaticum_end_date), 'MM-DD-YYYY') : moment(new Date(end_date), 'MM-DD-YYYY');
+
+        console.log(start_date, positionStart.format("MM-DD-YYYY"), end_date, 'start_date, end_date');
+        let workStart = start_date ? positionStart : moment(workDays[0], 'MM-DD-YYYY');
+        let workEnd = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
+        let targetDate = moment(new Date(current), 'MM-DD-YYYY');
+        workStart = workStart.subtract(1, 'day')
+        // workEnd = workEnd.add(1, 'day')
+
+        console.log(targetDate.isBetween(workStart, workEnd), targetDate.isSame(workEnd), targetDate.isSame(workStart))
+
+        if (!targetDate.isBetween(workStart, workEnd)) {
+          return message.error(`can't edit hour because `)
+        }
+        setPrevHour(hour);
+        setTimeout(() => {
+          if (formRef.current) formRef.current.setFieldsValue({
+            hours: hour,
+            comment: comment,
+          });
+        }, 400);
+        setSelectedCellValue(mainHour)
+        setSelectedDate(current);
+        setByEmail(byEmail)
+        setCurrentId(item._id);
+        setCurrentItem(item);
+        setIsModalVisible(true);
+        setIsUpdate(true);
       }
-      setPrevHour(hour);
-      setTimeout(() => {
-        if (formRef.current) formRef.current.setFieldsValue({
-          hours: hour,
-          comment: comment,
-        });
-      }, 400);
-      setSelectedCellValue(mainHour)
-      setSelectedDate(current);
-      setByEmail(byEmail)
-      setCurrentId(item._id);
-      setCurrentItem(item);
-      setIsModalVisible(true);
-      setIsUpdate(true);
     }
   }
   const calcAdjustment = (record) => {
@@ -437,27 +445,34 @@ const PayrollDetails = () => {
   }
   const changedCellValue = (hours, date, record, origin_value) => {
 
-    const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id }, workDays, start_date, end_date } = record;
+    const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id }, workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = record;
+    if (contract) {
 
-    console.log(start_date, end_date, 'start_date,end_date');
-
-    let positionStart = moment(new Date(start_date), 'MM-DD-YYYY');
-    let positionEnd = moment(new Date(end_date), 'MM-DD-YYYY');
+      let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
+      let positionEnd = contract.type === 3 ? moment(new Date(viaticum_end_date), 'MM-DD-YYYY') : moment(new Date(end_date), 'MM-DD-YYYY');
 
 
-    let startWorkDay = positionStart || moment(workDays[0], 'MM-DD-YYYY');
-    let endWorkDay = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
-    const targetDay = moment(new Date(date), 'MM-DD-YYYY');
-    if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
-      const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
-      if (item) {
-        return item.hour
-      } else {
-        return false;
+      let startWorkDay = positionStart || moment(workDays[0], 'MM-DD-YYYY');
+      let endWorkDay = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
+      startWorkDay = startWorkDay.subtract(1, 'day')
+      const targetDay = moment(new Date(date), 'MM-DD-YYYY');
+
+      if (contract.type === 3) {
+
+        console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
       }
-    } else {
-      return 0;
+      if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
+        const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
+        if (item) {
+          return item.hour
+        } else {
+          return false;
+        }
+      } else {
+        return 0;
+      }
     }
+
   }
   const changedCellItem = (hours, date, record) => {
     const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id } } = record;
@@ -759,7 +774,7 @@ const PayrollDetails = () => {
         };
         obj.hr_week = assignedContract.hr_week;
         obj.sal_hr = assignedContract.sal_hr;
-        obj.hrs_bi = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : getServiceHours(obj);
+        obj.hrs_bi = getServiceHours(obj);
         obj.week_pay = (assignedContract && assignedContract.type) ? mathCeil(obj.hrs_bi * assignedContract.sal_hr || 0) : mathCeil(obj.hrs_bi * obj.sal_hr)
         obj.adjustment = calcAdjustment(obj);
         obj.adjust = (calcAdjustment(obj) * obj.sal_hr || 0).toFixed(2);

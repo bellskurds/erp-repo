@@ -60,9 +60,14 @@ const AssignedEmployeeSchema = new mongoose.Schema({
   },
   start_date: {
     type: Date,
-    default: Date.now,
+  },
+  viaticum_start_date: {
+    type: Date,
   },
   end_date: {
+    type: Date,
+  },
+  viaticum_end_date: {
     type: Date,
   },
 });
