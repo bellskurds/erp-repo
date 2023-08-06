@@ -145,6 +145,7 @@ const InvoiceHistory = (props) => {
       return acc;
     }, []);
 
+    console.log(invoices, 'invoices');
     const billingData = [];
 
     if (customerData) {

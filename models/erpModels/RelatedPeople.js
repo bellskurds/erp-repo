@@ -14,6 +14,9 @@ const RelatedPeopleSchema = new mongoose.Schema({
   contact: {
     type: String,
   },
+  phone: {
+    type: String,
+  },
   address: {
     type: String,
   },

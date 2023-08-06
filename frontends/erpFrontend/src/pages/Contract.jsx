@@ -1,7 +1,7 @@
 import { crud } from "@/redux/crud/actions";
 import { selectFilteredItemsByParent, selectListItems, selectListsByContract, selectListsByEmergency, selectListsByMedical, selectReadItem } from "@/redux/crud/selectors";
 import { request } from "@/request";
-import { CheckOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, NumberOutlined } from "@ant-design/icons";
+import { CheckOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, MoneyCollectOutlined, NumberOutlined } from "@ant-design/icons";
 import { Button, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Table, Tag, Typography } from "antd";
 import moment from "moment";
 import { useEffect, useRef, useState } from "react";
@@ -72,6 +72,12 @@ const Contract = (props) => {
                 return (
                     role === 0 ?
                         <>
+                            {record.type <= 2 &&
+
+                                <Typography.Link onClick={() => vacModal(record)}>
+                                    <MoneyCollectOutlined style={{ fontSize: "20px", paddingLeft: "5px" }} />
+                                </Typography.Link>
+                            }
                             <Typography.Link onClick={() => editItem(record)}>
                                 <EditOutlined style={{ fontSize: "20px", paddingLeft: "5px" }} />
                             </Typography.Link>
@@ -97,6 +103,58 @@ const Contract = (props) => {
     const [contractType, setContractType] = useState();
     const formattedDateFunc = (date) => {
         return new Date(date).toLocaleDateString()
+    }
+    const vacModal = (record) => {
+        console.log(record, 'record');
+        let { _id: contract_id, start_date, end_date } = record;
+
+        start_date = '7/31/2023';
+        end_date = '9/29/2023';
+        console.log(start_date, end_date, 'start_date, end_date');
+        let startDate = moment(`${start_date.split('/')[0]}/${start_date.split('/')[2]}`, 'MM/YYYY');
+        const endDate = moment(`${end_date.split('/')[0]}/${end_date.split('/')[2]}`, 'MM/YYYY');
+        const periods = [];
+        while (startDate.isSameOrBefore(endDate)) {
+            const p1 = `1-${Math.floor(startDate.daysInMonth() / 2)}`;
+            const p2 = `${startDate.daysInMonth() === (28, 30) ? Math.round(startDate.daysInMonth() / 2) + 1 : Math.round(startDate.daysInMonth() / 2)}-${startDate.daysInMonth()}`;
+
+            if (new Date(start_date).getMonth() === startDate.month() && new Date(start_date).getDate() > 15) {
+                periods.push({
+                    period: p2,
+                    date: startDate.format('MM/YYYY'),
+                    q: 2,
+                })
+            }
+            else if (new Date(end_date).getMonth() === startDate.month() && new Date(end_date).getDate() < 31) {
+                periods.push({
+                    period: p1,
+                    date: startDate.format('MM/YYYY'),
+                    q: 1,
+
+                })
+            }
+            else {
+
+                periods.push({
+                    period: p1,
+                    date: startDate.format('MM/YYYY'),
+                    q: 1
+                }, {
+                    period: p2,
+                    date: startDate.format('MM/YYYY'),
+                    q: 2
+                })
+            }
+            startDate = startDate.add(1, 'months')
+        }
+
+        console.log(periods, 'periods');
+        if (positionData) {
+            const filteredPositions = positionData.filter(position => position.contract && position.contract._id === contract_id)
+
+            // console.log(filteredPositions, 'filteredPositions');
+
+        }
     }
     const checkCancelStatus = (record) => {
         if (positionData && record) {
@@ -420,6 +478,9 @@ const Contract = (props) => {
                 </Form>
                 <>
                 </>
+            </Modal>
+            <Modal title="Accumulated Vacations">
+
             </Modal>
             <Row>
                 <Col span={5}>

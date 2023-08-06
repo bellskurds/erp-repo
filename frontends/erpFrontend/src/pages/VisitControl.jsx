@@ -394,7 +394,7 @@ const VisitControl = () => {
   const visitColumn = [
     {
       title: "........................................",
-      width: 100,
+      width: 460,
       dataIndex: "report_title"
     },
     {

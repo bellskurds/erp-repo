@@ -34,6 +34,10 @@ const RelatedPeople = (props) => {
             dataIndex: 'contact',
         },
         {
+            title: 'Phone',
+            dataIndex: 'phone',
+        },
+        {
             title: 'Address',
             dataIndex: 'address',
         },
@@ -195,6 +199,17 @@ const RelatedPeople = (props) => {
                     <Form.Item
                         name="contact"
                         label="Contact"
+                        rules={[
+                            {
+                                required: true,
+                            },
+                        ]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item
+                        name="phone"
+                        label="Phone"
                         rules={[
                             {
                                 required: true,

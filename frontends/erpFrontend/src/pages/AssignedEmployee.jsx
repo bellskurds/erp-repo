@@ -1,7 +1,7 @@
 import { crud } from "@/redux/crud/actions";
 import { selectListsByAssignedEmployee, selectListsByContract, selectListsByCustomerStores, } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined, } from "@ant-design/icons";
-import { Button, Checkbox, Col, DatePicker, Form, Input, Modal, Popconfirm, Row, Select, Table, TimePicker, Typography } from "antd";
+import { Button, Checkbox, Col, DatePicker, Form, Input, Modal, Popconfirm, Row, Select, Table, TimePicker, Typography, message } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import SelectAsync from "@/components/SelectAsync";
@@ -24,6 +24,7 @@ const AssignedEmployee = (props) => {
     const [itemLists, setItemLists] = useState([]);
     const [currentEmployee, setCurrentEmployee] = useState(false);
     const [currentContract, setCurrentContract] = useState(false);
+    const [currentViaticum, setCurrentViaticum] = useState(false);
     const [assignStatus, setAssignStatus] = useState(true);
     const [unAssignStatus, setUnAssignStatus] = useState(false);
     const bankColumns = [
@@ -72,7 +73,7 @@ const AssignedEmployee = (props) => {
                     return `${contractTypes[text]},${contractTypes[viaticum.type]}`
                 } else if (contract) {
                     return `${contractTypes[text]}`
-                } else {
+                } else if (viaticum) {
                     return `${contractTypes[viaticum.type]}`
                 }
             }
@@ -124,6 +125,7 @@ const AssignedEmployee = (props) => {
         setSaturdayValue(false);
         setSundayValue(false);
         setUnAssignStatus(false);
+        setCantUpdate(false)
         if (formRef.current) { formRef.current.resetFields(); }
     }
 
@@ -143,6 +145,7 @@ const AssignedEmployee = (props) => {
         }
         return hours.join(', ');
     }
+    const [cantUpdate, setCantUpdate] = useState(false);
     const editItem = (item) => {
         if (item) {
             console.log(item, 'item');
@@ -152,6 +155,7 @@ const AssignedEmployee = (props) => {
             setIsUpdate(true);
             setCurrentContract(item.contract);
             setCurrentEmployee(item.employee);
+            setCurrentViaticum(item.viaticum);
             selectCurrentItem(item);
             setUnAssignStatus(false);
             if (formRef.current) formRef.current.resetFields();
@@ -184,6 +188,13 @@ const AssignedEmployee = (props) => {
                 else {
                     setSundayValue(false)
                 }
+                if (item.end_date) {
+                    setUnAssignStatus(true);
+                    setCantUpdate(true);
+                } else {
+                    setUnAssignStatus(false);
+                    setCantUpdate(false);
+                }
                 if (formRef.current) formRef.current.setFieldsValue({
                     monday: item.monday ? [moment(item.monday[0]), moment(item.monday[1])] : null,
                     tuesday: item.tuesday ? [moment(item.tuesday[0]), moment(item.tuesday[1])] : null,
@@ -198,7 +209,8 @@ const AssignedEmployee = (props) => {
                     hr_week: item.hr_week,
                     position: item.position,
                     gross_salary: item.gross_salary,
-                    start_date: item.start_date ? moment(new Date(item.start_date)) : null
+                    start_date: item.start_date ? moment(new Date(item.start_date)) : null,
+                    end_date: item.end_date ? moment(new Date(item.end_date)) : null,
                 });
 
                 setTimeout(() => {
@@ -229,8 +241,27 @@ const AssignedEmployee = (props) => {
         setIsBankModal(false)
     }
     const saveBankDetails = (values) => {
+
+
         const parentId = currentEmployeeId;
-        if (currentId && parentId && isUpdate) {
+        if (unAssignStatus && currentId && parentId && isUpdate) {
+
+            const id = currentId;
+            values["parent_id"] = parentId;
+            const jsonData = { parent_id: parentId }
+            const { start_date, ...updateObj } = values
+            dispatch(crud.update({ entity, id, jsonData: updateObj }));
+
+
+            setTimeout(() => {
+                const { contract, viaticum, start_date, end_date, ...otherObj } = values
+                dispatch(crud.create({ entity, jsonData: otherObj }));
+                setIsBankModal(false)
+                dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
+            }, 500)
+
+        }
+        else if (currentId && parentId && isUpdate) {
             const id = currentId;
             const jsonData = { parent_id: parentId }
             values["parent_id"] = parentId;
@@ -239,11 +270,12 @@ const AssignedEmployee = (props) => {
             setTimeout(() => {
                 dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
             }, 500)
-        } else {
+        }
+
+        else {
             const jsonData = { parent_id: parentId }
-            const id = currentId;
             values["parent_id"] = parentId;
-            dispatch(crud.create({ entity, id, jsonData: values }));
+            dispatch(crud.create({ entity, jsonData: values }));
             setIsBankModal(false)
             setTimeout(() => {
                 dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
@@ -281,6 +313,8 @@ const AssignedEmployee = (props) => {
     const [stores, setStores] = useState([]);
     const { result: Contracts } = useSelector(selectListsByContract);
     const [isEmployee, setIsEmployee] = useState(false);
+
+    const [workContracts, setWorkContracts] = useState();
     const changeEmployee = (value) => {
         formRef.current.setFieldsValue({
             contract: undefined
@@ -297,7 +331,12 @@ const AssignedEmployee = (props) => {
             setIsEmployee(false)
         }
     }
-
+    useEffect(() => {
+        if (Contracts)
+            setWorkContracts(Contracts.items)
+    }, [
+        Contracts
+    ])
     useEffect(() => {
         const storesOptions = Stores.items || [];
 
@@ -356,14 +395,14 @@ const AssignedEmployee = (props) => {
     useEffect(() => {
 
         console.log(currentEmployee, 'currentContract , currentEmployee')
-        if (currentContract && currentEmployee) {
+        if ((currentContract && currentEmployee) || (currentViaticum && currentEmployee)) {
             setAssignStatus(false);
         } else {
 
             console.log()
             setAssignStatus(true);
         }
-    }, [currentContract, currentEmployee]);
+    }, [currentContract, currentEmployee, currentViaticum]);
 
     const [isWorkDate, setIsWorkDate] = useState(false);
     const cancelWorkDate = () => {
@@ -372,20 +411,70 @@ const AssignedEmployee = (props) => {
     const handleUnAssign = () => {
         setUnAssignStatus(true);
 
-        const unAssignForm = formRef.current;
-        setIsUpdate(false);
 
-        if (unAssignForm && unAssignStatus) {
-            unAssignForm.resetFields(['employee', 'contract']);
-            unAssignForm.setFieldsValue({
-                employee: null,
-                contract: null
-            })
+
+
+        const unAssignForm = formRef.current;
+        if (unAssignForm) {
+
         }
+
+
+        // setIsUpdate(false);
+
+        // if (unAssignForm && unAssignStatus) {
+        //     unAssignForm.resetFields(['employee', 'contract', 'viaticum']);
+        //     unAssignForm.setFieldsValue({
+        //         employee: null,
+        //         contract: null,
+        //         viaticum: null
+        //     })
+        // }
     }
     const handleLastWork = (values) => {
 
         console.log(values, currentItem, 'values, currentItem')
+    }
+    const checkValidate = (e) => {
+        if (formRef.current) {
+            const { contract, viaticum } = formRef.current.getFieldsValue(['contract', 'viaticum'])
+
+            const currentWorkContract = workContracts.filter(data => contract === data._id);
+            const currentViaticum = workContracts.filter(data => viaticum === data._id);
+
+            let { start_date: contractStart, end_date: contractEnd } = currentWorkContract[0] || { start_date: new Date('01-01-1999'), end_date: new Date('01-01-2999') };
+            let { start_date: viaticumStart, end_date: viaticumEnd } = currentViaticum[0] || { start_date: new Date('01-01-1999'), end_date: new Date('01-01-2999') };
+            contractStart = moment(contractStart, 'MM-DD-YYYY');
+            viaticumStart = moment(viaticumStart, 'MM-DD-YYYY');
+            contractEnd = moment(contractEnd, 'MM-DD-YYYY');
+            viaticumEnd = moment(viaticumEnd, 'MM-DD-YYYY');
+            let minEnd = moment.min(contractEnd, viaticumEnd);
+            let maxDate = moment.max(contractStart, viaticumStart);
+            let selectedDate = moment(e, 'MM-DD-YYYY');
+            if (selectedDate.isSameOrBefore(maxDate) || !selectedDate.isSameOrBefore(minEnd)) {
+                formRef.current.resetFields(['start_date']);
+                message.error("position start date cant be before employee contract start date")
+            }
+        }
+    }
+    const endValidate = (e) => {
+        if (formRef.current) {
+            const { contract, viaticum } = formRef.current.getFieldsValue(['contract', 'viaticum'])
+
+            const currentWorkContract = workContracts.filter(data => contract === data._id);
+            const currentViaticum = workContracts.filter(data => viaticum === data._id);
+
+            let { end_date: contractEnd } = currentWorkContract[0] || { start_date: new Date('01-01-1999'), end_date: new Date('01-01-2999') };
+            let { end_date: viaticumEnd } = currentViaticum[0] || { start_date: new Date('01-01-1999'), end_date: new Date('01-01-2999') };
+            contractEnd = moment(contractEnd, 'MM-DD-YYYY');
+            viaticumEnd = moment(viaticumEnd, 'MM-DD-YYYY');
+            let minEnd = moment.min(contractEnd, viaticumEnd);
+            let selectedDate = moment(e, 'MM-DD-YYYY');
+            if (!selectedDate.isSameOrBefore(minEnd)) {
+                formRef.current.resetFields(['end_date']);
+                message.error("position end date cant be before employee contract end date")
+            }
+        }
     }
     return (
 
@@ -635,7 +724,7 @@ const AssignedEmployee = (props) => {
                                     },
                                 ]}
                             >
-                                <DatePicker />
+                                <DatePicker onChange={checkValidate} />
                             </Form.Item>}
 
                             {
@@ -649,7 +738,7 @@ const AssignedEmployee = (props) => {
                                         },
                                     ]}
                                 >
-                                    <DatePicker />
+                                    <DatePicker onChange={endValidate} />
                                 </Form.Item>
                             }
                             {!assignStatus &&
@@ -667,27 +756,34 @@ const AssignedEmployee = (props) => {
                             }
                         </Col>
                     </Row>
-                    <Form.Item
-                        wrapperCol={{
-                            offset: 8,
-                            span: 16,
-                        }}
-                    >
-                        {
-                            isUpdate ?
-                                <Button type="primary" htmlType="submit">
-                                    Update
-                                </Button>
-                                : <Button type="primary" htmlType="submit">
-                                    Save
-                                </Button>
+                    {
+                        !cantUpdate && <Form.Item
+                            wrapperCol={{
+                                offset: 8,
+                                span: 16,
+                            }}
+                        >
+                            {
+                                isUpdate ?
+                                    <Button type="primary" htmlType="submit">
+                                        Update
+                                    </Button>
+                                    : <Button type="primary" htmlType="submit">
+                                        Save
+                                    </Button>
 
-                        }
+                            }
 
-                        <Button type="ghost" onClick={handleBankModal}>
-                            cancel
-                        </Button>
-                    </Form.Item>
+                            <Button type="ghost" onClick={handleBankModal}>
+                                cancel
+                            </Button>
+                        </Form.Item>
+                    }
+                    {
+
+                        cantUpdate &&
+                        <label style={{ fontSize: '30px', textAlign: 'right', color: 'red' }}>You can't update because it was un assigned</label>
+                    }
                 </Form>
                 <>
                 </>

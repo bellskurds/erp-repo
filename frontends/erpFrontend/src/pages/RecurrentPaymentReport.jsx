@@ -186,7 +186,7 @@ const RecurrentPaymentReport = () => {
         },
         {
           title: "Deductions",
-          dataIndex: "deductions"
+          dataIndex: "deductions",
         },
         {
           title: "Net salary",
@@ -210,15 +210,15 @@ const RecurrentPaymentReport = () => {
         {
           title: "S.S.",
           render: (_, record) => {
-            const { gross_salary } = record;
-            return (gross_salary * 0.0975).toFixed(2);
+            const { gross_salary, contract } = record;
+            return contract.type === 1 ? (gross_salary * 0.0975).toFixed(2) : 0;
           }
         },
         {
           title: "S.E.",
           render: (_, record) => {
-            const { gross_salary } = record;
-            return (gross_salary * 0.0125).toFixed(2);
+            const { gross_salary, contract } = record;
+            return contract.type === 1 ? (gross_salary * 0.0125).toFixed(2) : 0;
           }
         },
         {
@@ -229,8 +229,8 @@ const RecurrentPaymentReport = () => {
         }, {
           title: "Total RET",
           render: (_, record) => {
-            const { gross_salary } = record;
-            return (gross_salary * (0.0975 + 0.0125)).toFixed(2)
+            const { gross_salary, contract } = record;
+            return contract.type === 1 ? (gross_salary * (0.0975 + 0.0125)).toFixed(2) : 0
           }
         }
       ]
@@ -242,22 +242,22 @@ const RecurrentPaymentReport = () => {
         {
           title: "S.S.",
           render: (_, record) => {
-            const { gross_salary } = record;
-            return (gross_salary * 0.1225).toFixed(2);
+            const { gross_salary, contract } = record;
+            return contract.type === 1 ? (gross_salary * 0.1225).toFixed(2) : 0;
           }
         },
         {
           title: "S.E.",
           render: (_, record) => {
-            const { gross_salary } = record;
-            return (gross_salary * 0.015).toFixed(2);
+            const { gross_salary, contract } = record;
+            return contract.type === 1 ? (gross_salary * 0.015).toFixed(2) : 0;
           }
         },
         {
           title: "R.P.",
           render: (_, record) => {
-            const { gross_salary } = record;
-            return (gross_salary * 0.021).toFixed(2);
+            const { gross_salary, contract } = record;
+            return contract.type === 1 ? (gross_salary * 0.021).toFixed(2) : 0;
           }
         },
         {
@@ -269,8 +269,8 @@ const RecurrentPaymentReport = () => {
         {
           title: "Total Cuota",
           render: (_, record) => {
-            const { gross_salary } = record;
-            return (gross_salary * (0.1225 + 0.015 + 0.021)).toFixed(2)
+            const { gross_salary, contract } = record;
+            return contract.type === 1 ? (gross_salary * (0.1225 + 0.015 + 0.021)).toFixed(2) : 0
           }
         }
       ]
@@ -281,8 +281,8 @@ const RecurrentPaymentReport = () => {
         {
           title: "R.P.",
           render: (_, record) => {
-            const { gross_salary } = record;
-            return (gross_salary * 0.021).toFixed(2);
+            const { gross_salary, contract } = record;
+            return contract.type === 1 ? (gross_salary * 0.021).toFixed(2) : 0;
           }
         },
         {
@@ -294,22 +294,22 @@ const RecurrentPaymentReport = () => {
         {
           title: "S.E.",
           render: (_, record) => {
-            const { gross_salary } = record;
-            return (gross_salary * (0.015 + 0.0125)).toFixed(2);
+            const { gross_salary, contract } = record;
+            return contract.type === 1 ? (gross_salary * (0.015 + 0.0125)).toFixed(2) : 0;
           }
         },
         {
           title: "S.S.",
           render: (_, record) => {
-            const { gross_salary } = record;
-            return (gross_salary * (0.1225 + 0.0975)).toFixed(2);
+            const { gross_salary, contract } = record;
+            return contract.type === 1 ? (gross_salary * (0.1225 + 0.0975)).toFixed(2) : 0;
           }
         },
         {
           title: "Total SIPE",
           render: (_, record) => {
-            const { gross_salary } = record;
-            return (gross_salary * (0.021 + 0.015 + 0.0125 + 0.1225 + 0.0975)).toFixed(2);
+            const { gross_salary, contract } = record;
+            return contract.type === 1 ? (gross_salary * (0.021 + 0.015 + 0.0125 + 0.1225 + 0.0975)).toFixed(2) : 0;
           }
         },
 
@@ -328,6 +328,8 @@ const RecurrentPaymentReport = () => {
               return 0
             }
           }
+        }, {
+          title: "DTM A."
         }
       ]
     }
@@ -564,9 +566,23 @@ const RecurrentPaymentReport = () => {
         obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
         obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
       })
+      const viaticumArr = [];
+      assignedEmployees.map(position => {
+        const { viaticum, contract, ...otherObj } = position;
+        if (viaticum && contract) {
+          otherObj.contract = viaticum
+          viaticumArr.push(otherObj);
+          assignedEmployees.push(otherObj);
+        } else if (viaticum && !contract) {
+          position.contract = viaticum;
+        }
+      });
+      const mergedPositions = JSON.parse(JSON.stringify(assignedEmployees)).filter(data => data !== undefined);
 
 
-      const _listItems = assignedEmployees.filter(({ contract }) =>
+
+
+      const _listItems = mergedPositions.filter(({ contract }) =>
         Object(contract).hasOwnProperty('status') && contract.status === "active" &&
         (
           (
@@ -580,7 +596,19 @@ const RecurrentPaymentReport = () => {
             dateValue(contract.end_date) >= dateValue(end_date)
           )
         )
-      )
+      );
+
+
+
+      const groupedContracts = _listItems
+        .reduce((acc, item) => {
+          const existingItem = acc.find(i => i.contract && i.contract._id === item.contract._id);
+          if (!existingItem) {
+            acc.push(item);
+          }
+          return acc;
+        }, []);
+
       _listItems.map(obj => {
         const { contract: assignedContract } = obj;
         obj.position = obj.position;
@@ -707,9 +735,34 @@ const RecurrentPaymentReport = () => {
             data.bank = bank;
           }
         })
+      });
+
+
+      const restedLists = JSON.parse(JSON.stringify(_listItems));
+      const restedAGroupedLists = JSON.parse(JSON.stringify(groupedContracts));
+      restedAGroupedLists.map((list, index) => {
+        const { contract: contract1, employee } = list;
+        restedLists.map(item => {
+          const { contract: contract2 } = item;
+          if (list._id !== item._id && contract1._id === contract2._id) {
+            list.gross_salary = parseFloat(list.gross_salary) + parseFloat(item.gross_salary);
+            list.net_salary = parseFloat(list.net_salary) + parseFloat(item.net_salary);
+            list.deductions = (parseFloat(list.deductions) + parseFloat(item.deductions)).toFixed(2);
+          }
+        });
+        list['key'] = index;
+        list['category'] = 'Contract';
+        bankDetails.map(bank => {
+          if (employee._id === bank.parent_id) {
+            list.bank = bank;
+          }
+        })
+
       })
-      setListItems([...allDatas])
-      console.log(allDatas, 'sortedLists');
+      setListItems([...restedAGroupedLists]);
+
+      console.log(restedAGroupedLists, allDatas);
+
 
     }
     init()
