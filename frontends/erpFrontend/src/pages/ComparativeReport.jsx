@@ -144,7 +144,7 @@ const ComparativeReport = () => {
       title: 'Difference',
       width: '100',
       render: (_, record) => {
-        return `$${((parseInt(record.gross_salary) || 0) - (parseInt(record.transferencia) || 0)).toFixed(2)}`
+        return `$${((parseInt(record.gross_salary) || 0) - (parseInt(record.salary) || 0)).toFixed(2)}`
       },
       align: "center"
     },
@@ -452,7 +452,10 @@ const ComparativeReport = () => {
         });
         _totalProjection += item.gross_salary || 0;
         _totalRealPayment += item.salary || 0;
-      })
+      });
+
+
+
       _totalDifference = _totalProjection - _totalRealPayment;
       setTotalProjection(parseFloat(_totalProjection).toFixed(2));
       setTotalDifference(parseFloat(_totalDifference).toFixed(2));
