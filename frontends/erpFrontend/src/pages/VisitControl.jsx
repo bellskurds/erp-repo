@@ -85,6 +85,21 @@ const VisitControl = () => {
   const handleCancel = () => {
     setIsModalVisible(false);
   };
+
+  const [typeOptions, setTypeOptions] = useState([
+    {
+      value: 3,
+      label: "Inspection",
+    },
+    {
+      value: 2,
+      label: "Products"
+    },
+    {
+      value: 1,
+      label: "Visit"
+    },
+  ])
   const [customerStores, setCustomerStores] = useState([]);
   const [globalData, setGlobalData] = useState([]);
   const [filteredStores, setFilteredStores] = useState([]);
@@ -197,62 +212,6 @@ const VisitControl = () => {
 
   ]
 
-  const monthData = [
-    {
-      key: 1,
-      text: "Jan"
-    },
-
-    {
-      key: 1,
-      text: "Jan"
-    },
-    {
-      key: 2,
-      text: "Feb"
-    },
-    {
-      key: 3,
-      text: "Mar"
-    },
-    {
-      key: 4,
-      text: "Apr"
-    },
-    {
-      key: 5,
-      text: "May"
-    },
-    {
-      key: 6,
-      text: "Jun"
-    },
-    {
-      key: 7,
-      text: "Jul"
-    },
-    {
-      key: 8,
-      text: "Aug"
-    },
-    {
-      key: 9,
-      text: "Sep"
-    },
-    {
-      key: 10,
-      text: "Oct"
-    },
-    {
-      key: 11,
-      text: "Nov"
-    },
-    {
-      key: 12,
-      text: "Dec"
-    },
-
-  ]
   const content = (
     <table style={{
       tableLayout: 'fixed',
@@ -485,6 +444,19 @@ const VisitControl = () => {
       }, 1000)
     }
   }
+
+  useEffect(() => {
+    typeOptions.map(type => {
+      if (type.value == tabsStatus) {
+        type.disabled = false;
+      } else {
+        type.disabled = true;
+      }
+    })
+    console.log(typeOptions, tabsStatus);
+  }, [
+    tabsStatus, typeOptions
+  ])
   useEffect(() => {
 
     async function init() {
@@ -859,9 +831,6 @@ const VisitControl = () => {
     }
   ]
 
-  useEffect(() => {
-    setIsModalVisible(false);
-  }, [typeValue]);
 
   const [inspectionOfficer, setInspectionOfficer] = useState();
   const [personAcknowledgingReceipt, setPersonAcknowledgingReceipt] = useState();
@@ -925,20 +894,7 @@ const VisitControl = () => {
                   >
                     <Radio.Group
                       name='radioGroup'
-                      options={[
-                        {
-                          value: 3,
-                          label: "Inspection"
-                        },
-                        {
-                          value: 2,
-                          label: "Products"
-                        },
-                        {
-                          value: 1,
-                          label: "Visit"
-                        },
-                      ]}
+                      options={typeOptions}
                       onChange={(e) => setTypeValue(e.target.value)}
                     />
                   </Form.Item>
