@@ -389,7 +389,33 @@ const RecurrentPaymentReport = () => {
   }
   useEffect(() => {
     setCurrentPeriod(getPeriods(currentMonth, currentYear, currentQ))
-  }, [currentMonth, currentQ, currentYear])
+  }, [currentMonth, currentQ, currentYear]);
+
+
+  const checkPeriods = (contract, start, end, what) => {
+    const { start_date: contract_start, end_date: contract_end } = contract;
+    let startDate = moment(new Date(contract_start), 'MM-DD-YYYY');
+    const endDate = moment(new Date(contract_end), 'MM-DD-YYYY');
+
+    let targetStartDate = moment(start, 'MM-DD-YYYY');
+    const targetEndDate = moment(end, 'MM-DD-YYYY');
+    let flag = false;
+    const PeriodShouldBeworked = [];
+    while (targetStartDate.isSameOrBefore(targetEndDate)) {
+
+      if (targetStartDate.isBetween(startDate, endDate, null, '[]')) {
+        flag = true;
+        PeriodShouldBeworked.push(targetStartDate.format('MM-DD-YYYY'));
+      }
+      targetStartDate = targetStartDate.add(1, 'days');
+    }
+    if (what) {
+      return PeriodShouldBeworked
+    } else {
+      return flag;
+    }
+  }
+
   const AdminId = useSelector(selectCurrentAdmin);
   const Auth = JSON.parse(localStorage.getItem('auth'));
   const onFinish = (values) => {
@@ -408,10 +434,6 @@ const RecurrentPaymentReport = () => {
     setSaveStatus(!saveStatus)
 
   }
-
-  const dateValue = (date) => {
-    return new Date(date).valueOf();
-  }
   const changedCellValue = (hours, date, record) => {
     const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id } } = record;
     const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
@@ -421,14 +443,32 @@ const RecurrentPaymentReport = () => {
       return false;
     }
   }
-  const changedCellItem = (hours, date, record) => {
-    const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id } } = record;
-    const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
-    if (item) {
-      return item
-    } else {
-      return false;
+
+  const getCellValue = (hours, date, record, origin_value) => {
+
+    const { workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = record;
+    if (contract) {
+
+      let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
+      let positionEnd = contract.type === 3 ? moment(new Date(viaticum_end_date), 'MM-DD-YYYY') : moment(new Date(end_date), 'MM-DD-YYYY');
+
+
+      let startWorkDay = positionStart || moment(workDays[0], 'MM-DD-YYYY');
+      let endWorkDay = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
+      startWorkDay = startWorkDay.subtract(1, 'day')
+      const targetDay = moment(new Date(date), 'MM-DD-YYYY');
+
+      if (contract.type === 3) {
+
+        console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
+      }
+      if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
+        return origin_value;
+      } else {
+        return 0;
+      }
     }
+
   }
 
 
@@ -442,125 +482,13 @@ const RecurrentPaymentReport = () => {
       const start_date = new Date(currentYear, startDay === 31 ? (currentMonth - 2) : (currentMonth - 1), startDay);
       const end_date = new Date(currentYear, currentMonth - 1, endDay);
 
-      let currentDate = moment(start_date);
       var date = new Date(start_date);
       date.setMonth(date.getMonth() + 12);
-      const end = moment(end_date);
 
-      const daysColumns = [];
-      while (currentDate.isSameOrBefore(end)) {
-        const monthLable = currentDate.format("MMMM");
-        const day = currentDate.date();
-        const _day = currentDate.day();
-        const year = currentDate.year();
-        const month = currentDate.month();
-        daysColumns.push({
-          title: `${day}-${monthLable}`,
-          dataIndex: `-day-${year}_${month + 1}_${day}`,
-          render: (text, record) => {
-            switch (_day) {
-              case 0:
-                return (
-
-                  record.hasOwnProperty('type') ?
-                    <Typography.Text>
-                      {0}
-                    </Typography.Text>
-                    :
-                    <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.sunday_hr }, `${year}/${month + 1}/${day}`, record.sunday_hr)}>
-                      {parseFloat(text) || 0}
-                    </Typography.Text>
-                );
-                break;
-              case 1:
-                return (
-                  record.hasOwnProperty('type') ?
-                    <Typography.Text>
-                      {0}
-                    </Typography.Text>
-                    :
-                    <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.monday_hr }, `${year}/${month + 1}/${day}`, record.monday_hr)}>
-                      {parseFloat(text) || 0}
-                    </Typography.Text>
-                );
-                break;
-              case 2:
-                return (
-                  record.hasOwnProperty('type') ?
-                    <Typography.Text>
-                      {0}
-                    </Typography.Text>
-                    :
-                    <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.tuesday_hr }, `${year}/${month + 1}/${day}`, record.tuesday_hr)}>
-                      {parseFloat(text) || 0}
-                    </Typography.Text>
-                );
-                break;
-              case 3:
-                return (
-                  record.hasOwnProperty('type') ?
-                    <Typography.Text>
-                      {0}
-                    </Typography.Text>
-                    :
-                    <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.wednesday_hr }, `${year}/${month + 1}/${day}`, record.wednesday_hr)}>
-                      {parseFloat(text) || 0}
-                    </Typography.Text>
-                );
-                break;
-              case 4:
-                return (
-                  record.hasOwnProperty('type') ?
-                    <Typography.Text>
-                      {0}
-                    </Typography.Text>
-                    :
-                    <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.thursday_hr }, `${year}/${month + 1}/${day}`, record.thursday_hr)}>
-                      {parseFloat(text) || 0}
-                    </Typography.Text>
-                );
-                break;
-              case 5:
-                return (
-                  record.hasOwnProperty('type') ?
-                    <Typography.Text>
-                      {0}
-                    </Typography.Text>
-                    :
-                    <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.friday_hr }, `${year}/${month + 1}/${day}`, record.friday_hr)}>
-                      {parseFloat(text) || 0}
-                    </Typography.Text>
-                );
-                break;
-              case 6:
-                return (
-                  record.hasOwnProperty('type') ?
-                    <Typography.Text>
-                      {0}
-                    </Typography.Text>
-                    :
-                    <Typography.Text onDoubleClick={() => editItem(record, changedCellItem(allHours, `${year}/${month + 1}/${day}`, record) || { hour: record.saturday_hr }, `${year}/${month + 1}/${day}`, record.saturday_hr)}>
-                      {parseFloat(text) || 0}
-                    </Typography.Text>
-                );
-                break;
-
-              default:
-                break;
-            }
-          }
-        })
-
-        currentDate = currentDate.add(1, 'days');
-      };
-      console.log(daysColumns);
-      setChangedDays(daysColumns);
       console.log();
       const { result: workContracts } = await request.list({ entity: "workContract" })
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" });
       const { result: bankDetails } = await request.list({ entity: "bankAccount" });
-      const unassignedContracts = [];
-      const assignedContracts = [];
 
       workContracts.map(obj => {
         obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
@@ -585,16 +513,7 @@ const RecurrentPaymentReport = () => {
       const _listItems = mergedPositions.filter(({ contract }) =>
         Object(contract).hasOwnProperty('status') && contract.status === "active" &&
         (
-          (
-            dateValue(contract.start_date) <= dateValue(start_date) &&
-            dateValue(contract.end_date) >= dateValue(end_date)
-          )
-          ||
-          (
-            dateValue(contract.start_date) > dateValue(start_date) &&
-            dateValue(contract.start_date) < dateValue(end_date) &&
-            dateValue(contract.end_date) >= dateValue(end_date)
-          )
+          checkPeriods(contract, start_date, end_date, 0)
         )
       );
 
@@ -619,59 +538,65 @@ const RecurrentPaymentReport = () => {
         obj.thursday_hr = obj.thursday ? getHours(obj.thursday) : 0;
         obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
         obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
-
+        obj.workDays = checkPeriods(assignedContract, start_date, end_date, 1)
 
         let currentDate = moment(start_date);
 
         const end = moment(end_date);
 
         while (currentDate.isSameOrBefore(end)) {
-          const monthLable = currentDate.format("MMMM");
           const day = currentDate.date();
           const _day = currentDate.day();
           const year = currentDate.year();
           const month = currentDate.month();
           const dataIndex = `-day-${year}_${month + 1}_${day}`;
           const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
+          const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
+
           switch (_day) {
             case 0:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr;
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr) - obj.sunday_hr
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.sunday_hr);
+
               break;
 
             case 1:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr;
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr) - obj.monday_hr
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.monday_hr);
 
               break;
 
             case 2:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr;
-
-              obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr) - obj.tuesday_hr
-
+              obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr) - obj.tuesday_hr;
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.tuesday_hr);
               break;
 
             case 3:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr;
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr) - obj.wednesday_hr
-
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.wednesday_hr);
               break;
 
             case 4:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr;
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr) - obj.thursday_hr
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.thursday_hr);
 
               break;
             case 5:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr;
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr) - obj.friday_hr
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.friday_hr);
 
 
               break;
             case 6:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr;
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr) - obj.saturday_hr
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.saturday_hr);
 
               break;
 
@@ -680,14 +605,27 @@ const RecurrentPaymentReport = () => {
           }
           currentDate = currentDate.add(1, 'days');
         };
-        obj.hrs_bi = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : getServiceHours(obj);
-        obj.week_pay = mathCeil(obj.hrs_bi * obj.sal_hr)
+        obj.sal_hr = assignedContract.sal_hr || 0;
+        obj.hrs_bi = getServiceHours(obj);
+        obj.week_pay =
+          (assignedContract && assignedContract.type) ?
+            (
+              assignedContract.type === 3 ?
+                assignedContract.sal_monthly / 2
+                :
+                mathCeil(obj.hrs_bi * assignedContract.sal_hr || 0)
+            )
+
+            : mathCeil(obj.hrs_bi * obj.sal_hr);
         obj.adjustment = calcAdjustment(obj);
-        obj.adjust = calcAdjustment(obj) * obj.sal_hr;
+        obj.adjust =
+          assignedContract.type === 3 ?
+            ((obj.adjustment / obj.hrs_bi) * obj.week_pay).toFixed(2)
+            : (calcAdjustment(obj) * obj.sal_hr || 0).toFixed(2);
+
         obj.salary = parseFloat(obj.adjust) + parseFloat(obj.week_pay);
-        obj.transferencia = assignedContract.type === 1 ? obj.salary : obj.salary * 0.89;
-        obj.deductions = (obj.gross_salary - obj.transferencia).toFixed(2);
-        obj.gross_salary = (obj.gross_salary || 0).toFixed(2);
+        obj.deductions = (obj.gross_salary - obj.salary).toFixed(2);
+        obj.gross_salary = (obj.salary || 0).toFixed(2);
         obj.net_salary = assignedContract.type === 1 ? (obj.gross_salary * 0.89).toFixed(2) : obj.gross_salary;
       });
 
@@ -739,7 +677,7 @@ const RecurrentPaymentReport = () => {
   const getServiceHours = (record) => {
     var hours = 0;
     for (var key in record) {
-      if (key.includes('-day-')) {
+      if (key.includes('services-day-')) {
         hours += record[key];
       }
     }
