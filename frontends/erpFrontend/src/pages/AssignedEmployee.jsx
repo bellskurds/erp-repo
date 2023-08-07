@@ -879,7 +879,10 @@ const AssignedEmployee = (props) => {
                     {
 
                         cantUpdate &&
-                        <label style={{ fontSize: '30px', textAlign: 'right', color: 'red' }}>You can't update because it was un assigned</label>
+                        <Form.Item>
+
+                            <label style={{ fontSize: '30px', textAlign: 'right', color: 'red' }}>You can't update because it was un assigned</label>
+                        </Form.Item>
                     }
                 </Form>
                 <>

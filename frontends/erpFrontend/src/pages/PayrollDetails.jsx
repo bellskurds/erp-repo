@@ -703,10 +703,6 @@ const PayrollDetails = () => {
       setGlobalEmployeeLists(_employees)
       const assignedContracts = [];
 
-      workContracts.map(obj => {
-        obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-        obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-      })
       const viaticumArr = [];
       assignedEmployees.map(position => {
         const { viaticum, contract, ...otherObj } = position;

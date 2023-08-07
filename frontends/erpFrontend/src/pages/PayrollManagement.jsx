@@ -152,21 +152,94 @@ const PayrollManagement = () => {
   const dateValue = (date) => {
     return new Date(date).valueOf();
   }
-  const changedCellValue = (hours, date, record) => {
-    const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id } } = record;
-    const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
-    if (item) {
-      return item.hour
-    } else {
-      return false;
+  const changedCellValue = (hours, date, record, origin_value) => {
+
+    const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id }, workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = record;
+    if (contract) {
+
+      let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
+      let positionEnd = contract.type === 3 ? moment(new Date(viaticum_end_date), 'MM-DD-YYYY') : moment(new Date(end_date), 'MM-DD-YYYY');
+
+
+      let startWorkDay = positionStart || moment(workDays[0], 'MM-DD-YYYY');
+      let endWorkDay = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
+      startWorkDay = startWorkDay.subtract(1, 'day')
+      const targetDay = moment(new Date(date), 'MM-DD-YYYY');
+
+      if (contract.type === 3) {
+
+        console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
+      }
+      if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
+        const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
+        if (item) {
+          return item.hour
+        } else {
+          return false;
+        }
+      } else {
+        return 0;
+      }
     }
+
   }
+
+  const getCellValue = (hours, date, record, origin_value) => {
+
+    const { workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = record;
+    if (contract) {
+
+      let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
+      let positionEnd = contract.type === 3 ? moment(new Date(viaticum_end_date), 'MM-DD-YYYY') : moment(new Date(end_date), 'MM-DD-YYYY');
+
+
+      let startWorkDay = positionStart || moment(workDays[0], 'MM-DD-YYYY');
+      let endWorkDay = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
+      startWorkDay = startWorkDay.subtract(1, 'day')
+      const targetDay = moment(new Date(date), 'MM-DD-YYYY');
+
+      if (contract.type === 3) {
+
+        console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
+      }
+      if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
+        return origin_value;
+      } else {
+        return 0;
+      }
+    }
+
+  }
+
   const getHours = (dates) => {
     const hours = dates.map(date => moment(date).hour());
     const maxHour = Math.max(...hours);
     const minHour = Math.min(...hours);
     const difference = maxHour - minHour;
     return (difference)
+  }
+  const checkPeriods = (contract, start, end, what) => {
+    const { start_date: contract_start, end_date: contract_end } = contract;
+    let startDate = moment(new Date(contract_start), 'MM-DD-YYYY');
+    const endDate = moment(new Date(contract_end), 'MM-DD-YYYY');
+
+    let targetStartDate = moment(start, 'MM-DD-YYYY');
+    const targetEndDate = moment(end, 'MM-DD-YYYY');
+    let flag = false;
+    const PeriodShouldBeworked = [];
+    while (targetStartDate.isSameOrBefore(targetEndDate)) {
+
+      if (targetStartDate.isBetween(startDate, endDate, null, '[]')) {
+        flag = true;
+        PeriodShouldBeworked.push(targetStartDate.format('MM-DD-YYYY'));
+      }
+      targetStartDate = targetStartDate.add(1, 'days');
+    }
+    if (what) {
+      return PeriodShouldBeworked
+    } else {
+      return flag;
+    }
   }
   const getPaymentData = (_assignedEmployees, Hours, workContracts, year, month, periods, payType = 1) => {
     month++;
@@ -179,16 +252,7 @@ const PayrollManagement = () => {
     const _listItems = _assignedEmployees.filter(({ contract }) =>
       Object(contract).hasOwnProperty("status") && contract.status === "active" &&
       (
-        (
-          dateValue(contract.start_date) <= dateValue(start_date) &&
-          dateValue(contract.end_date) >= dateValue(end_date)
-        )
-        ||
-        (
-          dateValue(contract.start_date) > dateValue(start_date) &&
-          dateValue(contract.start_date) < dateValue(end_date) &&
-          dateValue(contract.end_date) >= dateValue(end_date)
-        )
+        checkPeriods(contract, start_date, end_date, 0)
       )
     )
     _listItems.map((obj, index) => {
@@ -202,7 +266,7 @@ const PayrollManagement = () => {
         obj.thursday_hr = obj.thursday ? getHours(obj.thursday) : 0;
         obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
         obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
-
+        obj.workDays = checkPeriods(assignedContract, start_date, end_date, 1)
 
         let currentDate = moment(start_date);
 
@@ -215,45 +279,54 @@ const PayrollManagement = () => {
           const month = currentDate.month();
           const dataIndex = `-day-${year}_${month + 1}_${day}`;
           const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
+          const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
+
           switch (_day) {
             case 0:
               obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr;
               obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr) - obj.sunday_hr
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.sunday_hr);
+
+
               break;
 
             case 1:
               obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr;
               obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr) - obj.monday_hr
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.monday_hr);
 
               break;
 
             case 2:
               obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr;
-
               obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr) - obj.tuesday_hr
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.tuesday_hr);
+
 
               break;
 
             case 3:
               obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr;
               obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr) - obj.wednesday_hr
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.wednesday_hr);
 
               break;
 
             case 4:
               obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr;
               obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr) - obj.thursday_hr
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.thursday_hr);
 
               break;
             case 5:
               obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr;
               obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr) - obj.friday_hr
-
-
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.friday_hr);
               break;
             case 6:
               obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr;
               obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr) - obj.saturday_hr
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.saturday_hr);
 
               break;
 
@@ -262,60 +335,22 @@ const PayrollManagement = () => {
           }
           currentDate = currentDate.add(1, 'days');
         };
-        obj.hrs_bi = assignedContract.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : getServiceHours(obj);
-        obj.week_pay = mathCeil(obj.hrs_bi * obj.sal_hr)
-        obj.adjustment = calcAdjustment(obj);
-        obj.adjust = calcAdjustment(obj) * obj.sal_hr;
+        obj.sal_hr = assignedContract.sal_hr || 0;
+
+        obj.hrs_bi = getServiceHours(obj);
+        obj.week_pay = mathCeil(obj.hrs_bi * assignedContract.sal_hr || 0)
+        obj.adjustment = calcAdjustment(obj) || 0;
+        obj.adjust = obj.adjustment * obj.sal_hr;
         obj.salary = parseFloat(obj.adjust) + parseFloat(obj.week_pay);
-        obj.transferencia = assignedContract.type === 1 ? obj.salary : obj.salary * 0.89;
       }
     });
-
-    _assignedEmployees.map(obj => {
-      const { contract: assignedContract } = obj;
-      assignedContracts.push(assignedContract);
-    })
-    const filteredWorkContracts = workContracts.filter(obj =>
-      obj.status === "active" &&
-      (
-        (
-          dateValue(obj.start_date) <= dateValue(start_date) &&
-          dateValue(obj.end_date) >= dateValue(end_date)
-        )
-        ||
-        (
-          dateValue(obj.start_date) > dateValue(start_date) &&
-          dateValue(obj.start_date) < dateValue(end_date) &&
-          dateValue(obj.end_date) >= dateValue(end_date)
-        )
-      )
-    )
-    workContracts.map(obj => {
-      obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-      obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-    })
-
-    filteredWorkContracts.map(contract => {
-      const item = assignedContracts.filter(obj => (Object(obj).hasOwnProperty('_id') && obj._id === contract._id));
-      if (!item.length) {
-        contract.employee = contract.parent_id
-        contract.contract = { type: contract.type };
-        contract.adjustment = 0;
-        contract.adjust = 0;
-        contract.salary = contract.week_pay;
-        contract.transferencia = contract.type === 1 ? (contract.salary) : contract.salary * 0.89
-        unassignedContracts.push(contract)
-      }
-    })
-
-
-
+    console.log(_listItems, '_listItems',);
 
     let calValue = 0;
-    [..._listItems, ...unassignedContracts].map(obj => {
+    [..._listItems].map(obj => {
       const { contract } = obj;
       if (contract.type === payType) {
-        calValue += (parseFloat(obj.week_pay))
+        calValue += (parseFloat(obj.salary))
       }
     })
     return calValue;
@@ -332,7 +367,7 @@ const PayrollManagement = () => {
   const getServiceHours = (record) => {
     var hours = 0;
     for (var key in record) {
-      if (key.includes('-day-')) {
+      if (key.includes('services-day-')) {
         hours += record[key];
       }
     }
