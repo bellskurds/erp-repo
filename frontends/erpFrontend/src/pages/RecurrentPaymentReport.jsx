@@ -691,39 +691,6 @@ const RecurrentPaymentReport = () => {
         obj.net_salary = assignedContract.type === 1 ? (obj.gross_salary * 0.89).toFixed(2) : obj.gross_salary;
       });
 
-      assignedEmployees.map(obj => {
-        const { contract: assignedContract } = obj;
-        assignedContracts.push(assignedContract);
-      })
-      const filteredWorkContracts = workContracts.filter(obj =>
-        obj.status === "active" &&
-        (
-          (
-            dateValue(obj.start_date) <= dateValue(start_date) &&
-            dateValue(obj.end_date) >= dateValue(end_date)
-          )
-          ||
-          (
-            dateValue(obj.start_date) > dateValue(start_date) &&
-            dateValue(obj.start_date) < dateValue(end_date) &&
-            dateValue(obj.end_date) >= dateValue(end_date)
-          )
-        )
-      )
-      filteredWorkContracts.map(contract => {
-        const item = assignedContracts.filter(obj => (Object(obj).hasOwnProperty('_id') && obj._id === contract._id));
-        if (!item.length) {
-          contract.employee = contract.parent_id
-          delete contract.parent_id
-          contract.contract = { type: contract.type };
-          contract.adjustment = 0;
-          contract.adjust = 0;
-          contract.salary = contract.week_pay;
-          contract.transferencia = contract.type === 1 ? contract.salary : contract.salary * 0.89
-          unassignedContracts.push(contract)
-        }
-      })
-
       const allDatas = [..._listItems];
       allDatas.map((data, index) => {
         const { employee } = data;
