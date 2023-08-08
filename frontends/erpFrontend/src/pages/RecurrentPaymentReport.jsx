@@ -320,16 +320,11 @@ const RecurrentPaymentReport = () => {
       children: [
         {
           title: "Vac. A.",
-          render: (_, record) => {
-            const { gross_salary, contract } = record;
-            if (contract.type <= 2) {
-              return (gross_salary / 11).toFixed(2)
-            } else {
-              return 0
-            }
-          }
+          dataIndex: "vac_bonus",
         }, {
-          title: "DTM A."
+          title: "DTM A.",
+          dataIndex: "dtm_bonus",
+
         }
       ]
     }
@@ -489,7 +484,12 @@ const RecurrentPaymentReport = () => {
       const { result: workContracts } = await request.list({ entity: "workContract" })
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" });
       const { result: bankDetails } = await request.list({ entity: "bankAccount" });
+      const { result: vacBonus } = await request.list({ entity: 'vacHistory' });
+      console.log(vacBonus, 'vacBonus');
 
+      vacBonus.map(data => {
+        data['paidPeriods'] = JSON.parse(data['paidPeriods'])
+      })
       workContracts.map(obj => {
         obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
         obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
@@ -627,6 +627,21 @@ const RecurrentPaymentReport = () => {
         obj.deductions = (obj.gross_salary - obj.salary).toFixed(2);
         obj.gross_salary = (obj.salary || 0).toFixed(2);
         obj.net_salary = assignedContract.type === 1 ? (obj.gross_salary * 0.89).toFixed(2) : obj.gross_salary;
+        obj.vac_bonus = assignedContract.type === (1) || assignedContract.type === (2) ? ((obj.salary / 11).toFixed(2)) : 0;
+        obj.dtm_bonus = assignedContract.type === (1) || assignedContract.type === (2) ? (obj.salary / 12).toFixed(2) : 0;
+
+        vacBonus.map(bonus => {
+          const { contract_id, paidPeriods } = bonus;
+          if (contract_id === assignedContract._id) {
+            paidPeriods.map(paidPaid => {
+              if (paidPaid.periods === `${moment(start_date).format('MM/DD/YYYY')}- ${moment(end_date).format('MM/DD/YYYY')}`) {
+                obj.vac_bonus = (parseFloat(obj.vac_bonus) - paidPaid.payment).toFixed(2)
+              }
+            })
+            console.log(paidPeriods, 'paidPeriods', contract_id, assignedContract._id, moment(end_date).format('MM/DD/YYYY'))
+          }
+        })
+
       });
 
       const allDatas = [..._listItems];
@@ -642,7 +657,7 @@ const RecurrentPaymentReport = () => {
         })
       });
 
-
+      console.log(allDatas, 'allDatas');
       const restedLists = JSON.parse(JSON.stringify(_listItems));
       const restedAGroupedLists = JSON.parse(JSON.stringify(groupedContracts));
       restedAGroupedLists.map((list, index) => {

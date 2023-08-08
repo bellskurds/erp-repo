@@ -47,6 +47,7 @@ const companyController = require('@/controllers/erpControllers/companyControlle
 const positionController = require('@/controllers/erpControllers/positionController');
 const routesController = require('@/controllers/erpControllers/routesController');
 const replacementController = require('@/controllers/erpControllers/replacementController');
+const vacHistoryController = require('@/controllers/erpControllers/vacHistoryController');
 
 const baseFilePath = 'public/uploads/admin/'
 // //_______________________________ Admin management_______________________________
@@ -434,6 +435,18 @@ router.route('/bankAccount/search').get(catchErrors(bankAccountController.search
 router.route('/bankAccount/list').get(catchErrors(bankAccountController.list));
 router.route('/bankAccount/filter').get(catchErrors(bankAccountController.filter));
 router.route('/bankAccount/byParentId').post(catchErrors(bankAccountController.getByParentId));
+
+
+
+// //____________________________________________ API for Bank Account of Employee _________________
+router.route('/vacHistory/create').post(catchErrors(vacHistoryController.create));
+router.route('/vacHistory/read/:id').get(catchErrors(vacHistoryController.read));
+router.route('/vacHistory/update/:id').patch(catchErrors(vacHistoryController.update));
+router.route('/vacHistory/delete/:id').delete(catchErrors(vacHistoryController.delete));
+router.route('/vacHistory/search').get(catchErrors(vacHistoryController.search));
+router.route('/vacHistory/list').get(catchErrors(vacHistoryController.list));
+router.route('/vacHistory/filter').get(catchErrors(vacHistoryController.filter));
+router.route('/vacHistory/byParentId').post(catchErrors(vacHistoryController.getByParentId));
 
 
 

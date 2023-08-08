@@ -12,11 +12,20 @@ const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth)
 const Contract = (props) => {
     const entity = 'workContract';
     const dispatch = useDispatch();
+    const Auth = JSON.parse(localStorage.getItem('auth'));
+
     const currentEmployeeId = props.parentId
     const [isBankModal, setIsBankModal] = useState(false);
+    const [isVacation, setIsVacation] = useState(false);
     const formRef = useRef(null);
     const [salMonthly, setSalMonthly] = useState();
     const [positionData, setPositionData] = useState();
+    const [allHours, setAllHours] = useState();
+    const [paymentHistoryData, setPaymentHistoryData] = useState([]);
+    const [totalAmountOfCurrentContract, setTotalAmountOfCurrentContract] = useState();
+    const [currentContractId, setCurrentContractId] = useState();
+    const [storedHistory, setStoredHistory] = useState()
+    const [allUsers, setAllUsers] = useState()
     const contractTypes = [
         {
             value: 1,
@@ -97,64 +106,369 @@ const Contract = (props) => {
             },
         },
     ];
+
+    const vacColumns = [
+        {
+            title: "Period",
+            dataIndex: 'period'
+        }, {
+            title: 'Gross Salary',
+            dataIndex: 'gross_salary'
+        }, {
+            title: "Amount",
+            dataIndex: 'amount',
+        }, {
+            title: "Payment",
+            dataIndex: 'payment'
+        }, {
+            title: "Pending",
+            dataIndex: 'pending'
+        }
+    ];
+    const paymentHistory = [
+        {
+            title: "Date",
+            dataIndex: 'date'
+        }, {
+            title: "Comment",
+            dataIndex: 'comment'
+        }, {
+            title: "By",
+            dataIndex: 'by'
+        }
+    ]
     const [currentId, setCurrentId] = useState('');
     const [isUpdate, setIsUpdate] = useState(false);
     const [contracts, setContracts] = useState([]);
     const [contractType, setContractType] = useState();
+    const [vacItems, setVacItems] = useState()
     const formattedDateFunc = (date) => {
         return new Date(date).toLocaleDateString()
     }
+    const checkPeriods = (data, start, end) => {
+        const { from: contract_start, to: contract_end } = data;
+        let startDate = moment(new Date(contract_start), 'MM-DD-YYYY');
+        const endDate = moment(new Date(contract_end), 'MM-DD-YYYY');
+
+        let targetStartDate = moment(start, 'MM-DD-YYYY');
+        const targetEndDate = moment(end, 'MM-DD-YYYY');
+        let flag = false;
+        while (targetStartDate.isSameOrBefore(targetEndDate)) {
+
+            if (targetStartDate.isBetween(startDate, endDate, null, '[]')) {
+                flag = true;
+            }
+            targetStartDate = targetStartDate.add(1, 'days');
+        }
+
+        return flag;
+        // console.log(startDate.isSameOrBefore(targetStartDate) && endDate.isSameOrAfter(targetEndDate), 'status')
+
+    }
+    const checkContractPeriods = (contract, start, end, what) => {
+        const { start_date: contract_start, end_date: contract_end } = contract;
+        let startDate = moment(new Date(contract_start), 'MM-DD-YYYY');
+        const endDate = moment(new Date(contract_end), 'MM-DD-YYYY');
+
+        let targetStartDate = moment(start, 'MM-DD-YYYY');
+        const targetEndDate = moment(end, 'MM-DD-YYYY');
+        let flag = false;
+        const PeriodShouldBeworked = [];
+        while (targetStartDate.isSameOrBefore(targetEndDate)) {
+
+            if (targetStartDate.isBetween(startDate, endDate, null, '[]')) {
+                flag = true;
+                PeriodShouldBeworked.push(targetStartDate.format('MM-DD-YYYY'));
+            }
+            targetStartDate = targetStartDate.add(1, 'days');
+        }
+        if (what) {
+            return PeriodShouldBeworked
+        } else {
+            return flag;
+        }
+        // console.log(startDate.isSameOrBefore(targetStartDate) && endDate.isSameOrAfter(targetEndDate), 'status')
+
+    }
+    const getHours = (dates) => {
+        const hours = dates.map(date => moment(date).hour());
+        const maxHour = Math.max(...hours);
+        const minHour = Math.min(...hours);
+        const difference = maxHour - minHour;
+        return (difference)
+    }
+    const getCellValue = (hours, date, record, origin_value) => {
+
+        const { workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = record;
+        if (contract) {
+
+            let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
+            let positionEnd = contract.type === 3 ? moment(new Date(viaticum_end_date), 'MM-DD-YYYY') : moment(new Date(end_date), 'MM-DD-YYYY');
+
+
+            let startWorkDay = positionStart || moment(workDays[0], 'MM-DD-YYYY');
+            let endWorkDay = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
+            startWorkDay = startWorkDay.subtract(1, 'day')
+            const targetDay = moment(new Date(date), 'MM-DD-YYYY');
+
+            if (contract.type === 3) {
+
+                console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
+            }
+            if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
+                return origin_value;
+            } else {
+                return 0;
+            }
+        }
+    }
+    const changedCellValue = (hours, date, record, origin_value) => {
+
+        const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id }, workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = record;
+        if (contract) {
+
+            let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
+            let positionEnd = contract.type === 3 ? moment(new Date(viaticum_end_date), 'MM-DD-YYYY') : moment(new Date(end_date), 'MM-DD-YYYY');
+
+
+            let startWorkDay = positionStart || moment(workDays[0], 'MM-DD-YYYY');
+            let endWorkDay = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
+            startWorkDay = startWorkDay.subtract(1, 'day')
+            const targetDay = moment(new Date(date), 'MM-DD-YYYY');
+
+            if (contract.type === 3) {
+
+                console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
+            }
+            if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
+                const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
+
+                if (item) {
+                    return item.hour
+                } else {
+                    return false;
+                }
+            } else {
+                return 0;
+            }
+        }
+
+    }
+    const getServiceHours = (record) => {
+        var hours = 0;
+        for (var key in record) {
+            if (key.includes('services-day-')) {
+                hours += record[key];
+            }
+        }
+        return hours;
+    }
+    const mathCeil = (value) => {
+        return value.toFixed(2)
+    }
+    const calcAdjustment = (record) => {
+        var adjust = 0;
+        for (var key in record) {
+            if (key.includes('_day-')) {
+                adjust += record[key];
+            }
+        }
+        return adjust;
+    }
+    const getGrossSalary = (from, to, contract_id) => {
+        if (positionData) {
+
+            let restedData = JSON.parse(JSON.stringify(positionData))
+            const filteredPositions = restedData.filter(position => position.contract._id === contract_id && (
+                checkContractPeriods(position.contract, from, to, 0)
+            )
+            )
+            filteredPositions.map((obj, index) => {
+                const { contract: assignedContract } = obj;
+                obj.sunday_hr = obj.sunday ? getHours(obj.sunday) : 0;
+                obj.monday_hr = obj.monday ? getHours(obj.monday) : 0;
+                obj.tuesday_hr = obj.tuesday ? getHours(obj.tuesday) : 0;
+                obj.wednesday_hr = obj.wednesday ? getHours(obj.wednesday) : 0;
+                obj.thursday_hr = obj.thursday ? getHours(obj.thursday) : 0;
+                obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
+                obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
+                obj.workDays = checkContractPeriods(assignedContract, from, to, 1)
+                let currentDate = moment(new Date(from));
+                const end = moment(new Date(to));
+
+                while (currentDate.isSameOrBefore(end)) {
+                    const day = currentDate.date();
+                    const _day = currentDate.day();
+                    const year = currentDate.year();
+                    const month = currentDate.month();
+                    const dataIndex = `-day-${year}_${month + 1}_${day}`;
+
+                    const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
+                    const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
+                    switch (_day) {
+                        case 0:
+                            obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.sunday_hr);
+
+                            obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr) - obj.sunday_hr
+                            break;
+
+                        case 1:
+                            obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr) - obj.monday_hr;
+                            obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.monday_hr);
+
+                            break;
+
+                        case 2:
+
+                            obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr) - obj.tuesday_hr
+                            obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.tuesday_hr);
+                            break;
+
+                        case 3:
+                            obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr) - obj.wednesday_hr
+                            obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.wednesday_hr);
+                            break;
+
+                        case 4:
+                            obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr) - obj.thursday_hr
+                            obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.thursday_hr);
+                            break;
+                        case 5:
+                            obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr) - obj.friday_hr
+
+                            obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.friday_hr);
+                            break;
+                        case 6:
+                            obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr) - obj.saturday_hr
+                            obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.saturday_hr);
+                            break;
+
+                        default:
+                            break;
+                    }
+                    currentDate = currentDate.add(1, 'days');
+                };
+                obj.hr_week = assignedContract.hr_week;
+                obj.sal_hr = assignedContract.sal_hr;
+                obj.hrs_bi = getServiceHours(obj);
+                obj.week_pay =
+                    (assignedContract && assignedContract.type) ?
+                        (
+                            assignedContract.type === 3 ?
+                                assignedContract.sal_monthly / 2
+                                :
+                                mathCeil(obj.hrs_bi * assignedContract.sal_hr || 0)
+                        )
+
+                        : mathCeil(obj.hrs_bi * obj.sal_hr)
+                obj.adjustment = calcAdjustment(obj);
+                obj.adjust =
+
+                    assignedContract.type === 3 ?
+                        ((obj.adjustment / obj.hrs_bi) * obj.week_pay).toFixed(2)
+                        : (calcAdjustment(obj) * obj.sal_hr || 0).toFixed(2);
+
+
+                obj.salary = ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
+            });
+            let totalSalary = 0;
+            JSON.parse(JSON.stringify(filteredPositions)).map(item => {
+                totalSalary += parseFloat(item.salary);
+            })
+            return totalSalary.toFixed(2) || 0;
+
+        }
+    }
+    const getPeriods = (month, year, Q = 0) => {
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const prevMonth = new Date(year, month, 0);
+        const daysInPrevMonth = new Date(prevMonth.getFullYear(), prevMonth.getMonth(), 0).getDate();
+
+        if (daysInPrevMonth === 31) {
+            const Qs = ['31-15', `16-${daysInMonth === 31 ? 30 : daysInMonth}`];
+            return Qs[Q];
+        } else if (daysInMonth) {
+            const Qs = ['1-15', `16-${daysInMonth === 31 ? 30 : daysInMonth}`];
+            return Qs[Q];
+
+        }
+    }
+
     const vacModal = (record) => {
-        console.log(record, 'record');
         let { _id: contract_id, start_date, end_date } = record;
+        setCurrentContractId(contract_id);
 
-        start_date = '7/31/2023';
-        end_date = '9/29/2023';
-        console.log(start_date, end_date, 'start_date, end_date');
+
         let startDate = moment(`${start_date.split('/')[0]}/${start_date.split('/')[2]}`, 'MM/YYYY');
-        const endDate = moment(`${end_date.split('/')[0]}/${end_date.split('/')[2]}`, 'MM/YYYY');
+        let endDate = moment(`${end_date.split('/')[0]}/${end_date.split('/')[2]}`, 'MM/YYYY');
         const periods = [];
+
+        endDate = endDate.add(1, 'months')
         while (startDate.isSameOrBefore(endDate)) {
-            const p1 = `1-${Math.floor(startDate.daysInMonth() / 2)}`;
-            const p2 = `${startDate.daysInMonth() === (28, 30) ? Math.round(startDate.daysInMonth() / 2) + 1 : Math.round(startDate.daysInMonth() / 2)}-${startDate.daysInMonth()}`;
+            const p1 = getPeriods(startDate.month(), startDate.year(), 0);
+            const p2 = getPeriods(startDate.month(), startDate.year(), 1);
 
-            if (new Date(start_date).getMonth() === startDate.month() && new Date(start_date).getDate() > 15) {
-                periods.push({
-                    period: p2,
-                    date: startDate.format('MM/YYYY'),
-                    q: 2,
-                })
+
+            console.log(p1, p2, ';p1,p2', startDate.format('MM/DD/YYYY'), parseInt(p1.split('-')[0]) === 31 ? startDate.month() - 1 : startDate.month(), startDate.month());
+            const first = {
+                period: `${startDate.format("MMM")} Q1`,
+                from: moment(new Date(startDate.year(), parseInt(p1.split('-')[0]) === 31 ? startDate.month() - 1 : startDate.month(), p1.split('-')[0])).format("MM/DD/YYYY"),
+                to: moment(new Date(startDate.year(), startDate.month(), p1.split('-')[1])).format("MM/DD/YYYY"),
+                q: 1,
+                payment: 0,
+            };
+            const second = {
+                period: `${startDate.format("MMM")} Q2`,
+                from: moment(new Date(startDate.year(), parseInt(p2.split('-')[0]) === 31 ? startDate.month() - 1 : startDate.month(), p2.split('-')[0])).format("MM/DD/YYYY"),
+                to: moment(new Date(startDate.year(), startDate.month(), p2.split('-')[1])).format("MM/DD/YYYY"),
+                q: 2,
+                payment: 0,
             }
-            else if (new Date(end_date).getMonth() === startDate.month() && new Date(end_date).getDate() < 31) {
-                periods.push({
-                    period: p1,
-                    date: startDate.format('MM/YYYY'),
-                    q: 1,
 
-                })
+            if (checkPeriods(first, start_date, end_date)) {
+                periods.push(first)
             }
-            else {
-
-                periods.push({
-                    period: p1,
-                    date: startDate.format('MM/YYYY'),
-                    q: 1
-                }, {
-                    period: p2,
-                    date: startDate.format('MM/YYYY'),
-                    q: 2
-                })
+            if (checkPeriods(second, start_date, end_date)) {
+                periods.push(second)
             }
             startDate = startDate.add(1, 'months')
         }
 
+        let totalAmount = 0;
+
+        console.log(allUsers, 'allUsers');
+        const filteredHistory = storedHistory.filter(data => data.employee === currentEmployeeId && data.contract_id === contract_id)
+        JSON.parse(JSON.stringify(filteredHistory)).map((data, index) => {
+            let { paidPeriods } = data;
+            data['key'] = index;
+            data['by'] = allUsers.find(user => user._id === data['by']) ? allUsers.find(user => user._id === data['by']).name : ''
+            paidPeriods = JSON.parse(paidPeriods);
+            periods.map(period => {
+                paidPeriods.map(paidPeriod => {
+                    if (`${period.from}- ${period.to}` === paidPeriod.periods) {
+                        period.payment += paidPeriod.payment
+                    }
+                })
+            })
+        });
+        periods.map((data, index) => {
+            data['key'] = index;
+            data['gross_salary'] = getGrossSalary(data['from'], data['to'], contract_id)
+            data['amount'] = parseFloat(data.gross_salary / 11).toFixed(2);
+            data['pending'] = data['amount'] - data['payment']
+            totalAmount += data['pending']
+        })
+        filteredHistory.map((data, index) => {
+            data['key'] = index
+        })
+        console.log(filteredHistory, 'filteredHistory');
+        setPaymentHistoryData(filteredHistory)
+
+        setTotalAmountOfCurrentContract(parseFloat(totalAmount.toFixed(2)));
+        setIsVacation(true);
+        setVacItems(periods)
         console.log(periods, 'periods');
-        if (positionData) {
-            const filteredPositions = positionData.filter(position => position.contract && position.contract._id === contract_id)
 
-            // console.log(filteredPositions, 'filteredPositions');
-
-        }
     }
     const checkCancelStatus = (record) => {
         if (positionData && record) {
@@ -196,6 +510,7 @@ const Contract = (props) => {
     }
     const editItem = (item) => {
         if (item) {
+            item = JSON.parse(JSON.stringify(item))
             setContractType(item.type);
             setHourWeek(item.hr_week);
             setSalaryHour(item.sal_hr);
@@ -210,17 +525,6 @@ const Contract = (props) => {
             }, 500);
 
         }
-    }
-    const deleteItem = (item) => {
-        const id = item._id;
-
-
-        const jsonData = { parent_id: currentEmployeeId }
-        console.log(id, 'idididi')
-        dispatch(crud.delete({ entity, id }))
-        setTimeout(() => {
-            dispatch(crud.listByContract({ entity, jsonData }));
-        }, 500)
     }
     const handleBankModal = () => {
         setIsBankModal(false)
@@ -238,7 +542,6 @@ const Contract = (props) => {
     const saveDetails = (values) => {
         values['start_date'] = formatDate(values['start_date']);
         values['end_date'] = formatDate(values['end_date']);
-        console.log(values, '333343434')
         const parentId = currentEmployeeId;
         if (currentId && parentId && isUpdate) {
             const id = currentId;
@@ -271,7 +574,14 @@ const Contract = (props) => {
         dispatch(crud.listByContract({ entity, jsonData }));
         const init = async () => {
             const { result } = await request.listById({ entity: "assignedEmployee", jsonData: { employee: id } });
+            const { result: allHours } = await request.list({ entity: 'payroll' });
+            const { result: paymentHistory } = await request.list({ entity: 'vacHistory' });
+            const { result: userData } = await request.list({ entity: "Admin" });
+
+            setAllHours(allHours)
             setPositionData(result);
+            setStoredHistory(paymentHistory)
+            setAllUsers(userData);
         }
         init();
     }, []);
@@ -314,6 +624,98 @@ const Contract = (props) => {
     useEffect(() => {
 
     }, [contractType])
+    const handleVac = () => {
+        setIsVacation(false)
+    }
+
+    useEffect(() => {
+
+        let totalAmount = 0;
+        if (vacItems) {
+            vacItems.map(data => {
+                totalAmount += parseFloat(data['pending']);
+            });
+
+            console.log(totalAmount, 'totalAmount')
+            setTotalAmountOfCurrentContract(totalAmount)
+        }
+
+    }, [vacItems])
+    const payVacation = (values) => {
+        const newData = JSON.parse(JSON.stringify(vacItems)).sort((a, b) => b.key - a.key);
+        let { paymentAmount } = values;
+        let commentAmount = paymentAmount
+        paymentAmount = parseFloat(paymentAmount)
+        var totalAmount = totalAmountOfCurrentContract;
+
+        let paidPeriods = [];
+        newData.map(data => {
+            let { pending } = data;
+            pending = parseFloat(pending);
+            if (pending > paymentAmount) {
+                data['payment'] += paymentAmount;
+                data['pending'] = (pending - paymentAmount).toFixed(2);
+                paidPeriods.push({
+                    payment: paymentAmount,
+                    periods: `${data['from']}- ${data['to']}`
+                })
+                paymentAmount = 0;
+            } else if (pending < paymentAmount) {
+                data['payment'] += pending;
+                data['pending'] = 0;
+                paymentAmount = paymentAmount - pending;
+                paidPeriods.push({
+                    payment: pending,
+                    periods: `${data['from']}- ${data['to']}`
+                })
+            } else if (pending === paymentAmount) {
+                data['payment'] += pending;
+                data['pending'] = 0;
+                paymentAmount = paymentAmount - pending;
+
+                paidPeriods.push({
+                    payment: pending,
+                    periods: `${data['from']}- ${data['to']}`
+                })
+            }
+        });
+        const sortedNewData = newData.sort((a, b) => a.key - b.key)
+        console.log(paidPeriods);
+
+        const newHistory = {
+            date: moment().format("MM/DD/YY H:mm"),
+            comment: `Vacations executed for $${commentAmount}`,
+            by: Auth.name,
+            key: paymentHistoryData.length + 1,
+            paidPeriods: JSON.stringify(paidPeriods),
+            contract_id: currentContractId,
+            employee: currentEmployeeId
+        }
+        const saveHistory = {
+            date: moment().format("MM/DD/YY H:mm"),
+            comment: `Vacations executed for $${commentAmount}`,
+            by: Auth.id,
+            key: paymentHistoryData.length + 1,
+            paidPeriods: JSON.stringify(paidPeriods),
+            contract_id: currentContractId,
+            employee: currentEmployeeId
+        }
+        dispatch(crud.create({ entity: "vacHistory", jsonData: saveHistory }))
+
+
+        paymentHistoryData.push(newHistory)
+        setPaymentHistoryData([...paymentHistoryData])
+        setVacItems(sortedNewData)
+
+
+    }
+
+    useEffect(() => {
+
+        console.log(dispatch);
+    }, [
+        dispatch
+    ])
     return (
 
         <div className="whiteBox shadow">
@@ -479,8 +881,45 @@ const Contract = (props) => {
                 <>
                 </>
             </Modal>
-            <Modal title="Accumulated Vacations">
+            <Modal title="Accumulated Vacations" visible={isVacation} onCancel={handleVac} footer={null} width={800}>
+                <Table
+                    bordered
+                    dataSource={vacItems || []}
+                    columns={vacColumns}
+                />
+                <Row >
+                    <Form
+                        onFinish={payVacation}
+                    >
+                        <Form.Item
+                            name={"paymentAmount"}
+                            label="Amount to pay"
+                            rules={[
+                                {
+                                    required: true,
+                                    validator: (_, value) => {
+                                        if (value > totalAmountOfCurrentContract) {
+                                            return Promise.reject("Value must be less that  total ")
+                                        }
+                                        return Promise.resolve();
+                                    }
+                                },
+                            ]}
+                        >
 
+                            <Input placeholder="Amount to pay" />
+                        </Form.Item>
+
+                        <Col span={16}>
+                            <Button type="primary" htmlType="submit" >Pay Vacation</Button>
+                        </Col>
+                    </Form>
+                </Row>
+                <Table
+                    bordered
+                    dataSource={paymentHistoryData}
+                    columns={paymentHistory}
+                />
             </Modal>
             <Row>
                 <Col span={5}>
