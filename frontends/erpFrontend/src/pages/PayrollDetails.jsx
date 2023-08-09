@@ -829,12 +829,32 @@ const PayrollDetails = () => {
       _listItems.map(data => {
         if (!data.position) data.position = ''
       })
+
+      unAssingedEmployees.map((obj, index) => {
+        obj.sunday_hr = obj.sunday ? getHours(obj.sunday) : 0;
+        obj.monday_hr = obj.monday ? getHours(obj.monday) : 0;
+        obj.tuesday_hr = obj.tuesday ? getHours(obj.tuesday) : 0;
+        obj.wednesday_hr = obj.wednesday ? getHours(obj.wednesday) : 0;
+        obj.thursday_hr = obj.thursday ? getHours(obj.thursday) : 0;
+        obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
+        obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
+
+
+        obj.hrs_bi = getServiceHours(obj);
+        obj.week_pay = mathCeil(obj.hrs_bi * obj.sal_hr)
+        obj.adjustment = calcAdjustment(obj);
+        obj.adjust = (obj.adjustment * obj.sal_hr || 0).toFixed(2);
+
+
+        obj.salary = ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
+      });
+
       const sortedListItems = _listItems.sort((a, b) => b.position.localeCompare(a.position));
-      const allDatas = [...sortedListItems];
+      const allDatas = [...sortedListItems, ...unAssingedEmployees];
       allDatas.map((data, index) => data['key'] = index)
       // const sortedLists = allDatas.sort((a, b) => b.position.localeCompare(a.position));
 
-      console.log(allDatas, 'allDatas');
+      console.log(unAssingedEmployees, 'allDatas');
       setListItems([...allDatas]);
       setGlobalItems([...allDatas]);
 
