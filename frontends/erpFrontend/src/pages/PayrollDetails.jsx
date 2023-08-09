@@ -50,8 +50,6 @@ const EditableCell = ({
   const save = async () => {
     try {
       const values = await form.validateFields();
-
-      toggleEdit();
       if (handleSave_) {
         handleSave_({
           ...record,
@@ -113,7 +111,7 @@ const EditableCell = ({
 
   let childNode = children;
   if (editable) {
-    childNode = editing ? (
+    childNode = (
       <Form.Item
         style={{
           margin: 0,
@@ -122,19 +120,20 @@ const EditableCell = ({
       >
         <Input ref={inputRef} onKeyDown={handleKeyDown} onPressEnter={save} onBlur={save} />
       </Form.Item>
-    ) : (
-      <div
-        className="editable-cell-value-wrap"
-        style={{
-          paddingRight: 24,
-        }}
-        onClick={toggleEdit}
-      >
-        {children}
-      </div>
-    );
+    )
+    // : (
+    //   <div
+    //     className="editable-cell-value-wrap"
+    //     style={{
+    //       paddingRight: 24,
+    //     }}
+    //     onClick={toggleEdit}
+    //   >
+    //     {children}
+    //   </div>
+    // );
   }
-  return <td {...restProps} onDoubleClick={toggleEdit}>{childNode}</td>;
+  return <td {...restProps} >{childNode}</td>;
 };
 const contractTypes = [
   "",
@@ -1061,9 +1060,10 @@ const PayrollDetails = () => {
     jsonObj.start_date = start_date;
     jsonObj.end_date = end_date;
 
-    dispatch(crud.create({ entity: 'replacement', jsonData: jsonObj }));
-    setIsReplacement(false);
-    setChangeStatus(!changeStatus);
+    console.log(jsonObj, 'jsonObj', periodsData);
+    // dispatch(crud.create({ entity: 'replacement', jsonData: jsonObj }));
+    // setIsReplacement(false);
+    // setChangeStatus(!changeStatus);
   }
   return (
 
