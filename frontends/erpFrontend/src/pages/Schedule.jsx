@@ -23,49 +23,49 @@ const Schedule = (props) => {
             title: 'Monday',
             dataIndex: 'monday',
             render: (monday) => {
-                return monday ? `${moment(monday[0]).format("HH")} : ${moment(monday[1]).format("HH")}` : ''
+                return monday ? `${moment(monday[0]).format("HH:mm")} - ${moment(monday[1]).format("HH:mm")}` : ''
             }
         },
         {
             title: 'Tuesday',
             dataIndex: 'tuesday',
             render: (tuesday) => {
-                return tuesday ? `${moment(tuesday[0]).format("HH")} : ${moment(tuesday[1]).format("HH")}` : ''
+                return tuesday ? `${moment(tuesday[0]).format("HH:mm")} - ${moment(tuesday[1]).format("HH:mm")}` : ''
             }
         },
         {
             title: 'Wednesday',
             dataIndex: 'wednesday',
             render: (wednesday) => {
-                return wednesday ? `${moment(wednesday[0]).format("HH")} : ${moment(wednesday[1]).format("HH")}` : ''
+                return wednesday ? `${moment(wednesday[0]).format("HH:mm")} - ${moment(wednesday[1]).format("HH:mm")}` : ''
             }
         },
         {
             title: 'Tursday',
             dataIndex: 'thursday',
             render: (thursday) => {
-                return thursday ? `${moment(thursday[0]).format("HH")} : ${moment(thursday[1]).format("HH")}` : ''
+                return thursday ? `${moment(thursday[0]).format("HH:mm")} - ${moment(thursday[1]).format("HH:mm")}` : ''
             }
         },
         {
             title: 'Friday',
             dataIndex: 'friday',
             render: (friday) => {
-                return friday ? `${moment(friday[0]).format("HH")} : ${moment(friday[1]).format("HH")}` : ''
+                return friday ? `${moment(friday[0]).format("HH:mm")} - ${moment(friday[1]).format("HH:mm")}` : ''
             }
         },
         {
             title: 'Saturday',
             dataIndex: 'saturday',
             render: (saturday) => {
-                return saturday ? `${moment(saturday[0]).format("HH")} : ${moment(saturday[1]).format("HH")}` : ''
+                return saturday ? `${moment(saturday[0]).format("HH:mm")} - ${moment(saturday[1]).format("HH:mm")}` : ''
             }
         },
         {
             title: 'Sunday',
             dataIndex: 'sunday',
             render: (sunday) => {
-                return sunday ? `${moment(sunday[0]).format("HH")} : ${moment(sunday[1]).format("HH")}` : ''
+                return sunday ? `${moment(sunday[0]).format("HH:mm")} - ${moment(sunday[1]).format("HH:mm")}` : ''
             }
         },
     ];
