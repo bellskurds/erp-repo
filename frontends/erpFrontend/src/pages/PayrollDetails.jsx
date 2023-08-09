@@ -217,9 +217,9 @@ const PayrollDetails = () => {
 
     setCurrentHistory(cellItem)
     console.log(cellItem, current, 'cellItem')
-    if (item) {
+    if (item && item.contract._id) {
       const { workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = item;
-
+      console.log(contract);
       if (contract) {
 
         let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
@@ -499,10 +499,15 @@ const PayrollDetails = () => {
 
   }
   const changedCellItem = (hours, date, record) => {
-    const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id } } = record;
-    const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
-    if (item) {
-      return item
+
+    if (record.contract._id) {
+      const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id } } = record;
+      const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
+      if (contract_id && item) {
+        return item
+      } else {
+        return false;
+      }
     } else {
       return false;
     }
@@ -848,8 +853,20 @@ const PayrollDetails = () => {
         obj.salary = (obj.gross_salary).toFixed(2) || 0;
       });
 
+
+      workContracts.map(obj => {
+        obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+        obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+        obj.contract = { type: obj.type, flag: false }
+      })
+      const filterdWorkContract = workContracts.filter(contract => Object(contract).hasOwnProperty('status') && contract.status === "active" &&
+        (
+          checkPeriods(contract, start_date, end_date, 0)
+        ))
+
+
       const sortedListItems = _listItems.sort((a, b) => b.position.localeCompare(a.position));
-      const allDatas = [...sortedListItems, ...unAssingedEmployees];
+      const allDatas = [...sortedListItems, ...unAssingedEmployees, ...filterdWorkContract];
       allDatas.map((data, index) => data['key'] = index)
       // const sortedLists = allDatas.sort((a, b) => b.position.localeCompare(a.position));
 
