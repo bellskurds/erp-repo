@@ -375,7 +375,6 @@ const PayrollDetails = () => {
   }
 
 
-  const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
 
   const [listItems, setListItems] = useState([]);
   const formRef = useRef(null);

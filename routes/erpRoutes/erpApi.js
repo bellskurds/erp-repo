@@ -48,6 +48,7 @@ const positionController = require('@/controllers/erpControllers/positionControl
 const routesController = require('@/controllers/erpControllers/routesController');
 const replacementController = require('@/controllers/erpControllers/replacementController');
 const vacHistoryController = require('@/controllers/erpControllers/vacHistoryController');
+const dtmHistoryController = require('@/controllers/erpControllers/dtmHistoryController');
 
 const baseFilePath = 'public/uploads/admin/'
 // //_______________________________ Admin management_______________________________
@@ -447,6 +448,19 @@ router.route('/vacHistory/search').get(catchErrors(vacHistoryController.search))
 router.route('/vacHistory/list').get(catchErrors(vacHistoryController.list));
 router.route('/vacHistory/filter').get(catchErrors(vacHistoryController.filter));
 router.route('/vacHistory/byParentId').post(catchErrors(vacHistoryController.getByParentId));
+
+
+
+
+// //____________________________________________ API for Bank Account of Employee _________________
+router.route('/dtmHistory/create').post(catchErrors(dtmHistoryController.create));
+router.route('/dtmHistory/read/:id').get(catchErrors(dtmHistoryController.read));
+router.route('/dtmHistory/update/:id').patch(catchErrors(dtmHistoryController.update));
+router.route('/dtmHistory/delete/:id').delete(catchErrors(dtmHistoryController.delete));
+router.route('/dtmHistory/search').get(catchErrors(dtmHistoryController.search));
+router.route('/dtmHistory/list').get(catchErrors(dtmHistoryController.list));
+router.route('/dtmHistory/filter').get(catchErrors(dtmHistoryController.filter));
+router.route('/dtmHistory/byParentId').post(catchErrors(dtmHistoryController.getByParentId));
 
 
 

@@ -1,7 +1,7 @@
 import { crud } from "@/redux/crud/actions";
 import { selectFilteredItemsByParent, selectListItems, selectListsByContract, selectListsByEmergency, selectListsByMedical, selectReadItem } from "@/redux/crud/selectors";
 import { request } from "@/request";
-import { CheckOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, MoneyCollectOutlined, NumberOutlined } from "@ant-design/icons";
+import { CheckOutlined, CloseCircleOutlined, CreditCardOutlined, DeleteOutlined, EditOutlined, EyeOutlined, MoneyCollectOutlined, NumberOutlined } from "@ant-design/icons";
 import { Button, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Table, Tag, Typography } from "antd";
 import moment from "moment";
 import { useEffect, useRef, useState } from "react";
@@ -26,6 +26,10 @@ const Contract = (props) => {
     const [currentContractId, setCurrentContractId] = useState();
     const [storedHistory, setStoredHistory] = useState()
     const [allUsers, setAllUsers] = useState()
+    const [isDtm, setIsDtm] = useState(false)
+    const [dtmItems, setDtmItems] = useState([]);
+    const [dtmHistory, setDtmHistory] = useState([])
+    const [storedDtmHistory, setStoredDtmHistory] = useState([])
     const contractTypes = [
         {
             value: 1,
@@ -82,10 +86,14 @@ const Contract = (props) => {
                     role === 0 ?
                         <>
                             {record.type <= 2 &&
-
-                                <Typography.Link onClick={() => vacModal(record)}>
-                                    <MoneyCollectOutlined style={{ fontSize: "20px", paddingLeft: "5px" }} />
-                                </Typography.Link>
+                                <>
+                                    <Typography.Link onClick={() => dtmModal(record)}>
+                                        <CreditCardOutlined style={{ fontSize: "20px", paddingLeft: "5px" }} />
+                                    </Typography.Link>
+                                    <Typography.Link onClick={() => vacModal(record)}>
+                                        <MoneyCollectOutlined style={{ fontSize: "20px", paddingLeft: "5px" }} />
+                                    </Typography.Link>
+                                </>
                             }
                             <Typography.Link onClick={() => editItem(record)}>
                                 <EditOutlined style={{ fontSize: "20px", paddingLeft: "5px" }} />
@@ -134,7 +142,7 @@ const Contract = (props) => {
             dataIndex: 'comment'
         }, {
             title: "By",
-            dataIndex: 'by'
+            dataIndex: 'user'
         }
     ]
     const [currentId, setCurrentId] = useState('');
@@ -441,7 +449,6 @@ const Contract = (props) => {
         JSON.parse(JSON.stringify(filteredHistory)).map((data, index) => {
             let { paidPeriods } = data;
             data['key'] = index;
-            data['by'] = allUsers.find(user => user._id === data['by']) ? allUsers.find(user => user._id === data['by']).name : ''
             paidPeriods = JSON.parse(paidPeriods);
             periods.map(period => {
                 paidPeriods.map(paidPeriod => {
@@ -460,6 +467,8 @@ const Contract = (props) => {
         })
         filteredHistory.map((data, index) => {
             data['key'] = index
+            data['user'] = allUsers.find(user => user._id === data['by']) ? allUsers.find(user => user._id === data['by']).name : ''
+
         })
         console.log(filteredHistory, 'filteredHistory');
         setPaymentHistoryData(filteredHistory)
@@ -468,7 +477,82 @@ const Contract = (props) => {
         setIsVacation(true);
         setVacItems(periods)
         console.log(periods, 'periods');
+    }
+    const dtmModal = (record) => {
+        let { _id: contract_id, start_date, end_date } = record;
+        setCurrentContractId(contract_id);
 
+
+        let startDate = moment(`${start_date.split('/')[0]}/${start_date.split('/')[2]}`, 'MM/YYYY');
+        let endDate = moment(`${end_date.split('/')[0]}/${end_date.split('/')[2]}`, 'MM/YYYY');
+        const periods = [];
+
+        endDate = endDate.add(1, 'months')
+        while (startDate.isSameOrBefore(endDate)) {
+            const p1 = getPeriods(startDate.month(), startDate.year(), 0);
+            const p2 = getPeriods(startDate.month(), startDate.year(), 1);
+
+
+            console.log(p1, p2, ';p1,p2', startDate.format('MM/DD/YYYY'), parseInt(p1.split('-')[0]) === 31 ? startDate.month() - 1 : startDate.month(), startDate.month());
+            const first = {
+                period: `${startDate.format("MMM")} Q1`,
+                from: moment(new Date(startDate.year(), parseInt(p1.split('-')[0]) === 31 ? startDate.month() - 1 : startDate.month(), p1.split('-')[0])).format("MM/DD/YYYY"),
+                to: moment(new Date(startDate.year(), startDate.month(), p1.split('-')[1])).format("MM/DD/YYYY"),
+                q: 1,
+                payment: 0,
+            };
+            const second = {
+                period: `${startDate.format("MMM")} Q2`,
+                from: moment(new Date(startDate.year(), parseInt(p2.split('-')[0]) === 31 ? startDate.month() - 1 : startDate.month(), p2.split('-')[0])).format("MM/DD/YYYY"),
+                to: moment(new Date(startDate.year(), startDate.month(), p2.split('-')[1])).format("MM/DD/YYYY"),
+                q: 2,
+                payment: 0,
+            }
+
+            if (checkPeriods(first, start_date, end_date)) {
+                periods.push(first)
+            }
+            if (checkPeriods(second, start_date, end_date)) {
+                periods.push(second)
+            }
+            startDate = startDate.add(1, 'months')
+        }
+
+        let totalAmount = 0;
+
+        console.log(allUsers, 'allUsers');
+        const filteredHistory = storedDtmHistory.filter(data => data.employee === currentEmployeeId && data.contract_id === contract_id)
+        JSON.parse(JSON.stringify(filteredHistory)).map((data, index) => {
+            let { paidPeriods } = data;
+            data['key'] = index;
+            paidPeriods = JSON.parse(paidPeriods);
+            periods.map(period => {
+                paidPeriods.map(paidPeriod => {
+                    if (`${period.from}- ${period.to}` === paidPeriod.periods) {
+                        period.payment += paidPeriod.payment
+                    }
+                })
+            })
+        });
+        periods.map((data, index) => {
+            data['key'] = index;
+            data['gross_salary'] = getGrossSalary(data['from'], data['to'], contract_id)
+            data['amount'] = parseFloat(data.gross_salary / 12).toFixed(2);
+            data['pending'] = parseFloat((data['amount'] - data['payment']).toFixed(2))
+            totalAmount += data['pending']
+        })
+        filteredHistory.map((data, index) => {
+            data['key'] = index
+            data['user'] = allUsers.find(user => user._id === data['by']) ? allUsers.find(user => user._id === data['by']).name : ''
+
+        })
+        console.log(JSON.parse(JSON.stringify(filteredHistory)), 'filteredHistory');
+        setDtmHistory(filteredHistory)
+
+        setTotalAmountOfCurrentContract(parseFloat(totalAmount.toFixed(2)));
+        setIsDtm(true);
+        setDtmItems(periods)
+        console.log(periods, 'periods');
     }
     const checkCancelStatus = (record) => {
         if (positionData && record) {
@@ -576,12 +660,14 @@ const Contract = (props) => {
             const { result } = await request.listById({ entity: "assignedEmployee", jsonData: { employee: id } });
             const { result: allHours } = await request.list({ entity: 'payroll' });
             const { result: paymentHistory } = await request.list({ entity: 'vacHistory' });
+            const { result: dtmHistory } = await request.list({ entity: 'dtmHistory' });
             const { result: userData } = await request.list({ entity: "Admin" });
 
             setAllHours(allHours)
             setPositionData(result);
             setStoredHistory(paymentHistory)
             setAllUsers(userData);
+            setStoredDtmHistory(dtmHistory)
         }
         init();
     }, []);
@@ -627,6 +713,9 @@ const Contract = (props) => {
     const handleVac = () => {
         setIsVacation(false)
     }
+    const handleDtm = () => {
+        setIsDtm(false)
+    }
 
     useEffect(() => {
 
@@ -646,8 +735,6 @@ const Contract = (props) => {
         let { paymentAmount } = values;
         let commentAmount = paymentAmount
         paymentAmount = parseFloat(paymentAmount)
-        var totalAmount = totalAmountOfCurrentContract;
-
         let paidPeriods = [];
         newData.map(data => {
             let { pending } = data;
@@ -685,7 +772,7 @@ const Contract = (props) => {
         const newHistory = {
             date: moment().format("MM/DD/YY H:mm"),
             comment: `Vacations executed for $${commentAmount}`,
-            by: Auth.name,
+            user: Auth.name,
             key: paymentHistoryData.length + 1,
             paidPeriods: JSON.stringify(paidPeriods),
             contract_id: currentContractId,
@@ -706,6 +793,72 @@ const Contract = (props) => {
         paymentHistoryData.push(newHistory)
         setPaymentHistoryData([...paymentHistoryData])
         setVacItems(sortedNewData)
+
+
+    }
+    const payDtm = (values) => {
+        const newData = JSON.parse(JSON.stringify(dtmItems)).sort((a, b) => b.key - a.key);
+        let { paymentAmount } = values;
+        let commentAmount = paymentAmount
+        paymentAmount = parseFloat(paymentAmount)
+        let paidPeriods = [];
+        newData.map(data => {
+            let { pending } = data;
+            pending = parseFloat(pending);
+            if (pending > paymentAmount) {
+                data['payment'] += paymentAmount;
+                data['pending'] = (pending - paymentAmount).toFixed(2);
+                paidPeriods.push({
+                    payment: paymentAmount,
+                    periods: `${data['from']}- ${data['to']}`
+                })
+                paymentAmount = 0;
+            } else if (pending < paymentAmount) {
+                data['payment'] += pending;
+                data['pending'] = 0;
+                paymentAmount = paymentAmount - pending;
+                paidPeriods.push({
+                    payment: pending,
+                    periods: `${data['from']}- ${data['to']}`
+                })
+            } else if (pending === paymentAmount) {
+                data['payment'] += pending;
+                data['pending'] = 0;
+                paymentAmount = paymentAmount - pending;
+
+                paidPeriods.push({
+                    payment: pending,
+                    periods: `${data['from']}- ${data['to']}`
+                })
+            }
+        });
+        const sortedNewData = newData.sort((a, b) => a.key - b.key)
+        console.log(paidPeriods);
+
+        const newHistory = {
+            date: moment().format("MM/DD/YY H:mm"),
+            comment: `Vacations executed for $${commentAmount}`,
+            user: Auth.name,
+            key: dtmHistory.length + 1,
+            paidPeriods: JSON.stringify(paidPeriods),
+            contract_id: currentContractId,
+            employee: currentEmployeeId
+        }
+        const saveHistory = {
+            date: moment().format("MM/DD/YY H:mm"),
+            comment: `Vacations executed for $${commentAmount}`,
+            by: Auth.id,
+            key: dtmHistory.length + 1,
+            paidPeriods: JSON.stringify(paidPeriods),
+            contract_id: currentContractId,
+            employee: currentEmployeeId
+        }
+        dispatch(crud.create({ entity: "dtmHistory", jsonData: saveHistory }))
+
+
+        dtmHistory.push(newHistory)
+        setDtmHistory([...dtmHistory])
+        setDtmItems(sortedNewData)
 
 
     }
@@ -918,6 +1071,46 @@ const Contract = (props) => {
                 <Table
                     bordered
                     dataSource={paymentHistoryData}
+                    columns={paymentHistory}
+                />
+            </Modal>
+            <Modal title="Accumulated DTM" visible={isDtm} onCancel={handleDtm} footer={null} width={800}>
+                <Table
+                    bordered
+                    dataSource={dtmItems || []}
+                    columns={vacColumns}
+                />
+                <Row >
+                    <Form
+                        onFinish={payDtm}
+                    >
+                        <Form.Item
+                            name={"paymentAmount"}
+                            label="Amount to pay"
+                            rules={[
+                                {
+                                    required: true,
+                                    validator: (_, value) => {
+                                        if (value > totalAmountOfCurrentContract) {
+                                            return Promise.reject("Value must be less that  total ")
+                                        }
+                                        return Promise.resolve();
+                                    }
+                                },
+                            ]}
+                        >
+
+                            <Input placeholder="Amount to pay" />
+                        </Form.Item>
+
+                        <Col span={16}>
+                            <Button type="primary" htmlType="submit" >Pay Vacation</Button>
+                        </Col>
+                    </Form>
+                </Row>
+                <Table
+                    bordered
+                    dataSource={dtmHistory}
                     columns={paymentHistory}
                 />
             </Modal>

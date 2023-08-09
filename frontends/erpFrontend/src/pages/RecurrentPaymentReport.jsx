@@ -485,9 +485,11 @@ const RecurrentPaymentReport = () => {
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" });
       const { result: bankDetails } = await request.list({ entity: "bankAccount" });
       const { result: vacBonus } = await request.list({ entity: 'vacHistory' });
-      console.log(vacBonus, 'vacBonus');
-
+      const { result: dtmBonus } = await request.list({ entity: 'dtmHistory' });
       vacBonus.map(data => {
+        data['paidPeriods'] = JSON.parse(data['paidPeriods'])
+      })
+      dtmBonus.map(data => {
         data['paidPeriods'] = JSON.parse(data['paidPeriods'])
       })
       workContracts.map(obj => {
@@ -638,7 +640,16 @@ const RecurrentPaymentReport = () => {
                 obj.vac_bonus = (parseFloat(obj.vac_bonus) - paidPaid.payment).toFixed(2)
               }
             })
-            console.log(paidPeriods, 'paidPeriods', contract_id, assignedContract._id, moment(end_date).format('MM/DD/YYYY'))
+          }
+        })
+        dtmBonus.map(bonus => {
+          const { contract_id, paidPeriods } = bonus;
+          if (contract_id === assignedContract._id) {
+            paidPeriods.map(paidPaid => {
+              if (paidPaid.periods === `${moment(start_date).format('MM/DD/YYYY')}- ${moment(end_date).format('MM/DD/YYYY')}`) {
+                obj.dtm_bonus = (parseFloat(obj.dtm_bonus) - paidPaid.payment).toFixed(2)
+              }
+            })
           }
         })
 
