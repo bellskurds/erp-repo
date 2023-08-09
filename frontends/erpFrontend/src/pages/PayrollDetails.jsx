@@ -846,7 +846,7 @@ const PayrollDetails = () => {
         obj.adjust = (obj.adjustment * obj.sal_hr || 0).toFixed(2);
 
 
-        obj.salary = ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
+        obj.salary = (obj.gross_salary).toFixed(2) || 0;
       });
 
       const sortedListItems = _listItems.sort((a, b) => b.position.localeCompare(a.position));
