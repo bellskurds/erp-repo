@@ -267,7 +267,7 @@ const PayrollDetails = () => {
     {
       title: 'Store',
       dataIndex: ['store', 'store'],
-      width: 100,
+      width: 270,
     },
     {
       title: 'Personal ID',
