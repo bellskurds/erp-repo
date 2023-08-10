@@ -858,6 +858,8 @@ const PayrollDetails = () => {
         obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
         obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
         obj.contract = { type: obj.type, flag: false }
+        obj.salary = obj.gross_salary
+        obj.employee = obj.parent_id
       })
       const filterdWorkContract = workContracts.filter(contract => Object(contract).hasOwnProperty('status') && contract.status === "active" &&
         (
@@ -870,7 +872,7 @@ const PayrollDetails = () => {
       allDatas.map((data, index) => data['key'] = index)
       // const sortedLists = allDatas.sort((a, b) => b.position.localeCompare(a.position));
 
-      console.log(unAssingedEmployees, 'allDatas');
+      console.log(filterdWorkContract, 'allDatas');
       setListItems([...allDatas]);
       setGlobalItems([...allDatas]);
 
