@@ -267,22 +267,18 @@ const PayrollDetails = () => {
     {
       title: 'Store',
       dataIndex: ['store', 'store'],
-      width: 270,
     },
     {
       title: 'Personal ID',
       dataIndex: ['employee', 'personal_id'],
-      width: 150,
     },
     {
       title: 'Employee',
       dataIndex: ['employee', 'name'],
-      width: 200
     },
     {
       title: `Hours`,
       dataIndex: 'hours',
-      width: 600,
       align: 'center',
       render: (text, record) => (
         <>
@@ -305,12 +301,10 @@ const PayrollDetails = () => {
     {
       title: 'HR/Week',
       dataIndex: 'hr_week',
-      width: 100,
     },
     {
       title: 'Type',
       dataIndex: ['contract', 'type'],
-      width: 100,
       render: (text) => {
         return (
           contractTypes[text]
@@ -320,35 +314,29 @@ const PayrollDetails = () => {
     {
       title: 'Sal/Hr',
       dataIndex: 'sal_hr',
-      width: '100',
     },
     {
       title: 'Hrs/BiWeekly',
-      width: '100',
       dataIndex: 'hrs_bi',
     },
     {
       title: 'Week Pay',
       dataIndex: 'week_pay',
-      width: '25',
     },
     {
       title: 'Adjustment',
       dataIndex: 'adjustment',
-      width: '100',
 
 
     },
     {
       title: 'Adjust($$$)',
       dataIndex: 'adjust',
-      width: '100',
 
     },
     {
       title: 'Salary',
       dataIndex: 'salary',
-      width: '100',
 
     },
     // {
@@ -591,7 +579,6 @@ const PayrollDetails = () => {
         daysColumns.push({
           title: `${currentDate.format("dddd").slice(0, 1).toUpperCase()} ${day}`,
           dataIndex: `-day-${year}_${month + 1}_${day}`,
-          width: 100,
           render: (text, record) => {
             const { contract } = record;
             switch (_day) {
