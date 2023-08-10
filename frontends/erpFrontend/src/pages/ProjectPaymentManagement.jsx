@@ -109,7 +109,7 @@ const ProjectPaymentManagement = () => {
     const start_date = new Date(year, startDay === 31 ? (month - 2) : (month - 1), startDay);
     const end_date = new Date(year, month - 1, endDay);
     const projectListItems = projects.filter(({ periods, status }) =>
-      status === 3
+      status === 3 || status === 2
       // &&
       // (
       //   (

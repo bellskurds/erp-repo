@@ -122,7 +122,7 @@ const ProjectDetails = () => {
       const { result: projects } = await request.list({ entity: "project" });
       const { result: employeeItems } = await request.list({ entity: "employee" });
       const projectListItems = projects.filter(({ periods, status }) =>
-        status === 3
+        status === 3 || status === 2
         // &&
         // (
         //   (
