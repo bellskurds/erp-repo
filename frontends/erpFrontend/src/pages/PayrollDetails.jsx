@@ -282,7 +282,7 @@ const PayrollDetails = () => {
     {
       title: `Hours`,
       dataIndex: 'hours',
-      width: 400,
+      width: 600,
       align: 'center',
       render: (text, record) => (
         <>
