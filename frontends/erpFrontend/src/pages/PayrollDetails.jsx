@@ -509,9 +509,9 @@ const PayrollDetails = () => {
       return <p>{origin_value}</p>
     }
     else if (new_value > origin_value) {
-      return <p style={{ backgroundColor: 'green' }} className='parent_green'>{new_value}</p>
+      return <p className='parent_green'>{new_value}({origin_value})</p>
     } else if (new_value < origin_value) {
-      return <p style={{ backgroundColor: 'yellow' }} className='parent_yellow'>{new_value}</p>
+      return <p className='parent_yellow'>{new_value}({origin_value})</p>
     } else {
       return <p>{origin_value}</p>
     }
@@ -541,7 +541,18 @@ const PayrollDetails = () => {
       return flag;
     }
     // console.log(startDate.isSameOrBefore(targetStartDate) && endDate.isSameOrAfter(targetEndDate), 'status')
+  }
 
+  const getFullPaymentStatus = (workDates, start, end) => {
+    let start_date = moment(start);
+    let end_date = moment(end);
+    const work_start = workDates[0];
+    const work_end = workDates[workDates.length - 1]
+    if (work_start === start_date.format('MM-DD-YYYY') && work_end === end_date.format('MM-DD-YYYY')) {
+      return true;
+    } else {
+      return false;
+    }
   }
   useEffect(() => {
     async function init() {
@@ -805,7 +816,8 @@ const PayrollDetails = () => {
             : (calcAdjustment(obj) * obj.sal_hr || 0).toFixed(2);
 
 
-        obj.salary = ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
+        obj.salary = getFullPaymentStatus(obj.workDays, start_date, end_date) ? assignedContract.sal_monthly / 2 || 0 : ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
+
       });
 
       assignedEmployees.map(obj => {
@@ -859,7 +871,7 @@ const PayrollDetails = () => {
       allDatas.map((data, index) => data['key'] = index)
       // const sortedLists = allDatas.sort((a, b) => b.position.localeCompare(a.position));
 
-      console.log(filterdWorkContract, 'allDatas');
+      console.log(start_date, end_date, 'allDatas');
       setListItems([...allDatas]);
       setGlobalItems([...allDatas]);
 
@@ -871,7 +883,6 @@ const PayrollDetails = () => {
     currentPeriod, saveStatus, currentMonth, currentYear, changeStatus
   ]);
   const getServiceHours = (record) => {
-    console.log(record, 'record')
     var hours = 0;
     for (var key in record) {
       if (key.includes('services-day-')) {
