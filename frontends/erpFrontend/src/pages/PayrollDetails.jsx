@@ -502,8 +502,8 @@ const PayrollDetails = () => {
   }
   const setColor = (new_value, origin_value) => {
 
-    if (new_value === 0) {
-      return <p>0</p>
+    if (new_value !== origin_value && new_value === 0) {
+      return <p className='parent_yellow'>0({origin_value})</p>
     }
     else if (!new_value) {
       return <p>{origin_value}</p>
@@ -543,12 +543,17 @@ const PayrollDetails = () => {
     // console.log(startDate.isSameOrBefore(targetStartDate) && endDate.isSameOrAfter(targetEndDate), 'status')
   }
 
-  const getFullPaymentStatus = (workDates, start, end) => {
+  const getFullPaymentStatus = (workDates, start, end, record) => {
     let start_date = moment(start);
     let end_date = moment(end);
     const work_start = workDates[0];
+    const real_start = record.start_date ? moment(record.start_date).format('MM-DD-YYYY') : moment(record.viaticum_start_date).format('MM-DD-YYYY');
+    const real_end = record.start_date ? moment(record.end_date).format('MM-DD-YYYY') : moment(record.viaticum_end_date).format('MM-DD-YYYY');
+
+
+    console.log(real_start, real_end, 'real_start, real_end');
     const work_end = workDates[workDates.length - 1]
-    if (work_start === start_date.format('MM-DD-YYYY') && work_end === end_date.format('MM-DD-YYYY')) {
+    if (work_start === start_date.format('MM-DD-YYYY') && work_end === end_date.format('MM-DD-YYYY') && work_start >= real_start && work_end <= real_end) {
       return true;
     } else {
       return false;
@@ -816,7 +821,7 @@ const PayrollDetails = () => {
             : (calcAdjustment(obj) * obj.sal_hr || 0).toFixed(2);
 
 
-        obj.salary = getFullPaymentStatus(obj.workDays, start_date, end_date) ? assignedContract.sal_monthly / 2 || 0 : ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
+        obj.salary = getFullPaymentStatus(obj.workDays, start_date, end_date, obj) ? assignedContract.sal_monthly / 2 || 0 : ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
 
       });
 
