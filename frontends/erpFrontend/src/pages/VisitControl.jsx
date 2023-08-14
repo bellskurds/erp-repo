@@ -118,100 +118,6 @@ const VisitControl = () => {
   const [isClientStore, setIsClientStore] = useState(false);
   const [customerStore, setCustomerStore] = useState([]);
   const [rowClass, setRowClass] = useState("inspection_background")
-  const dataSource = [
-    {
-      item_label: "Limpieza general de instalaciones",
-      cumple: false,
-      increase_quality: false
-      , key: 0
-    },
-    {
-      item_label: "Limpieza de pisos",
-      cumple: false,
-      increase_quality: false
-      , key: 1
-    },
-    {
-      item_label: "Limpieza de superficies de vidrio",
-      cumple: false,
-      increase_quality: false
-      , key: 2
-    },
-    {
-      item_label: "Limpieza de perfiles",
-      cumple: false,
-      increase_quality: false
-      , key: 3
-    },
-    {
-      item_label: "Limpieza y olor de baños",
-      cumple: false,
-      increase_quality: false
-      , key: 4
-    },
-    {
-      item_label: "Limpieza externa de mobiliario",
-      cumple: false,
-      increase_quality: false
-      , key: 5
-    },
-    {
-      item_label: "Limpieza interna de mobiliario",
-      cumple: false,
-      increase_quality: false
-      , key: 6
-    },
-    {
-      item_label: "Limpieza de telarañas en techos",
-      cumple: false,
-      increase_quality: false
-      , key: 7
-    },
-    {
-      item_label: "Limpieza de elementos en altura",
-      cumple: false,
-      increase_quality: false
-      , key: 8
-    },
-    {
-      item_label: "Correcto manejo de desechos",
-      cumple: false,
-      increase_quality: false
-      , key: 9
-    },
-    {
-      item_label: "Colocacion de insumos higienicos",
-      cumple: false,
-      increase_quality: false
-      , key: 10
-    },
-    {
-      item_label: "Colocacion de insumos de limpieza",
-      cumple: false,
-      increase_quality: false
-      , key: 11
-    },
-    {
-      item_label: "Suministro de insumos de limpieza",
-      cumple: false,
-      increase_quality: false
-      , key: 12
-    },
-    {
-      item_label: "Estado de los materiales de limpieza",
-      cumple: false,
-      increase_quality: false
-      , key: 13
-    },
-    {
-      item_label: "Uso correcto del uniforme",
-      cumple: false,
-      increase_quality: false
-      , key: 14
-    },
-
-  ]
-
   const content = (
     <table style={{
       tableLayout: 'fixed',
@@ -258,7 +164,6 @@ const VisitControl = () => {
     selectedElement.className = 'active-td'
     selectedElement.style.background = '#3fe1fd'
   }
-  const [data, setData] = useState(dataSource);
   const editItem = (item) => {
     if (item) {
       setIsClientStore(true)
@@ -290,7 +195,7 @@ const VisitControl = () => {
     {
       title: 'Client(Branch)',
       dataIndex: ['customer', 'name'],
-      width: 150,
+      // width: 270,
       render: (text, { store, ...otherObj }) => {
         return (<label style={{ cursor: 'pointer' }} onClick={() => editItem({ store, ...otherObj })}>{text}({store.store})</label>)
       }
@@ -298,17 +203,17 @@ const VisitControl = () => {
     {
       title: 'T',
       dataIndex: 'store_visit_value',
-      width: 150,
+      width: 100,
     },
     {
       title: 'R',
       dataIndex: 'visit_value',
-      width: 150,
+      width: 100,
     },
     {
       title: 'P',
       dataIndex: 'difference',
-      width: 150,
+      width: 100,
       render: (text, record) => {
         return ((parseFloat(record.store_visit_value) || 0) - (parseFloat(record.visit_value) || 0));
       }
@@ -328,36 +233,50 @@ const VisitControl = () => {
 
   const topColumn = [
     {
-      title: "........................................",
-      width: 100,
+      title: "",
+      width: 200,
       dataIndex: "report_title"
     },
     {
-      title: "....",
+      title: "",
       width: 100,
       dataIndex: 'report_value'
     },
     {
-      title: "...",
-      width: 100,
+      title: "",
+      width: 50,
     },
     {
-      title: "...",
-      width: 100,
+      title: "",
+      width: 50,
+
     },
     {
       title: "..%...",
-      width: 100,
+      width: 89,
+      dataIndex: "report_percent",
+      render: (text, record, index) => {
+        const obj = {
+          children: `${text}%`,
+          props: {},
+        };
+        if (index === 0) {
+          obj.props.rowSpan = 3;
+        } else {
+          obj.props.rowSpan = 0;
+        }
+        return obj;
+      },
     },
   ]
   const visitColumn = [
     {
-      title: "........................................",
-      width: 460,
+      title: "",
+      width: 450,
       dataIndex: "report_title"
     },
     {
-      title: "....",
+      title: "",
       width: 150,
       dataIndex: 'report_value'
     },
@@ -618,15 +537,16 @@ const VisitControl = () => {
         case 3:
           initReportData.push({
             key: 1,
-            report_title: "INSPECCIONES REALIZADAS",
+            report_title: "REALIZADAS",
             ...inspectionPerDate,
-            report_value: totalInspection
+            report_value: totalInspection,
+            report_percent: Math.round(totalInspection / (parseInt(totalInspection / businessDays * workDays))) || 0
           },
             {
               key: 2,
               report_title: "Proyección a la Fecha",
               report_value: parseInt(totalInspection / businessDays * workDays),
-              ...inspectionPerDate_
+              ...inspectionPerDate_,
             },
             {
               key: 3,
@@ -640,7 +560,9 @@ const VisitControl = () => {
             key: 4,
             report_title: "INSUMOS ENTREGADOS",
             report_value: totalProducts,
-            ...productPerDate
+            ...productPerDate,
+            report_percent: Math.round(totalProducts / (parseInt(totalMonthlyDeliver / businessDays * workDays))) || 0
+
           },
             {
               key: 5,
@@ -838,11 +760,7 @@ const VisitControl = () => {
   const [customerPerception, setCustomerPerception] = useState();
 
   const showInspectionForm = (record) => {
-    const { inspection_comment, inspection_details, inspection_officer, person_acknowledging_receipt, customer_perception } = record;
-    if (inspection_details)
-      setData(JSON.parse(inspection_details || "[]"));
-    else
-      setData(dataSource)
+    const { inspection_comment, inspection_officer, person_acknowledging_receipt, customer_perception } = record;
 
     setInspectionOfficer(inspection_officer || '');
     setPersonAcknowledgingReceipt(person_acknowledging_receipt || '');
