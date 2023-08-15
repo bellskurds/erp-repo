@@ -65,7 +65,7 @@ const EditableCell = ({
     try {
       const values = await form.validateFields();
 
-      toggleEdit();
+      // toggleEdit();
       if (handleSave_) {
         handleSave_({
           ...record,
@@ -127,32 +127,33 @@ const EditableCell = ({
 
   let childNode = children;
   if (editable) {
-    childNode = editing ? (
+    childNode = (
       <Form.Item
         style={{
           margin: 0,
         }}
         name={dataIndex}
-        rules={[
-          {
-            required: true,
-            message: `${title} is required.`,
-          },
-        ]}
+      // rules={[
+      //   {
+      //     required: true,
+      //     message: `${title} is required.`,
+      //   },
+      // ]}
       >
         <Input ref={inputRef} onKeyDown={handleKeyDown} onPressEnter={save} onBlur={save} />
       </Form.Item>
-    ) : (
-      <div
-        className="editable-cell-value-wrap"
-        style={{
-          paddingRight: 24,
-        }}
-        onClick={toggleEdit}
-      >
-        {children}
-      </div>
-    );
+    )
+    //  : (
+    //   <div
+    //     className="editable-cell-value-wrap"
+    //     style={{
+    //       paddingRight: 24,
+    //     }}
+    //     onClick={toggleEdit}
+    //   >
+    //     {children}
+    //   </div>
+    // );
   }
   return <td {...restProps} onDoubleClick={toggleEdit}>{childNode}</td>;
 };
