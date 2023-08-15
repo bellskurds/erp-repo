@@ -480,12 +480,23 @@ const RecurrentPaymentReport = () => {
       var date = new Date(start_date);
       date.setMonth(date.getMonth() + 12);
 
-      console.log();
       const { result: workContracts } = await request.list({ entity: "workContract" })
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" });
       const { result: bankDetails } = await request.list({ entity: "bankAccount" });
       const { result: vacBonus } = await request.list({ entity: 'vacHistory' });
       const { result: dtmBonus } = await request.list({ entity: 'dtmHistory' });
+      const { result: projectData } = await request.list({ entity: 'project' });
+
+
+      const filteredProjects = projectData.filter(({ status }) => (
+        status === 3 || status === 2
+      ))
+      filteredProjects.map(project => {
+        project.employees = JSON.parse(project.employees)
+      })
+
+
+      console.log(filteredProjects, 'projectData');
       vacBonus.map(data => {
         data['paidPeriods'] = JSON.parse(data['paidPeriods'])
       })

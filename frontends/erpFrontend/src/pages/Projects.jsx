@@ -140,7 +140,7 @@ const EditableCell = ({
       //   },
       // ]}
       >
-        <Input ref={inputRef} onKeyDown={handleKeyDown} onPressEnter={save} onBlur={save} />
+        <Input ref={inputRef} defaultValue={record[dataIndex]} onKeyDown={handleKeyDown} onPressEnter={save} onBlur={save} />
       </Form.Item>
     )
     //  : (
@@ -203,6 +203,9 @@ const Projects = () => {
   const [allECost, setAllECost] = useState(0);
   const [allOCost, setAllOCost] = useState(0);
   const [allProfitability, setAllProfitability] = useState(0);
+
+  const employeeRef = useRef(null);
+  const costRef = useRef(null);
   const isEditing = (record) => record.key === editingKey;
 
   const deleteEmployee = (record) => {
@@ -650,11 +653,20 @@ const Projects = () => {
   const [allEmployeeCost, setAllEmployeeCost] = useState(0);
   const [all_Cost, setAll_Cost] = useState(0);
   useEffect(() => {
-
     var totalCost = 0, employee_cost = 0, _cost = 0;
     employeeList.map(item => {
       totalCost += parseFloat(item.total) || 0;
       employee_cost += parseFloat(item.total) || 0;
+
+
+      // for (var key in item) {
+      //   if (key.includes("day_")) {
+      //     console.log(key, item[key]);
+      //     item[key] = <Input value={item[key]} />
+
+      //   }
+      // }
+
     })
     setAllEmployeeCost(employee_cost);
     costList.map(obj => {
@@ -664,6 +676,9 @@ const Projects = () => {
     setAll_Cost(_cost)
     setSummatoryCost(totalCost)
     if (formRef.current) formRef.current.setFieldsValue({ cost: totalCost })
+    if (employeeRef.current) {
+      console.log(employeeRef.current)
+    }
   }, [
     employeeList, costList
   ])
@@ -855,7 +870,7 @@ const Projects = () => {
                   columns={_columns}
                   style={{ overflow: "scroll" }}
                   components={components}
-
+                  ref={employeeRef}
                 />
               </Col>
               <Col span={8}>
@@ -879,6 +894,7 @@ const Projects = () => {
                       }),
                     };
                   })}
+                  ref={costRef}
                   style={{ overflow: "scroll" }}
                   components={components}
 
