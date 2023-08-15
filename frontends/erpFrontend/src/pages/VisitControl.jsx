@@ -272,7 +272,7 @@ const VisitControl = () => {
   const visitColumn = [
     {
       title: "",
-      width: 450,
+      width: 300,
       dataIndex: "report_title"
     },
     {
@@ -395,7 +395,6 @@ const VisitControl = () => {
       var productPerDate = {};
       var productPerDate_ = {};
       while (currentDate.isSameOrBefore(end)) {
-        const monthLable = currentDate.format("MMMM");
         const day = currentDate.format("DD")
         const year = currentDate.year();
         const month = currentDate.format("MM");
@@ -439,6 +438,7 @@ const VisitControl = () => {
         && new Date(visit_date).getMonth() === (currentMonth - 1)
       )
       )
+
       storeData.map((obj, index) => {
         const { store, customer } = obj;
         const { deliver, inspection } = store;
@@ -471,18 +471,19 @@ const VisitControl = () => {
         })
       })
       var storeDataHasValue = [];
+      console.log(storeData, '22222222222');
+
       switch (parseInt(tabsStatus)) {
         case 2:
-          storeDataHasValue = storeData.filter(store => store.visit_value > 0 || store.store.inspection)
+          storeDataHasValue = storeData.filter(store => store.visit_value > 0 || store.store.deliver)
           break;
         case 3:
-          storeDataHasValue = storeData.filter(store => store.visit_value > 0 || store.store.deliver)
+          storeDataHasValue = storeData.filter(store => store.visit_value > 0 || store.store.inspection)
           break;
         default:
           storeDataHasValue = storeData.filter(store => store.visit_value > 0)
           break;
       }
-      console.log(storeDataHasValue, 'storeDataHasValue');
       setFilterData(storeDataHasValue)
       setGlobalData(storeDataHasValue)
 
@@ -591,49 +592,7 @@ const VisitControl = () => {
         default:
           break;
       }
-      // const initReportData = [
-      //   {
-      //     key: 1,
-      //     report_title: "INSPECCIONES REALIZADAS",
-      //     ...inspectionPerDate,
-      //     report_value: totalInspection
-      //   },
-      //   {
-      //     key: 2,
-      //     report_title: "Proyección a la Fecha",
-      //     report_value: parseInt(totalInspection / businessDays * workDays),
-      //     ...inspectionPerDate_
-      //   },
-      //   {
-      //     key: 3,
-      //     report_title: "Proyección del Mes",
-      //     report_value: totalInspectionOnStores
-      //   },
 
-      //   {
-      //     key: 4,
-      //     report_title: "INSUMOS ENTREGADOS",
-      //     report_value: totalProducts,
-      //     ...productPerDate
-      //   },
-      //   {
-      //     key: 5,
-      //     report_title: "Proyección a la Fecha",
-      //     report_value: parseInt(totalMonthlyDeliver / businessDays * workDays),
-      //     ...productPerDate_
-      //   },
-      //   {
-      //     key: 6,
-      //     report_title: "Proyección del Mes",
-      //     report_value: parseInt(totalMonthlyDeliver)
-      //   },
-      //   {
-      //     key: 7,
-      //     report_title: "Visitas Realizadas",
-      //     ...visitPerDate,
-      //     report_value: parseInt(totalVisits)
-      //   },
-      // ]
       setReportData(initReportData);
     }
     init();
