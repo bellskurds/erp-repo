@@ -267,6 +267,9 @@ const PayrollDetails = () => {
     {
       title: 'Store',
       dataIndex: ['store', 'store'],
+      render: (text) => {
+        return text || 'Not assigned'
+      }
     },
     {
       title: 'Personal ID',
