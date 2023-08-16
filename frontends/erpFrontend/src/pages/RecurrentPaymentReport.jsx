@@ -410,7 +410,26 @@ const RecurrentPaymentReport = () => {
       return flag;
     }
   }
+  const checkPeriodsOfProject = (periods, start, end) => {
+    const project_start = periods[0];
+    const project_end = periods[1];
+    let startDate = moment(new Date(project_start), 'MM-DD-YYYY');
+    const endDate = moment(new Date(project_end), 'MM-DD-YYYY');
 
+    let targetStartDate = moment(start, 'MM-DD-YYYY');
+    const targetEndDate = moment(end, 'MM-DD-YYYY');
+    let flag = false;
+    const PeriodShouldBeworked = [];
+    while (targetStartDate.isSameOrBefore(targetEndDate)) {
+
+      if (targetStartDate.isBetween(startDate, endDate, null, '[]')) {
+        flag = true;
+        PeriodShouldBeworked.push(targetStartDate.format('MM-DD-YYYY'));
+      }
+      targetStartDate = targetStartDate.add(1, 'days');
+    }
+    return flag
+  }
   const AdminId = useSelector(selectCurrentAdmin);
   const Auth = JSON.parse(localStorage.getItem('auth'));
   const onFinish = (values) => {
@@ -453,10 +472,10 @@ const RecurrentPaymentReport = () => {
       startWorkDay = startWorkDay.subtract(1, 'day')
       const targetDay = moment(new Date(date), 'MM-DD-YYYY');
 
-      if (contract.type === 3) {
+      // if (contract.type === 3) {
 
-        console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
-      }
+      //   console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
+      // }
       if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
         return origin_value;
       } else {
@@ -466,7 +485,23 @@ const RecurrentPaymentReport = () => {
 
   }
 
-
+  const getEmployee = ({ employee }, employees) => {
+    const item = employees.find(obj => obj._id === employee);
+    return item
+  }
+  const getQuincena = (record, start_date, end_date) => {
+    let currentDate = moment(start_date);
+    const end = moment(end_date);
+    var hours = 0;
+    while (currentDate.isSameOrBefore(end)) {
+      const day = currentDate.format("DD")
+      const year = currentDate.year();
+      const month = currentDate.format("MM");
+      hours += parseFloat(record[`day_${year}-${month}-${day}`]) || 0;
+      currentDate = currentDate.add(1, 'days');
+    }
+    return hours || 0;
+  }
   useEffect(() => {
     async function init() {
       const { result: allHours } = await request.list({ entity });
@@ -486,17 +521,43 @@ const RecurrentPaymentReport = () => {
       const { result: vacBonus } = await request.list({ entity: 'vacHistory' });
       const { result: dtmBonus } = await request.list({ entity: 'dtmHistory' });
       const { result: projectData } = await request.list({ entity: 'project' });
+      const { result: employeeItems } = await request.list({ entity: "employee" });
 
-
-      const filteredProjects = projectData.filter(({ status }) => (
-        status === 3 || status === 2
-      ))
-      filteredProjects.map(project => {
+      projectData.map(project =>
         project.employees = JSON.parse(project.employees)
+      )
+      const filteredProjects = projectData.filter(({ status, periods }) => (
+        (status === 3 || status === 2) && checkPeriodsOfProject(periods, start_date, end_date)
+      ))
+      const nestedItems = [];
+      filteredProjects.map(({ employees, ...obj }) => {
+        employees.map(employee => {
+          nestedItems.push({ ...employee, ...obj, employee: getEmployee(employee, employeeItems), gross_salary: getQuincena(employee, start_date, end_date) })
+        })
+      })
+      const groupedProject = JSON.parse(JSON.stringify(nestedItems)).reduce((acc, item) => {
+        const existingItem = acc.find(i => i.employee._id === item.employee._id);
+        if (!existingItem) {
+          acc.push(item);
+        }
+        return acc;
+      }, []);
+
+      groupedProject.map(project => {
+        nestedItems.map(item => {
+          if (project._id !== item._id && project.employee._id === item.employee._id) {
+            project.gross_salary += item.gross_salary
+          }
+        });
+        project['category'] = 'Project';
+        project['contract'] = {}
+        bankDetails.map(bank => {
+          if (project.employee._id === bank.parent_id) {
+            project.bank = bank;
+          }
+        })
       })
 
-
-      console.log(filteredProjects, 'projectData');
       vacBonus.map(data => {
         data['paidPeriods'] = JSON.parse(data['paidPeriods'])
       })
@@ -692,7 +753,6 @@ const RecurrentPaymentReport = () => {
             list.deductions = (parseFloat(list.deductions) + parseFloat(item.deductions)).toFixed(2);
           }
         });
-        list['key'] = index;
         list['category'] = 'Contract';
         bankDetails.map(bank => {
           if (employee._id === bank.parent_id) {
@@ -701,7 +761,9 @@ const RecurrentPaymentReport = () => {
         })
 
       })
-      setListItems([...restedAGroupedLists]);
+      const allData = [...restedAGroupedLists, ...groupedProject];
+      allData.map((data, index) => data['key'] = index)
+      setListItems(allData);
 
       console.log(restedAGroupedLists, allDatas);
 

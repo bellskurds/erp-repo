@@ -150,6 +150,8 @@ const ProjectDetails = () => {
       nestedItems.map((obj, index) => {
         obj['key'] = index
       })
+
+      console.log(JSON.parse(JSON.stringify(nestedItems)), 'JSON.parse(JSON.stringify(nestedItems))')
       setListItems(JSON.parse(JSON.stringify(nestedItems)))
     }
     init()

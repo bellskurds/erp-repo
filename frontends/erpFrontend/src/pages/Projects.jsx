@@ -251,7 +251,6 @@ const Projects = () => {
     {
       title: 'Customer',
       dataIndex: ['customer', 'name'],
-      width: '15%',
       render: (text, record) => {
         return <label onClick={() => editItem(record)}>{text}</label>
       }
@@ -259,7 +258,6 @@ const Projects = () => {
     {
       title: 'Reference',
       dataIndex: 'ref',
-      width: '15%',
     },
     {
       title: "Billing ID",
@@ -268,7 +266,6 @@ const Projects = () => {
     {
       title: 'Date',
       dataIndex: 'periods',
-      width: '15%',
       render: (text) => {
         return (getDateLabel(text))
       }
@@ -276,7 +273,6 @@ const Projects = () => {
     {
       title: 'Employees',
       dataIndex: 'employees',
-      width: '15%',
       render: (text) => {
         return (
           text ? JSON.parse(text).length : 0
@@ -286,7 +282,6 @@ const Projects = () => {
     {
       title: 'Billing',
       dataIndex: 'billing',
-      width: '15%',
       render: (text) => {
         return (
           `$${text}`
@@ -297,7 +292,6 @@ const Projects = () => {
     {
       title: 'E.Costs',
       dataIndex: 'e_cost',
-      width: '15%',
       render: (text) => {
         return (
           `$${text || 0}`
@@ -307,7 +301,6 @@ const Projects = () => {
     {
       title: 'O.Costs',
       dataIndex: 'o_cost',
-      width: '15%',
       render: (text) => {
         return (
           `$${text || 0}`
@@ -317,7 +310,6 @@ const Projects = () => {
     {
       title: 'Profitability',
       dataIndex: 'profitability',
-      width: '15%',
       render: (text) => {
         return (
           `$${text || 0}`
@@ -327,7 +319,6 @@ const Projects = () => {
     {
       title: 'Status',
       dataIndex: 'status',
-      width: '15%',
       render: (text) => {
         return (statusLabel[text]);
       }
@@ -335,7 +326,6 @@ const Projects = () => {
     {
       title: 'Actions',
       dataIndex: 'operation',
-      width: "10%",
       align: 'center',
       render: (_, record) => {
         return (
@@ -512,6 +502,9 @@ const Projects = () => {
     const newData = [...employeeList];
     const index = newData.findIndex((item) => row.key === item.key);
     const item = newData[index];
+
+
+    console.log(item, 'item------')
     newData.splice(index, 1, {
       ...item,
       ...row,
