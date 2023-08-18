@@ -38,6 +38,9 @@ const PayrollSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  position: {
+    type: String
+  }
 });
 PayrollSchema.plugin(require('mongoose-autopopulate'));
 // AssignedEmployeeSchema.index({

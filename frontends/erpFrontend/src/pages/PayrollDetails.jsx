@@ -191,11 +191,7 @@ const PayrollDetails = () => {
   const [currentQ, setCurrentQ] = useState(parseInt(url.split("-")[2]));
   const [currentPeriod, setCurrentPeriod] = useState('1-15')
   const [changedDays, setChangedDays] = useState([]);
-  const [biWeek, setBiWeek] = useState(0);
-  const [selectedCellValue, setSelectedCellValue] = useState(0);
   const [selectedDate, setSelectedDate] = useState();
-  const [byEmail, setByEmail] = useState();
-  const [adjust, setAdjust] = useState(0);
   const [mergedColumns, setMergedColumns] = useState([]);
   const [prevHour, setPrevHour] = useState();
   const [currentHistory, setCurrentHistory] = useState();
@@ -212,16 +208,35 @@ const PayrollDetails = () => {
   const isEditing = (record) => record.key === editingKey;
 
   const editItem = (item, cellItem, current, mainHour) => {
-    console.log(item, 'itemitem');
     const { hour, comment, by: { email: byEmail = '' } = {} } = cellItem;
 
+    console.log(item, cellItem, current, mainHour, '11111111111111')
     setCurrentHistory(cellItem)
-    console.log(cellItem, current, 'cellItem')
+    if (item && item.contract.replace) {
+
+
+      const newHour = item[`new-day-${current.split("/").join("_")}`];
+      const newComment = item[`comment-day-${current.split("/").join("_")}`];
+      const newHistory = item[`history-day-${current.split("/").join("_")}`]
+
+      console.log(newHistory, 'newHistory');
+      setCurrentHistory(newHistory)
+      setPrevHour(newHour);
+      setTimeout(() => {
+        if (formRef.current) formRef.current.setFieldsValue({
+          hours: newHour,
+          comment: newComment,
+        });
+      }, 400);
+      setSelectedDate(current);
+      setCurrentId(item._id);
+      setCurrentItem(item);
+      setIsModalVisible(true);
+      setIsUpdate(true);
+    }
     if (item && item.contract._id) {
       const { workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = item;
-      console.log(contract);
       if (contract) {
-
         let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
         let positionEnd = contract.type === 3 ? moment(new Date(viaticum_end_date), 'MM-DD-YYYY') : moment(new Date(end_date), 'MM-DD-YYYY');
 
@@ -229,28 +244,27 @@ const PayrollDetails = () => {
         let workStart = start_date ? positionStart : moment(workDays[0], 'MM-DD-YYYY');
         let workEnd = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
         let targetDate = moment(new Date(current), 'MM-DD-YYYY');
-        workStart = workStart.subtract(1, 'day')
+        // workStart = workStart.subtract(1, 'day')
         // workEnd = workEnd.add(1, 'day')
 
-        console.log(targetDate.isBetween(workStart, workEnd), targetDate.isSame(workEnd), targetDate.isSame(workStart))
+        console.log(targetDate.isSame(workEnd), targetDate.isBetween(workStart, workEnd))
 
-        if (!targetDate.isBetween(workStart, workEnd)) {
+        if (targetDate.isSame(workEnd) || targetDate.isBetween(workStart, workEnd)) {
+          setPrevHour(hour);
+          setTimeout(() => {
+            if (formRef.current) formRef.current.setFieldsValue({
+              hours: hour,
+              comment: comment,
+            });
+          }, 400);
+          setSelectedDate(current);
+          setCurrentId(item._id);
+          setCurrentItem(item);
+          setIsModalVisible(true);
+          setIsUpdate(true);
+        } else {
           return message.error(`can't edit hour because `)
         }
-        setPrevHour(hour);
-        setTimeout(() => {
-          if (formRef.current) formRef.current.setFieldsValue({
-            hours: hour,
-            comment: comment,
-          });
-        }, 400);
-        setSelectedCellValue(mainHour)
-        setSelectedDate(current);
-        setByEmail(byEmail)
-        setCurrentId(item._id);
-        setCurrentItem(item);
-        setIsModalVisible(true);
-        setIsUpdate(true);
       }
     }
   }
@@ -268,8 +282,8 @@ const PayrollDetails = () => {
       title: 'Store',
       dataIndex: ['store', 'store'],
       render: (text) => {
-        return text || 'Not assigned'
-      }
+        return text || "Not assigned"
+      },
     },
     {
       title: 'Personal ID',
@@ -414,11 +428,9 @@ const PayrollDetails = () => {
     historys.push(historyObj);
 
 
-    const { contract, employee, parent_id } = currentItem
-    const jsonData = { by: Auth.id, hour: hours, date: selectedDate, comment: comment, contract: contract._id, employee: employee._id, customer: parent_id._id, history: JSON.stringify(historys) }
-    console.log(jsonData, 'allHoursallHours');
-
-    const item = allHours.filter(obj => obj.contract === contract._id && obj.employee === employee._id && obj.customer === parent_id._id && obj.date === selectedDate)
+    const { contract, employee, parent_id, _id: position_id } = currentItem
+    const jsonData = { by: Auth.id, hour: hours, date: selectedDate, comment: comment, history: JSON.stringify(historys), position: position_id }
+    const item = allHours.filter(obj => obj.position === position_id && obj.date === selectedDate)
     if (item.length) {
       dispatch(crud.update({ entity, id: item[0]._id, jsonData }))
     } else {
@@ -434,7 +446,7 @@ const PayrollDetails = () => {
   }
   const changedCellValue = (hours, date, record, origin_value) => {
 
-    const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id }, workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = record;
+    const { workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date, _id: position_id } = record;
     if (contract) {
 
       let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
@@ -445,13 +457,8 @@ const PayrollDetails = () => {
       let endWorkDay = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
       startWorkDay = startWorkDay.subtract(1, 'day')
       const targetDay = moment(new Date(date), 'MM-DD-YYYY');
-
-      if (contract.type === 3) {
-
-        console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
-      }
       if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
-        const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
+        const item = hours.find(obj => obj.position === position_id && obj.date === date);
         if (item) {
           return item.hour
         } else {
@@ -477,10 +484,10 @@ const PayrollDetails = () => {
       startWorkDay = startWorkDay.subtract(1, 'day')
       const targetDay = moment(new Date(date), 'MM-DD-YYYY');
 
-      if (contract.type === 3) {
+      // if (contract.type === 3) {
 
-        console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
-      }
+      //   console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
+      // }
       if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
         return origin_value;
       } else {
@@ -492,8 +499,8 @@ const PayrollDetails = () => {
   const changedCellItem = (hours, date, record) => {
 
     if (record.contract._id) {
-      const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id } } = record;
-      const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
+      const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id }, _id: position_id } = record;
+      const item = hours.find(obj => obj.position === position_id && obj.date === date);
       if (contract_id && item) {
         return item
       } else {
@@ -565,7 +572,6 @@ const PayrollDetails = () => {
   useEffect(() => {
     async function init() {
       const { result: allHours } = await request.list({ entity });
-      setAllHours(allHours)
       const startDay = parseInt(currentPeriod.split("-")[0]);
       const endDay = parseInt(currentPeriod.split("-")[1]);
       const start_date = new Date(currentYear, startDay === 31 ? (currentMonth - 2) : (currentMonth - 1), startDay);
@@ -588,12 +594,12 @@ const PayrollDetails = () => {
 
           {
             title: currentDate.format("MMM/DD"),
-            dataIndex: `day_${currentDate.format("YYYY-MM-DD")}`,
+            dataIndex: `-day-${year}_${month + 1}_${day}`,
             editable: true
           }
         )
 
-        initPeriodsData[`day_${currentDate.format("YYYY-MM-DD")}`] = 0;
+        initPeriodsData[`-day-${year}_${month + 1}_${day}`] = 0;
         initPeriodsData['key'] = currentDate.valueOf();
         daysColumns.push({
           title: `${currentDate.format("dddd").slice(0, 1).toUpperCase()} ${day}`,
@@ -692,6 +698,8 @@ const PayrollDetails = () => {
       setPeriodsColumn(periodsColumns)
       setPeriodsData([initPeriodsData]);
       setChangedDays(daysColumns);
+
+      console.log(daysColumns, 'daysColumns');
       setMergedColumns([...columns, ...daysColumns])
       const { result: replacementData } = await request.list({ entity: "replacement" });
       const { result: workContracts } = await request.list({ entity: "workContract" })
@@ -700,7 +708,6 @@ const PayrollDetails = () => {
       const { result: userData } = await request.list({ entity: "Admin" });
 
       const filteredReplacements = replacementData.filter(data => dateValue(data.start_date) === dateValue(start_date) && dateValue(data.end_date) === dateValue(end_date))
-      console.log(filteredReplacements, 'replacementData');
       setUserData(userData);
       const _employees = allEmployees.map(employee => {
         return {
@@ -750,7 +757,6 @@ const PayrollDetails = () => {
           const year = currentDate.year();
           const month = currentDate.month();
           const dataIndex = `-day-${year}_${month + 1}_${day}`;
-
           const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
           const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
           switch (_day) {
@@ -814,20 +820,40 @@ const PayrollDetails = () => {
                 :
                 mathCeil(obj.hrs_bi * assignedContract.sal_hr || 0)
             )
-
             : mathCeil(obj.hrs_bi * obj.sal_hr)
         obj.adjustment = calcAdjustment(obj);
         obj.adjust =
-
           assignedContract.type === 3 ?
             ((obj.adjustment / obj.hrs_bi) * obj.week_pay).toFixed(2)
             : (calcAdjustment(obj) * obj.sal_hr || 0).toFixed(2);
-
-
         obj.salary = getFullPaymentStatus(obj.workDays, start_date, end_date, obj) ? assignedContract.sal_monthly / 2 || 0 : ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
-
       });
-
+      filteredReplacements.map(replace => {
+        replace.hours = JSON.parse(replace.hours)[0]
+        replace.contract = { type: replace.contract_type, sal_hr: replace.sal_hr, replace: true }
+        replace.employee = replace.replacement
+        let currentDate = moment(start_date);
+        const end = moment(end_date);
+        while (currentDate.isSameOrBefore(end)) {
+          const day = currentDate.date();
+          const year = currentDate.year();
+          const month = currentDate.month();
+          const dataIndex = `-day-${year}_${month + 1}_${day}`;
+          const dataIndex_origin = `origin-day-${year}_${month + 1}_${day}`;
+          const dataIndex_new = `new-day-${year}_${month + 1}_${day}`;
+          const dataIndex_comment = `comment-day-${year}_${month + 1}_${day}`;
+          // const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
+          // const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
+          const originValue = replace.hours[dataIndex] || 0;
+          replace[dataIndex] = setColor(changedCellHour(allHours, originValue, currentDate.format("MM/DD/YYYY"), replace, true), originValue)
+          replace[dataIndex_origin] = originValue
+          replace[dataIndex_new] = changedCellHour(allHours, originValue, currentDate.format("MM/DD/YYYY"), replace, true)
+          replace[dataIndex_comment] = changedCellHour(allHours, originValue, currentDate.format("MM/DD/YYYY"), replace, false)
+          replace[`history${dataIndex}`] = getHistory(allHours, currentDate.format("MM/DD/YYYY"), replace)
+          currentDate = currentDate.add(1, 'days');
+        };
+      }
+      )
       assignedEmployees.map(obj => {
         const { contract: assignedContract } = obj;
         assignedContracts.push(assignedContract);
@@ -840,7 +866,6 @@ const PayrollDetails = () => {
       _listItems.map(data => {
         if (!data.position) data.position = ''
       })
-
       unAssingedEmployees.map((obj, index) => {
         obj.sunday_hr = obj.sunday ? getHours(obj.sunday) : 0;
         obj.monday_hr = obj.monday ? getHours(obj.monday) : 0;
@@ -858,9 +883,8 @@ const PayrollDetails = () => {
 
 
         obj.salary = (obj.gross_salary).toFixed(2) || 0;
+        obj.employee = { personal_id: '' }
       });
-
-
       workContracts.map(obj => {
         obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
         obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
@@ -872,24 +896,56 @@ const PayrollDetails = () => {
         (
           checkPeriods(contract, start_date, end_date, 0)
         ))
-
-
+      filterdWorkContract.map(contract => {
+        contract.store = { store: '' }
+      })
       const sortedListItems = _listItems.sort((a, b) => b.position.localeCompare(a.position));
-      const allDatas = [...sortedListItems, ...unAssingedEmployees, ...filterdWorkContract];
+      const allDatas = [...sortedListItems, ...filteredReplacements, ...unAssingedEmployees, ...filterdWorkContract];
       allDatas.map((data, index) => data['key'] = index)
-      // const sortedLists = allDatas.sort((a, b) => b.position.localeCompare(a.position));
-
-      console.log(start_date, end_date, 'allDatas');
+      // const sortedLists = allDatas.sort((a, b) => a.store.store.localeCompare(b.store.store) && a.employee.personal_id.localeCompare(b.employee.personal_id));
+      console.log(sortedListItems, filteredReplacements, 'filteredReplacements')
       setListItems([...allDatas]);
       setGlobalItems([...allDatas]);
-
-
-
     }
     init()
   }, [
     currentPeriod, saveStatus, currentMonth, currentYear, changeStatus
   ]);
+  const changedCellHour = (hours, origin_value, date, record, flag) => {
+
+    const { _id } = record;
+    const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
+
+    console.log(_id, date, '2222');
+    if (item) {
+      if (flag) {
+        return item.hour
+      } else {
+        return item.comment
+      }
+    } else {
+      if (flag) {
+        return origin_value
+      } else {
+
+        return ''
+      }
+    }
+  }
+
+  const getHistory = (hours, date, record) => {
+    const { _id } = record;
+    const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
+
+    if (item) {
+
+      console.log(item, date, 'item,dateitem,dateitem,date')
+      return item
+    } else {
+      return false
+    }
+  }
+
   const getServiceHours = (record) => {
     var hours = 0;
     for (var key in record) {
@@ -908,7 +964,7 @@ const PayrollDetails = () => {
     setIsChangeHistory(true)
     if (currentHistory) {
       const { history } = currentHistory;
-      console.log(userData, 'userData')
+      console.log(currentHistory, 'userData')
       const historyDatas = JSON.parse(history || '[]');
       for (var i = 0; i < historyDatas.length; i++) {
         var history_ = historyDatas[i];
@@ -921,6 +977,8 @@ const PayrollDetails = () => {
         history_['key'] = i;
       }
       setHistoryData(historyDatas);
+    } else {
+      setHistoryData([])
     }
   }
 
@@ -1077,6 +1135,7 @@ const PayrollDetails = () => {
     const jsonObj = { ...values, };
     jsonObj.store = jsonObj.employee.split('-')[1];
     jsonObj.employee = jsonObj.employee.split('-')[0];
+
     jsonObj.hours = JSON.stringify(periodsData)
     const startDay = parseInt(currentPeriod.split("-")[0]);
     const endDay = parseInt(currentPeriod.split("-")[1]);
@@ -1084,11 +1143,9 @@ const PayrollDetails = () => {
     const end_date = new Date(currentYear, currentMonth - 1, endDay);
     jsonObj.start_date = start_date;
     jsonObj.end_date = end_date;
-
-    console.log(jsonObj, 'jsonObj', periodsData);
-    // dispatch(crud.create({ entity: 'replacement', jsonData: jsonObj }));
-    // setIsReplacement(false);
-    // setChangeStatus(!changeStatus);
+    dispatch(crud.create({ entity: 'replacement', jsonData: jsonObj }));
+    setIsReplacement(false);
+    setChangeStatus(!changeStatus);
   }
   return (
 
@@ -1244,7 +1301,7 @@ const PayrollDetails = () => {
               },
               {
                 label: "Hourly",
-                value: 3
+                value: 4
               }
             ]} />
           </Form.Item>
@@ -1306,7 +1363,7 @@ const PayrollDetails = () => {
         scroll={{
           x: 3300,
         }}
-        pagination={paginations}
+        pagination={false}
         footer={Footer}
 
       />
