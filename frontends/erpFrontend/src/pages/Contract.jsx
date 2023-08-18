@@ -232,7 +232,7 @@ const Contract = (props) => {
     }
     const changedCellValue = (hours, date, record, origin_value) => {
 
-        const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id }, workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = record;
+        const { _id, workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = record;
         if (contract) {
 
             let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
@@ -249,7 +249,7 @@ const Contract = (props) => {
                 console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
             }
             if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
-                const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
+                const item = hours.find(obj => obj.position === _id && obj.date === date);
 
                 if (item) {
                     return item.hour

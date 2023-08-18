@@ -449,8 +449,8 @@ const RecurrentPaymentReport = () => {
 
   }
   const changedCellValue = (hours, date, record) => {
-    const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id } } = record;
-    const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
+    const { _id } = record;
+    const item = hours.find(obj => obj.position === _id && obj.date === date);
     if (item) {
       return item.hour
     } else {
@@ -502,6 +502,9 @@ const RecurrentPaymentReport = () => {
     }
     return hours || 0;
   }
+  const dateValue = (date) => {
+    return new Date(date).valueOf();
+  }
   useEffect(() => {
     async function init() {
       const { result: allHours } = await request.list({ entity });
@@ -522,6 +525,8 @@ const RecurrentPaymentReport = () => {
       const { result: dtmBonus } = await request.list({ entity: 'dtmHistory' });
       const { result: projectData } = await request.list({ entity: 'project' });
       const { result: employeeItems } = await request.list({ entity: "employee" });
+      const { result: replacementData } = await request.list({ entity: "replacement" });
+      const filteredReplacements = replacementData.filter(data => dateValue(data.start_date) === dateValue(start_date) && dateValue(data.end_date) === dateValue(end_date))
 
       projectData.map(project =>
         project.employees = JSON.parse(project.employees)
@@ -724,9 +729,37 @@ const RecurrentPaymentReport = () => {
             })
           }
         })
-
       });
+      filteredReplacements.map(replace => {
+        replace.hours = JSON.parse(replace.hours)[0]
+        replace.contract = { type: replace.contract_type, sal_hr: replace.sal_hr, replace: true }
+        replace.employee = replace.replacement
+        let currentDate = moment(start_date);
+        const end = moment(end_date);
+        while (currentDate.isSameOrBefore(end)) {
+          const day = currentDate.date();
+          const year = currentDate.year();
+          const month = currentDate.month();
+          const dataIndex = `-day-${year}_${month + 1}_${day}`;
+          const dataIndex_origin = `origin-day-${year}_${month + 1}_${day}`;
+          const dataIndex_new = `new-day-${year}_${month + 1}_${day}`;
+          const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
+          const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
+          const originValue = replace.hours[dataIndex] || 0;
+          replace[dataIndex_origin] = originValue
+          replace[dataIndex_new] = changedCellHour(allHours, originValue, currentDate.format("MM/DD/YYYY"), replace, true)
+          replace[dataIndex2] = originValue
+          replace[dataIndex1] = parseInt(replace[dataIndex_new] - originValue)
+          currentDate = currentDate.add(1, 'days');
+        };
+        replace.hrs_bi = getServiceHours(replace);
+        replace.week_pay = mathCeil(replace.hrs_bi * replace.sal_hr)
+        replace.adjustment = calcAdjustment(replace);
+        replace.adjust = ((replace.adjustment / replace.hrs_bi) * replace.week_pay).toFixed(2)
+        replace.salary = ((parseFloat(replace.adjust) + parseFloat(replace.week_pay))) || 0;
+      })
 
+      console.log(JSON.parse(JSON.stringify(_listItems)), 'filteredReplacements');
       const allDatas = [..._listItems];
       allDatas.map((data, index) => {
         const { employee } = data;
@@ -773,11 +806,42 @@ const RecurrentPaymentReport = () => {
   }, [
     currentPeriod, saveStatus, currentMonth, currentYear
   ]);
+
+  const changedCellHour = (hours, origin_value, date, record, flag) => {
+    const { _id } = record;
+    const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
+    if (item) {
+      if (flag) {
+        return item.hour
+      } else {
+        return item.comment
+      }
+    } else {
+      if (flag) {
+        return origin_value
+      } else {
+
+        return ''
+      }
+    }
+  }
+
+  const getHistory = (hours, date, record) => {
+    const { _id } = record;
+    const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
+
+    if (item) {
+      return item
+    } else {
+      return false
+    }
+  }
+
   const getServiceHours = (record) => {
     var hours = 0;
     for (var key in record) {
       if (key.includes('services-day-')) {
-        hours += record[key];
+        hours += parseFloat(record[key]);
       }
     }
     return hours;

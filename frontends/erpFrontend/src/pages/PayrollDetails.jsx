@@ -560,8 +560,6 @@ const PayrollDetails = () => {
     const real_start = record.start_date ? moment(record.start_date).format('MM-DD-YYYY') : moment(record.viaticum_start_date).format('MM-DD-YYYY');
     const real_end = record.start_date ? moment(record.end_date).format('MM-DD-YYYY') : moment(record.viaticum_end_date).format('MM-DD-YYYY');
 
-
-    console.log(real_start, real_end, 'real_start, real_end');
     const work_end = workDates[workDates.length - 1]
     if (work_start === start_date.format('MM-DD-YYYY') && work_end === end_date.format('MM-DD-YYYY') && work_start >= real_start && work_end <= real_end) {
       return true;
@@ -842,18 +840,24 @@ const PayrollDetails = () => {
           const dataIndex_origin = `origin-day-${year}_${month + 1}_${day}`;
           const dataIndex_new = `new-day-${year}_${month + 1}_${day}`;
           const dataIndex_comment = `comment-day-${year}_${month + 1}_${day}`;
-          // const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
-          // const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
+          const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
+          const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
           const originValue = replace.hours[dataIndex] || 0;
           replace[dataIndex] = setColor(changedCellHour(allHours, originValue, currentDate.format("MM/DD/YYYY"), replace, true), originValue)
           replace[dataIndex_origin] = originValue
           replace[dataIndex_new] = changedCellHour(allHours, originValue, currentDate.format("MM/DD/YYYY"), replace, true)
+          replace[dataIndex2] = originValue
+          replace[dataIndex1] = parseInt(replace[dataIndex_new] - originValue)
           replace[dataIndex_comment] = changedCellHour(allHours, originValue, currentDate.format("MM/DD/YYYY"), replace, false)
           replace[`history${dataIndex}`] = getHistory(allHours, currentDate.format("MM/DD/YYYY"), replace)
           currentDate = currentDate.add(1, 'days');
         };
-      }
-      )
+        replace.hrs_bi = getServiceHours(replace);
+        replace.week_pay = mathCeil(replace.hrs_bi * replace.sal_hr)
+        replace.adjustment = calcAdjustment(replace);
+        replace.adjust = ((replace.adjustment / replace.hrs_bi) * replace.week_pay).toFixed(2)
+        replace.salary = ((parseFloat(replace.adjust) + parseFloat(replace.week_pay))).toFixed(2) || 0;
+      })
       assignedEmployees.map(obj => {
         const { contract: assignedContract } = obj;
         assignedContracts.push(assignedContract);
@@ -912,11 +916,8 @@ const PayrollDetails = () => {
     currentPeriod, saveStatus, currentMonth, currentYear, changeStatus
   ]);
   const changedCellHour = (hours, origin_value, date, record, flag) => {
-
     const { _id } = record;
     const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
-
-    console.log(_id, date, '2222');
     if (item) {
       if (flag) {
         return item.hour
@@ -938,8 +939,6 @@ const PayrollDetails = () => {
     const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
 
     if (item) {
-
-      console.log(item, date, 'item,dateitem,dateitem,date')
       return item
     } else {
       return false
@@ -950,7 +949,7 @@ const PayrollDetails = () => {
     var hours = 0;
     for (var key in record) {
       if (key.includes('services-day-')) {
-        hours += record[key];
+        hours += parseFloat(record[key]);
       }
     }
     return hours;

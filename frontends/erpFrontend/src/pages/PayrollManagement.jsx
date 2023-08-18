@@ -98,6 +98,7 @@ const PayrollManagement = () => {
     const { result: assignedEmployee } = await request.list({ entity: "assignedEmployee" });
     const { result: allHours } = await request.list({ entity: 'payroll' });
     const { result: workContracts } = await request.list({ entity: "workContract" })
+    const { result: replacementData } = await request.list({ entity: "replacement" });
 
     while (currentDate.isSameOrBefore(end)) {
 
@@ -109,8 +110,8 @@ const PayrollManagement = () => {
           period_label: `${currentDate.format('MMMM')}-1(${currentDate.year()})`,
           year: currentDate.year(),
           periods: getPeriods(currentDate.month(), currentDate.year(), 0),
-          payroll_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), allHours, workContracts, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0), 1),
-          services_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), allHours, workContracts, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0), 2)
+          payroll_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), JSON.parse(JSON.stringify(replacementData)), allHours, workContracts, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0), 1),
+          services_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), JSON.parse(JSON.stringify(replacementData)), allHours, workContracts, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0), 2)
         })
       }
       else {
@@ -121,9 +122,9 @@ const PayrollManagement = () => {
           period_label: `${currentDate.format('MMMM')}-1(${currentDate.year()})`,
           year: currentDate.year(),
           periods: getPeriods(currentDate.month(), currentDate.year(), 0),
-          payroll_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), allHours, workContracts, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0), 1)
+          payroll_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), JSON.parse(JSON.stringify(replacementData)), allHours, workContracts, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0), 1)
           ,
-          services_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), allHours, workContracts, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0), 2)
+          services_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), JSON.parse(JSON.stringify(replacementData)), allHours, workContracts, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 0), 2)
 
         },
           {
@@ -133,9 +134,9 @@ const PayrollManagement = () => {
             period_label: `${currentDate.format('MMMM')}-2(${currentDate.year()})`,
             year: currentDate.year(),
             periods: getPeriods(currentDate.month(), currentDate.year(), 1),
-            payroll_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), allHours, workContracts, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 1), 1)
+            payroll_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), JSON.parse(JSON.stringify(replacementData)), allHours, workContracts, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 1), 1)
             ,
-            services_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), allHours, workContracts, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 1), 2)
+            services_amount: getPaymentData(JSON.parse(JSON.stringify(assignedEmployee)), JSON.parse(JSON.stringify(replacementData)), allHours, workContracts, currentDate.year(), currentDate.month(), getPeriods(currentDate.month() + 1, currentDate.year(), 1), 2)
 
           })
       }
@@ -154,7 +155,7 @@ const PayrollManagement = () => {
   }
   const changedCellValue = (hours, date, record, origin_value) => {
 
-    const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id }, workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = record;
+    const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id }, workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date, _id } = record;
     if (contract) {
 
       let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
@@ -171,7 +172,7 @@ const PayrollManagement = () => {
         console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
       }
       if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
-        const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
+        const item = hours.find(obj => obj.position === _id && obj.date === date);
         if (item) {
           return item.hour
         } else {
@@ -241,7 +242,7 @@ const PayrollManagement = () => {
       return flag;
     }
   }
-  const getPaymentData = (_assignedEmployees, Hours, workContracts, year, month, periods, payType = 1) => {
+  const getPaymentData = (_assignedEmployees, _replacements, Hours, workContracts, year, month, periods, payType = 1) => {
     month++;
     const unassignedContracts = [];
     const assignedContracts = [];
@@ -255,6 +256,7 @@ const PayrollManagement = () => {
         checkPeriods(contract, start_date, end_date, 0)
       )
     )
+    const filteredReplacements = _replacements.filter(data => dateValue(data.start_date) === dateValue(start_date) && dateValue(data.end_date) === dateValue(end_date))
     _listItems.map((obj, index) => {
 
       const { contract: assignedContract } = obj;
@@ -344,10 +346,42 @@ const PayrollManagement = () => {
         obj.salary = parseFloat(obj.adjust) + parseFloat(obj.week_pay);
       }
     });
-    console.log(_listItems, '_listItems',);
 
+    filteredReplacements.map(replace => {
+      replace.hours = JSON.parse(replace.hours)[0]
+      replace.contract = { type: replace.contract_type, sal_hr: replace.sal_hr, replace: true }
+      replace.employee = replace.replacement
+      let currentDate = moment(start_date);
+      const end = moment(end_date);
+      while (currentDate.isSameOrBefore(end)) {
+        const day = currentDate.date();
+        const year = currentDate.year();
+        const month = currentDate.month();
+        const dataIndex = `-day-${year}_${month + 1}_${day}`;
+        const dataIndex_origin = `origin-day-${year}_${month + 1}_${day}`;
+        const dataIndex_new = `new-day-${year}_${month + 1}_${day}`;
+        const dataIndex_comment = `comment-day-${year}_${month + 1}_${day}`;
+        const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
+        const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
+        const originValue = replace.hours[dataIndex] || 0;
+        replace[dataIndex_origin] = originValue
+        replace[dataIndex_new] = changedCellHour(Hours, originValue, currentDate.format("MM/DD/YYYY"), replace, true)
+        replace[dataIndex2] = originValue
+        replace[dataIndex1] = parseInt(replace[dataIndex_new] - originValue)
+        replace[dataIndex_comment] = changedCellHour(Hours, originValue, currentDate.format("MM/DD/YYYY"), replace, false)
+        replace[`history${dataIndex}`] = getHistory(Hours, currentDate.format("MM/DD/YYYY"), replace)
+        currentDate = currentDate.add(1, 'days');
+      };
+      replace.hrs_bi = getServiceHours(replace);
+      replace.week_pay = mathCeil(replace.hrs_bi * replace.sal_hr)
+      replace.adjustment = calcAdjustment(replace);
+      replace.adjust = ((replace.adjustment / replace.hrs_bi) * replace.week_pay).toFixed(2)
+      replace.salary = ((parseFloat(replace.adjust) + parseFloat(replace.week_pay))) || 0;
+    })
+
+    console.log(filteredReplacements, start_date);
     let calValue = 0;
-    [..._listItems].map(obj => {
+    [..._listItems, ...filteredReplacements].map(obj => {
       const { contract } = obj;
       if (contract.type === payType) {
         calValue += (parseFloat(obj.salary))
@@ -368,10 +402,39 @@ const PayrollManagement = () => {
     var hours = 0;
     for (var key in record) {
       if (key.includes('services-day-')) {
-        hours += record[key];
+        hours += parseFloat(record[key]);
       }
     }
     return hours;
+  }
+  const changedCellHour = (hours, origin_value, date, record, flag) => {
+    const { _id } = record;
+    const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
+    if (item) {
+      if (flag) {
+        return item.hour
+      } else {
+        return item.comment
+      }
+    } else {
+      if (flag) {
+        return origin_value
+      } else {
+
+        return ''
+      }
+    }
+  }
+
+  const getHistory = (hours, date, record) => {
+    const { _id } = record;
+    const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
+
+    if (item) {
+      return item
+    } else {
+      return false
+    }
   }
 
 
