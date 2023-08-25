@@ -759,7 +759,7 @@ const RecurrentPaymentReport = () => {
         replace.salary = ((parseFloat(replace.adjust) + parseFloat(replace.week_pay))) || 0;
       })
 
-      console.log(JSON.parse(JSON.stringify(_listItems)), 'filteredReplacements');
+      console.log(JSON.parse(JSON.stringify(filteredReplacements)), 'filteredReplacements');
       const allDatas = [..._listItems];
       allDatas.map((data, index) => {
         const { employee } = data;

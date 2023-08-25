@@ -299,17 +299,21 @@ const PayrollDetails = () => {
       align: 'center',
       render: (text, record) => (
         <>
+
+
           {
-            `${getFormattedHours(
-              [
-                record.monday ? [record.monday[0], record.monday[1]] : "",
-                record.tuesday ? [record.tuesday[0], record.tuesday[1]] : "",
-                record.wednesday ? [record.wednesday[0], record.wednesday[1]] : "",
-                record.thursday ? [record.thursday[0], record.thursday[1]] : "",
-                record.friday ? [record.friday[0], record.friday[1]] : "",
-                record.saturday ? [record.saturday[0], record.saturday[1]] : "",
-                record.sunday ? [record.sunday[0], record.sunday[1]] : "",
-              ])}`
+            text ?
+              text :
+              `${getFormattedHours(
+                [
+                  record.monday ? [record.monday[0], record.monday[1]] : "",
+                  record.tuesday ? [record.tuesday[0], record.tuesday[1]] : "",
+                  record.wednesday ? [record.wednesday[0], record.wednesday[1]] : "",
+                  record.thursday ? [record.thursday[0], record.thursday[1]] : "",
+                  record.friday ? [record.friday[0], record.friday[1]] : "",
+                  record.saturday ? [record.saturday[0], record.saturday[1]] : "",
+                  record.sunday ? [record.sunday[0], record.sunday[1]] : "",
+                ])}`
 
           }
         </>
@@ -593,7 +597,6 @@ const PayrollDetails = () => {
           {
             title: currentDate.format("MMM/DD"),
             dataIndex: `-day-${year}_${month + 1}_${day}`,
-            editable: true
           }
         )
 
@@ -852,6 +855,7 @@ const PayrollDetails = () => {
           replace[`history${dataIndex}`] = getHistory(allHours, currentDate.format("MM/DD/YYYY"), replace)
           currentDate = currentDate.add(1, 'days');
         };
+        replace.hours = 'Replacement'
         replace.hrs_bi = getServiceHours(replace);
         replace.week_pay = mathCeil(replace.hrs_bi * replace.sal_hr)
         replace.adjustment = calcAdjustment(replace);
@@ -887,7 +891,7 @@ const PayrollDetails = () => {
 
 
         obj.salary = (obj.gross_salary).toFixed(2) || 0;
-        obj.employee = { personal_id: '' }
+        obj.employee = { personal_id: '', name: '' }
       });
       workContracts.map(obj => {
         obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
@@ -907,9 +911,9 @@ const PayrollDetails = () => {
       const allDatas = [...sortedListItems, ...filteredReplacements, ...unAssingedEmployees, ...filterdWorkContract];
       allDatas.map((data, index) => data['key'] = index)
       // const sortedLists = allDatas.sort((a, b) => a.store.store.localeCompare(b.store.store) && a.employee.personal_id.localeCompare(b.employee.personal_id));
-      console.log(sortedListItems, filteredReplacements, 'filteredReplacements')
-      setListItems([...allDatas]);
-      setGlobalItems([...allDatas]);
+      console.log(allDatas, 'filteredReplacements')
+      setListItems(allDatas);
+      setGlobalItems(allDatas);
     }
     init()
   }, [
@@ -1031,12 +1035,14 @@ const PayrollDetails = () => {
     if (globalItems) {
       const filteredData = globalItems.filter((record) => {
         const { store, employee } = record;
-
+        console.log(employee, '')
         return (
           (!searchText || (employee && employee['name'].toString().toLowerCase().includes(searchText.toLowerCase())) ||
             (store && store['store'].toString().toLowerCase().includes(searchText.toLowerCase())))
         );
       })
+
+      console.log(filteredData, 'filteredData')
       setListItems(filteredData);
       setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
     }
@@ -1131,6 +1137,7 @@ const PayrollDetails = () => {
     periodsColumn
   ]);
   const handleReplacement = (values) => {
+
     const jsonObj = { ...values, };
     jsonObj.store = jsonObj.employee.split('-')[1];
     jsonObj.employee = jsonObj.employee.split('-')[0];
@@ -1353,18 +1360,14 @@ const PayrollDetails = () => {
       </Row>
       <Table
         bordered
-        dataSource={[...listItems] || []}
+        dataSource={listItems || []}
         columns={[...mergedColumns]}
-        rowClassName="editable-row"
         ref={tableRef}
-        size='large'
-        className='payroll_details'
         scroll={{
-          x: 3300,
+          x: 3000,
         }}
         pagination={false}
         footer={Footer}
-
       />
     </Layout>
   );

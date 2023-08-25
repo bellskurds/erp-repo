@@ -27,7 +27,7 @@ const AssignedEmployee = (props) => {
     const [currentViaticum, setCurrentViaticum] = useState(false);
     const [assignStatus, setAssignStatus] = useState(true);
     const [unAssignStatus, setUnAssignStatus] = useState(false);
-    const bankColumns = [
+    const positionColumns = [
         {
             title: 'Position',
             dataIndex: 'position',
@@ -257,11 +257,10 @@ const AssignedEmployee = (props) => {
             dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
         }, 500)
     }
-    const handleBankModal = () => {
+    const handleModal = () => {
         setIsBankModal(false)
     }
-    const saveBankDetails = (values) => {
-
+    const saveDetails = (values) => {
 
         const parentId = currentEmployeeId;
         if (unAssignStatus && currentId && parentId && isUpdate) {
@@ -273,12 +272,12 @@ const AssignedEmployee = (props) => {
             dispatch(crud.update({ entity, id, jsonData: updateObj }));
 
 
-            setTimeout(() => {
-                const { contract, viaticum, employee, start_date, end_date, ...otherObj } = values
-                dispatch(crud.create({ entity, jsonData: otherObj }));
-                setIsBankModal(false)
-                dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
-            }, 500)
+            // setTimeout(() => {
+            //     const { contract, viaticum, employee, start_date, end_date, ...otherObj } = values
+            //     dispatch(crud.create({ entity, jsonData: otherObj }));
+            //     setIsBankModal(false)
+            //     dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
+            // }, 500)
 
         }
         else if (currentId && parentId && isUpdate) {
@@ -336,14 +335,14 @@ const AssignedEmployee = (props) => {
     const [isViaticum, setIsViaticum] = useState(false);
     const [isContract, setIsContract] = useState(false);
     const [workContracts, setWorkContracts] = useState();
+    const [selectedEmployeeId, setSelectedEmployeeId] = useState(false);
     const changeEmployee = (value) => {
         formRef.current.setFieldsValue({
             contract: undefined,
-            viaticum: undefined
+            viaticum: undefined,
         })
-        setWorkContract([]);
-        setViaticumContract([])
         if (value) {
+            setSelectedEmployeeId(value)
             setIsEmployee(true)
             const entity = 'workContract';
             const jsonData = { parent_id: value }
@@ -362,7 +361,38 @@ const AssignedEmployee = (props) => {
         }
     }
     const changeContract = (e) => {
-        console.log(e, 'test');
+        console.log(currentItem, 'currentItem')
+        setUnAssignStatus(false);
+
+        if (currentItem) {
+            if (currentItem.end_date) {
+                setUnAssignStatus(true);
+                setCantUpdate(true);
+            } else {
+                setUnAssignStatus(false);
+                setCantUpdate(false);
+            }
+            if (currentItem.viaticum_start_date) {
+                setIsViaticum(true)
+            } else {
+                setIsViaticum(false)
+            }
+            if (currentItem.contract._id === e) {
+                if (formRef.current) {
+                    formRef.current.setFieldsValue({
+                        start_date: currentItem.start_date ? moment(new Date(currentItem.start_date)) : null,
+                        end_date: currentItem.end_date ? moment(new Date(currentItem.end_date)) : null,
+                        viaticum_start_date: currentItem.viaticum_start_date ? moment(new Date(currentItem.viaticum_start_date)) : null,
+                        viaticum_end_date: currentItem.viaticum_end_date ? moment(new Date(currentItem.viaticum_end_date)) : null,
+
+                    })
+                }
+            } else {
+                if (formRef.current) {
+                    formRef.current.resetFields(["start_date"])
+                }
+            }
+        }
         if (e) {
             setIsContract(true)
         } else {
@@ -391,8 +421,12 @@ const AssignedEmployee = (props) => {
         }
 
     }, [Stores]);
+
     useEffect(() => {
 
+        console.log(selectedEmployeeId, 'selectedEmployeeId');
+    }, [selectedEmployeeId,])
+    useEffect(() => {
         console.log(Contracts, 'ContractsContracts')
         const contractOptions = Contracts.items || [];
         if (contractOptions) {
@@ -432,7 +466,7 @@ const AssignedEmployee = (props) => {
     }, [Contracts]);
     useEffect(() => {
 
-        console.log(currentEmployee, 'currentContract , currentEmployee')
+        console.log(currentContract, currentEmployee, currentViaticum, 'currentContract , currentEmployee')
         if ((currentContract && currentEmployee) || (currentViaticum && currentEmployee)) {
             setAssignStatus(false);
         } else {
@@ -442,6 +476,12 @@ const AssignedEmployee = (props) => {
         }
     }, [currentContract, currentEmployee, currentViaticum]);
 
+
+
+    useEffect(() => {
+
+        console.log(isContract, isEmployee, 'isContract,isEmployee');
+    }, [isContract, isEmployee])
     const [isWorkDate, setIsWorkDate] = useState(false);
     const cancelWorkDate = () => {
         setIsWorkDate(false);
@@ -546,7 +586,7 @@ const AssignedEmployee = (props) => {
     return (
 
         <div className="whiteBox shadow">
-            <Modal title="Create Form" visible={isBankModal} onCancel={handleBankModal} footer={null} width={1000}>
+            <Modal title="Create Form" visible={isBankModal} onCancel={handleModal} footer={null} width={1000}>
                 <Form
                     ref={formRef}
                     name="basic"
@@ -556,7 +596,7 @@ const AssignedEmployee = (props) => {
                     wrapperCol={{
                         span: 16,
                     }}
-                    onFinish={saveBankDetails}
+                    onFinish={saveDetails}
                     onFinishFailed={onFinishFailed}
                     autoComplete="off"
                     initialValues={{
@@ -853,37 +893,38 @@ const AssignedEmployee = (props) => {
                             }
                         </Col>
                     </Row>
-                    {
-                        !cantUpdate && <Form.Item
-                            wrapperCol={{
-                                offset: 8,
-                                span: 16,
-                            }}
-                        >
-                            {
-                                isUpdate ?
-                                    <Button type="primary" htmlType="submit">
-                                        Update
-                                    </Button>
-                                    : <Button type="primary" htmlType="submit">
-                                        Save
-                                    </Button>
+                    {/* {
+                        !cantUpdate &&
+                    } */}
+                    <Form.Item
+                        wrapperCol={{
+                            offset: 8,
+                            span: 16,
+                        }}
+                    >
+                        {
+                            isUpdate ?
+                                <Button type="primary" htmlType="submit">
+                                    Update
+                                </Button>
+                                : <Button type="primary" htmlType="submit">
+                                    Save
+                                </Button>
 
-                            }
+                        }
 
-                            <Button type="ghost" onClick={handleBankModal}>
-                                cancel
-                            </Button>
-                        </Form.Item>
-                    }
-                    {
+                        <Button type="ghost" onClick={handleModal}>
+                            cancel
+                        </Button>
+                    </Form.Item>
+                    {/* {
 
                         cantUpdate &&
                         <Form.Item>
 
                             <label style={{ fontSize: '30px', textAlign: 'right', color: 'red' }}>You can't update because it was un assigned</label>
                         </Form.Item>
-                    }
+                    } */}
                 </Form>
                 <>
                 </>
@@ -927,7 +968,7 @@ const AssignedEmployee = (props) => {
                 rowKey={(item) => item._id}
                 key={(item) => item._id}
                 dataSource={itemLists || []}
-                columns={bankColumns}
+                columns={positionColumns}
                 rowClassName="editable-row"
 
 
