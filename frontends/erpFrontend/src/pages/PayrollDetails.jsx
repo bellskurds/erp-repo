@@ -517,7 +517,7 @@ const PayrollDetails = () => {
   const setColor = (new_value, origin_value) => {
 
     if (new_value !== origin_value && new_value === 0) {
-      return <p className='parent_yellow'>0({origin_value})</p>
+      return <p>0</p>
     }
     else if (!new_value) {
       return <p>{origin_value}</p>
