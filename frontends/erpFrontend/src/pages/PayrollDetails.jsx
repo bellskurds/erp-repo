@@ -730,6 +730,18 @@ const PayrollDetails = () => {
         } else if (viaticum && !contract) {
           position.contract = viaticum;
         }
+        if (position.start_date) {
+          position.contract.start_date = moment(new Date(position.start_date)).format("MM/DD/YYYY");
+        }
+        if (position.end_date) {
+          position.contract.end_date = moment(new Date(position.end_date)).format("MM/DD/YYYY");
+        }
+        if (position.viaticum_start_date) {
+          position.contract.start_date = moment(new Date(position.viaticum_start_date)).format("MM/DD/YYYY");
+        }
+        if (position.viaticum_end_date) {
+          position.contract.end_date = moment(new Date(position.viaticum_end_date)).format("MM/DD/YYYY");
+        }
       })
       const _listItems = assignedEmployees.filter(({ contract, viaticum }) =>
         Object(contract).hasOwnProperty('status') && contract.status === "active" &&

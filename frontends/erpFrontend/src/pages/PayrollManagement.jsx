@@ -250,6 +250,16 @@ const PayrollManagement = () => {
     const endDay = parseInt(periods.split("-")[1]);
     const start_date = new Date(year, startDay === 31 ? (month - 2) : (month - 1), startDay);
     const end_date = new Date(year, month - 1, endDay);
+
+    _assignedEmployees.map(position => {
+      if (position.start_date) {
+        position.contract.start_date = moment(new Date(position.start_date)).format("MM/DD/YYYY");
+      }
+      if (position.end_date) {
+        position.contract.end_date = moment(new Date(position.end_date)).format("MM/DD/YYYY");
+      }
+    })
+
     const _listItems = _assignedEmployees.filter(({ contract }) =>
       Object(contract).hasOwnProperty("status") && contract.status === "active" &&
       (
@@ -347,6 +357,18 @@ const PayrollManagement = () => {
       }
     });
 
+    workContracts.map(obj => {
+      obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+      obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+      obj.contract = { type: obj.type, flag: false }
+      obj.salary = obj.type <= 2 ? mathCeil(obj.sal_monthly / 2) || 0 : 0
+      obj.employee = obj.parent_id
+    })
+    const filterdWorkContract = workContracts.filter(contract => Object(contract).hasOwnProperty('status') && contract.status === "active" &&
+      (
+        checkPeriods(contract, start_date, end_date, 0)
+      ))
+
     filteredReplacements.map(replace => {
       replace.hours = JSON.parse(replace.hours)[0]
       replace.contract = { type: replace.contract_type, sal_hr: replace.sal_hr, replace: true }
@@ -381,7 +403,7 @@ const PayrollManagement = () => {
 
     console.log(filteredReplacements, start_date);
     let calValue = 0;
-    [..._listItems, ...filteredReplacements].map(obj => {
+    [..._listItems, ...filteredReplacements, ...filterdWorkContract].map(obj => {
       const { contract } = obj;
       if (contract.type === payType) {
         calValue += (parseFloat(obj.salary))
