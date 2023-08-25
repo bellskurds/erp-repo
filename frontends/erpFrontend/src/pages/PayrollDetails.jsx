@@ -897,7 +897,7 @@ const PayrollDetails = () => {
         obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
         obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
         obj.contract = { type: obj.type, flag: false }
-        obj.salary = obj.gross_salary
+        obj.salary = obj.type <= 2 ? mathCeil(obj.sal_monthly / 2) || 0 : 0
         obj.employee = obj.parent_id
       })
       const filterdWorkContract = workContracts.filter(contract => Object(contract).hasOwnProperty('status') && contract.status === "active" &&
