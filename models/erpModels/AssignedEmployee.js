@@ -70,6 +70,9 @@ const AssignedEmployeeSchema = new mongoose.Schema({
   viaticum_end_date: {
     type: Date,
   },
+  unassigned: {
+    type: Boolean,
+  },
 });
 AssignedEmployeeSchema.plugin(require('mongoose-autopopulate'));
 // AssignedEmployeeSchema.index({

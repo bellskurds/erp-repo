@@ -142,6 +142,10 @@ export default function Navigation() {
                   <Link to={'/routes'} />
                   Routes
                 </Menu.Item>
+                <Menu.Item key={'Routes'}>
+                  <Link to={'/routes'} />
+                  Routes
+                </Menu.Item>
               </SubMenu>
             </>
           }

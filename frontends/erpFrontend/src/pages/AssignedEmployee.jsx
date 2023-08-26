@@ -269,15 +269,15 @@ const AssignedEmployee = (props) => {
             values["parent_id"] = parentId;
             const jsonData = { parent_id: parentId }
             const { start_date, ...updateObj } = values
-            dispatch(crud.update({ entity, id, jsonData: updateObj }));
+            dispatch(crud.update({ entity, id, jsonData: { ...updateObj, unassigned: true } }));
 
 
-            // setTimeout(() => {
-            //     const { contract, viaticum, employee, start_date, end_date, ...otherObj } = values
-            //     dispatch(crud.create({ entity, jsonData: otherObj }));
-            //     setIsBankModal(false)
-            //     dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
-            // }, 500)
+            setTimeout(() => {
+                const { contract, viaticum, employee, start_date, end_date, viaticum_start_date, viaticum_end_date, ...otherObj } = values
+                dispatch(crud.create({ entity, jsonData: otherObj }));
+                setIsBankModal(false)
+                dispatch(crud.listByAssignedEmployee({ entity, jsonData }));
+            }, 500)
 
         }
         else if (currentId && parentId && isUpdate) {
@@ -315,7 +315,9 @@ const AssignedEmployee = (props) => {
         dispatch(crud.listByCustomerStores({ entity: "customerStores", jsonData: { parent_id: currentEmployeeId } }))
     }, []);
     useEffect(() => {
-        setItemLists(Items.items || [])
+        const positions = Items.items || [];
+        const data = positions.filter(position => !position.unassigned)
+        setItemLists(data || [])
         console.log(Items.items, 'Items.items');
     }, [Items])
 
@@ -377,7 +379,7 @@ const AssignedEmployee = (props) => {
             } else {
                 setIsViaticum(false)
             }
-            if (currentItem.contract._id === e) {
+            if (currentItem.contract && currentItem.contract._id === e) {
                 if (formRef.current) {
                     formRef.current.setFieldsValue({
                         start_date: currentItem.start_date ? moment(new Date(currentItem.start_date)) : null,
@@ -488,26 +490,6 @@ const AssignedEmployee = (props) => {
     }
     const handleUnAssign = () => {
         setUnAssignStatus(true);
-
-        console.log(isEmployee, isContract, isViaticum, 'isEmployee,isContract,isViaticum');
-
-
-        const unAssignForm = formRef.current;
-        if (unAssignForm) {
-
-        }
-
-
-        // setIsUpdate(false);
-
-        // if (unAssignForm && unAssignStatus) {
-        //     unAssignForm.resetFields(['employee', 'contract', 'viaticum']);
-        //     unAssignForm.setFieldsValue({
-        //         employee: null,
-        //         contract: null,
-        //         viaticum: null
-        //     })
-        // }
     }
     const handleLastWork = (values) => {
 
@@ -543,30 +525,29 @@ const AssignedEmployee = (props) => {
     const endValidate = (e, type) => {
         if (formRef.current) {
             const { contract, viaticum } = formRef.current.getFieldsValue(['contract', 'viaticum'])
-
             const currentWorkContract = workContracts.filter(data => contract === data._id);
             const currentViaticum = workContracts.filter(data => viaticum === data._id);
-
             let { end_date: contractEnd } = currentWorkContract[0] || { start_date: new Date('01-01-1999'), end_date: new Date('01-01-2999') };
             let { end_date: viaticumEnd } = currentViaticum[0] || { start_date: new Date('01-01-1999'), end_date: new Date('01-01-2999') };
             contractEnd = moment(contractEnd, 'MM-DD-YYYY');
             viaticumEnd = moment(viaticumEnd, 'MM-DD-YYYY');
             let selectedDate = moment(e, 'MM-DD-YYYY');
-
             if (formRef.current) {
-                let { start_date } = formRef.current.getFieldsValue();
+                let { start_date, viaticum_start_date } = formRef.current.getFieldsValue();
                 let startDate = moment(start_date, 'MM-DD-YYYY');
-
+                if (type === "viaticum") {
+                    startDate = moment(viaticum_start_date, 'MM-DD-YYYY');
+                }
                 if (selectedDate.isAfter(startDate)) {
                     console.log('yes');
                     if (type === 'contract') {
 
-                        if (!selectedDate.isSameOrBefore(contractEnd)) {
+                        if (!(selectedDate.format("MM/DD/YYYY") === contractEnd.format("MM/DD/YYYY") || selectedDate.isSameOrBefore(contractEnd))) {
                             formRef.current.resetFields(['end_date']);
                             message.error("position end date cant be before employee contract end date")
                         }
                     } else {
-                        if (!selectedDate.isSameOrBefore(viaticumEnd)) {
+                        if (!(selectedDate.format("MM/DD/YYYY") === viaticumEnd.format("MM/DD/YYYY") || selectedDate.isBefore(viaticumEnd))) {
                             formRef.current.resetFields(['viaticum_end_date']);
                             message.error("position end date cant be before employee viaticum_end_date end date")
                         }
