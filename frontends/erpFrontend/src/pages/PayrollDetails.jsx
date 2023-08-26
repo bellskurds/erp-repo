@@ -247,9 +247,9 @@ const PayrollDetails = () => {
         // workStart = workStart.subtract(1, 'day')
         // workEnd = workEnd.add(1, 'day')
 
-        console.log(targetDate.isSame(workEnd), targetDate.isBetween(workStart, workEnd))
+        console.log(workStart, workEnd, targetDate.isSame(workEnd))
 
-        if (targetDate.isSame(workEnd) || targetDate.isBetween(workStart, workEnd)) {
+        if (targetDate.format("MM/DD/YYYY") === workStart.format("MM/DD/YYYY") || targetDate.isBetween(workStart, workEnd)) {
           setPrevHour(hour);
           setTimeout(() => {
             if (formRef.current) formRef.current.setFieldsValue({
