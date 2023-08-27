@@ -336,6 +336,16 @@ const ComparativeReport = () => {
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" })
 
 
+      assignedEmployees.map(position => {
+
+        if (position.start_date) {
+          position.contract.start_date = moment(new Date(position.start_date)).format("MM/DD/YYYY");
+        }
+        if (position.end_date) {
+          position.contract.end_date = moment(new Date(position.end_date)).format("MM/DD/YYYY");
+        }
+      })
+
 
       const _listItems = assignedEmployees.filter(({ contract }) =>
         Object(contract).hasOwnProperty('status') && contract.status === "active" &&
