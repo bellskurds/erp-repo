@@ -29,6 +29,9 @@ const ReplacementSchema = new mongoose.Schema({
   },
   hours: {
     type: Object
+  },
+  payroll_id: {
+    type: String
   }
 });
 ReplacementSchema.plugin(require('mongoose-autopopulate'));

@@ -597,6 +597,7 @@ const PayrollDetails = () => {
           {
             title: currentDate.format("MMM/DD"),
             dataIndex: `-day-${year}_${month + 1}_${day}`,
+            editable: true
           }
         )
 
@@ -772,7 +773,8 @@ const PayrollDetails = () => {
         obj.thursday_hr = obj.thursday ? getHours(obj.thursday) : 0;
         obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
         obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
-        obj.workDays = checkPeriods(assignedContract, start_date, end_date, 1)
+        obj.workDays = checkPeriods(assignedContract, start_date, end_date, 1);
+        obj.payroll_id = obj._id;
         let currentDate = moment(start_date);
         const end = moment(end_date);
 
@@ -852,6 +854,7 @@ const PayrollDetails = () => {
             ((obj.adjustment / obj.hrs_bi) * obj.week_pay).toFixed(2)
             : (calcAdjustment(obj) * obj.sal_hr || 0).toFixed(2);
         obj.salary = getFullPaymentStatus(obj.workDays, start_date, end_date, obj) ? assignedContract.sal_monthly / 2 || 0 : ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
+        obj.replace = false
       });
       filteredReplacements.map(replace => {
         replace.hours = JSON.parse(replace.hours)[0]
@@ -879,6 +882,7 @@ const PayrollDetails = () => {
           replace[`history${dataIndex}`] = getHistory(allHours, currentDate.format("MM/DD/YYYY"), replace)
           currentDate = currentDate.add(1, 'days');
         };
+        replace.replace = true
         replace.hours = 'Replacement'
         replace.hrs_bi = getServiceHours(replace);
         replace.week_pay = mathCeil(replace.hrs_bi * replace.sal_hr)
@@ -933,9 +937,15 @@ const PayrollDetails = () => {
       })
       const sortedListItems = _listItems.sort((a, b) => b.position.localeCompare(a.position));
       const allDatas = [...sortedListItems, ...filteredReplacements, ...unAssingedEmployees, ...filterdWorkContract];
+      allDatas.map(obj => {
+        if (!obj.payroll_id) {
+          obj.payroll_id = "ZZZZ"
+        }
+      })
+      const sortedLists = allDatas.sort((a, b) => a.payroll_id.localeCompare(b.payroll_id));
       allDatas.map((data, index) => data['key'] = index)
       // const sortedLists = allDatas.sort((a, b) => a.store.store.localeCompare(b.store.store) && a.employee.personal_id.localeCompare(b.employee.personal_id));
-      console.log(allDatas, 'filteredReplacements')
+      console.log(sortedLists, 'filteredReplacements')
       setListItems(allDatas);
       setGlobalItems(allDatas);
     }
@@ -1054,6 +1064,9 @@ const PayrollDetails = () => {
   }
   const isertReplacement = () => {
     setIsReplacement(true)
+    if (replaceRef.current) {
+      replaceRef.current.resetFields();
+    }
   }
   useEffect(() => {
     if (globalItems) {
@@ -1073,11 +1086,14 @@ const PayrollDetails = () => {
   }, [searchText, globalItems]);
   useEffect(() => {
     if (globalItems) {
+
+      console.log(globalItems, 'globalItems');
       const filter = globalItems.map((item, index) => {
+        console.log(item.replace, 'item.replace');
         const { employee, store } = item;
-        if (employee && store) {
+        if (employee && store && store.store && !item.replace) {
           return {
-            value: `${employee._id}-${store._id}`,
+            value: `${employee._id}-${store._id}-${item._id}`,
             label: `${employee.name}(${store.store})`
           }
         }
@@ -1162,10 +1178,11 @@ const PayrollDetails = () => {
   ]);
   const handleReplacement = (values) => {
 
+
     const jsonObj = { ...values, };
     jsonObj.store = jsonObj.employee.split('-')[1];
+    jsonObj.payroll_id = jsonObj.employee.split('-')[2];
     jsonObj.employee = jsonObj.employee.split('-')[0];
-
     jsonObj.hours = JSON.stringify(periodsData)
     const startDay = parseInt(currentPeriod.split("-")[0]);
     const endDay = parseInt(currentPeriod.split("-")[1]);
