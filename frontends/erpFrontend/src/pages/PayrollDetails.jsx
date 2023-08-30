@@ -556,6 +556,19 @@ const PayrollDetails = () => {
     }
     // console.log(startDate.isSameOrBefore(targetStartDate) && endDate.isSameOrAfter(targetEndDate), 'status')
   }
+  const getWorkedStatus = (record) => {
+    var flag = true;
+    for (var key in record) {
+      if (key.includes('services-day-')) {
+        const date_key = key.split('services-day-')[1].split("_").join("-");
+        const day = moment(new Date(date_key)).day();
+        if (day && !record[key]) {
+          flag = false;
+        }
+      }
+    }
+    return flag;
+  }
 
   const getFullPaymentStatus = (workDates, start, end, record) => {
     let start_date = moment(start);
@@ -563,9 +576,8 @@ const PayrollDetails = () => {
     const work_start = workDates[0];
     const real_start = record.start_date ? moment(record.start_date).format('MM-DD-YYYY') : moment(record.viaticum_start_date).format('MM-DD-YYYY');
     const real_end = record.start_date ? moment(record.end_date).format('MM-DD-YYYY') : moment(record.viaticum_end_date).format('MM-DD-YYYY');
-
     const work_end = workDates[workDates.length - 1]
-    if (work_start === start_date.format('MM-DD-YYYY') && work_end === end_date.format('MM-DD-YYYY') && work_start >= real_start && work_end <= real_end) {
+    if (getWorkedStatus(record) && record.adjustment === 0 && work_start === start_date.format('MM-DD-YYYY') && work_end === end_date.format('MM-DD-YYYY') && work_start >= real_start && work_end <= real_end) {
       return true;
     } else {
       return false;
@@ -836,7 +848,7 @@ const PayrollDetails = () => {
           }
           currentDate = currentDate.add(1, 'days');
         };
-        obj.hr_week = assignedContract.hr_week;
+        // obj.hr_week = assignedContract.hr_week;
         obj.sal_hr = assignedContract.sal_hr;
         obj.hrs_bi = getServiceHours(obj);
         obj.week_pay =
@@ -853,7 +865,11 @@ const PayrollDetails = () => {
           assignedContract.type === 3 ?
             ((obj.adjustment / obj.hrs_bi) * obj.week_pay).toFixed(2)
             : (calcAdjustment(obj) * obj.sal_hr || 0).toFixed(2);
-        obj.salary = getFullPaymentStatus(obj.workDays, start_date, end_date, obj) ? assignedContract.sal_monthly / 2 || 0 : ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
+        obj.salary =
+          (assignedContract.type <= 2 && getFullPaymentStatus(obj.workDays, start_date, end_date, obj)) ?
+            assignedContract.sal_monthly / 2 || 0
+            :
+            ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
         obj.replace = false
       });
       filteredReplacements.map(replace => {
@@ -910,20 +926,20 @@ const PayrollDetails = () => {
         obj.thursday_hr = obj.thursday ? getHours(obj.thursday) : 0;
         obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
         obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
-
-
         obj.hrs_bi = getServiceHours(obj);
         obj.week_pay = mathCeil(obj.hrs_bi * obj.sal_hr)
         obj.adjustment = calcAdjustment(obj);
         obj.adjust = (obj.adjustment * obj.sal_hr || 0).toFixed(2);
-
-
         obj.salary = (obj.gross_salary).toFixed(2) || 0;
         obj.employee = { personal_id: '', name: '' }
       });
+
+
+
+
       workContracts.map(obj => {
-        obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-        obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+        // obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
+        // obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
         obj.contract = { type: obj.type, flag: false }
         obj.salary = obj.type <= 2 ? mathCeil(obj.sal_monthly / 2) || 0 : 0
         obj.employee = obj.parent_id
@@ -935,19 +951,53 @@ const PayrollDetails = () => {
       filterdWorkContract.map(contract => {
         contract.store = { store: '' }
       })
+      const groupedContract = JSON.parse(JSON.stringify(_listItems)).reduce((acc, item) => {
+        const existingItem = acc.find(i => i.employee._id === item.employee._id && i.contract._id === item.contract._id);
+        if (!existingItem) {
+          acc.push(item);
+        }
+        return acc;
+      }, []);
+      groupedContract.map(a_item => {
+        _listItems.map(b_item => {
+          if (a_item._id !== b_item._id && a_item.contract._id === b_item.contract._id && a_item.employee._id === b_item.employee._id) {
+            a_item.hr_week += parseFloat(a_item.hr_week)
+          }
+        });
+        filterdWorkContract.map(c_item => {
+          if (c_item.type <= 2 && a_item.contract._id === c_item._id && a_item.employee._id === c_item.employee._id) {
+            if (a_item.hr_week >= c_item.hr_week) {
+              c_item.isShow = false;
+            } else {
+              // c_item.isShow = true;
+
+              c_item.hr_week = parseFloat(c_item.hr_week) - parseFloat(a_item.hr_week);
+              c_item.salary = ((parseFloat(c_item.hr_week) / (parseFloat(c_item.hr_week) + parseFloat(a_item.hr_week))) * c_item.sal_monthly / 2).toFixed(2)
+            }
+          }
+        })
+      })
+      const finalWorkConctract = filterdWorkContract.filter(contract => contract.isShow !== false)
+
+      console.log(finalWorkConctract, 'allDatasallqqssqDatas')
       const sortedListItems = _listItems.sort((a, b) => b.position.localeCompare(a.position));
-      const allDatas = [...sortedListItems, ...filteredReplacements, ...unAssingedEmployees, ...filterdWorkContract];
+      const allDatas = [...sortedListItems, ...filteredReplacements, ...unAssingedEmployees, ...finalWorkConctract];
+
       allDatas.map(obj => {
         if (!obj.payroll_id) {
-          obj.payroll_id = "ZZZZ"
+          obj.payroll_id = "ZZZZZ"
         }
       })
+
+
+
+
+
       const sortedLists = allDatas.sort((a, b) => a.payroll_id.localeCompare(b.payroll_id));
       allDatas.map((data, index) => data['key'] = index)
-      // const sortedLists = allDatas.sort((a, b) => a.store.store.localeCompare(b.store.store) && a.employee.personal_id.localeCompare(b.employee.personal_id));
-      console.log(sortedLists, 'filteredReplacements')
-      setListItems(allDatas);
-      setGlobalItems(allDatas);
+      setListItems(sortedLists);
+      setGlobalItems(sortedLists);
+
     }
     init()
   }, [
