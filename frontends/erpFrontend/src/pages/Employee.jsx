@@ -94,7 +94,7 @@ const Employees = () => {
     dispatch(crud.delete({ entity, id }))
     setTimeout(() => {
       dispatch(crud.list({ entity }));
-    }, 1000)
+    }, 400)
   }
   const showCustomers = (data) => {
     setIsModal(true)
@@ -241,9 +241,11 @@ const Employees = () => {
     } else {
       dispatch(crud.create({ entity, jsonData: values }));
     }
-    formRef.current.resetFields();
-    dispatch(crud.list({ entity }));
-    handleCancel()
+    setTimeout(() => {
+      formRef.current.resetFields();
+      dispatch(crud.list({ entity }));
+      handleCancel()
+    }, 400);
   };
   const formRef = useRef(null);
   const onFinishFailed = (errorInfo) => {

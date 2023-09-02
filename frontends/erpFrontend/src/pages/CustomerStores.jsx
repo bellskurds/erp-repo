@@ -504,7 +504,7 @@ const CustomerStores = (props) => {
                                 </>
                             }
                             {
-                                !insumos &&
+                                insumos &&
                                 <Form.Item
                                     name="inspection"
                                     label="Monthly inspections"
