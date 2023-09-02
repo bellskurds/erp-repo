@@ -1006,6 +1006,19 @@ const Contract = (props) => {
                                 </Form.Item>
                             }
                             <Form.Item
+                                name={"daily_hour"}
+                                label="Daily Hour"
+                                rules={[
+                                    {
+                                        required: true,
+                                        max: 16,
+                                        min: 2
+                                    }
+                                ]}
+                            >
+                                <Input type="number" />
+                            </Form.Item>
+                            <Form.Item
                             // wrapperCol={{
                             //     offset: 8,
                             //     span: 16,

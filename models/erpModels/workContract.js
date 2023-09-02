@@ -17,6 +17,9 @@ const WorkContractSchema = new mongoose.Schema({
   sal_monthly: {
     type: Number,
   },
+  daily_hour: {
+    type: Number,
+  },
   status: {
     type: String,
     default: "active"

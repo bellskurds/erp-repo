@@ -1,12 +1,12 @@
-import { DashboardLayout, DefaultLayout } from '@/layout';
-import { DeleteOutlined, EditOutlined, EyeOutlined, LeftOutlined, PlusOutlined, RightOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons';
-import { Button, Col, Form, Input, InputNumber, Layout, Modal, Popconfirm, Radio, Row, Select, Space, Table, Tag, Typography, message } from 'antd';
+/* eslint-disable no-sparse-arrays */
+/* eslint-disable array-callback-return */
+/* eslint-disable no-unused-vars */
+import { LeftOutlined, RightOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons';
+import { Button, Col, Form, Input, Layout, Modal, Radio, Row, Select, Table, Typography, message } from 'antd';
 import * as XLSX from 'xlsx';
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import CustomModal from 'modules/CustomModal'
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
-import { selectListItems } from '@/redux/crud/selectors';
 import moment from 'moment';
 import { useParams } from 'react-router-dom/cjs/react-router-dom.min';
 import { request } from '@/request';
@@ -475,23 +475,14 @@ const PayrollDetails = () => {
 
   }
   const getCellValue = (hours, date, record, origin_value) => {
-
     const { workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = record;
     if (contract) {
-
       let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
       let positionEnd = contract.type === 3 ? moment(new Date(viaticum_end_date), 'MM-DD-YYYY') : moment(new Date(end_date), 'MM-DD-YYYY');
-
-
       let startWorkDay = positionStart || moment(workDays[0], 'MM-DD-YYYY');
       let endWorkDay = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
       startWorkDay = startWorkDay.subtract(1, 'day')
       const targetDay = moment(new Date(date), 'MM-DD-YYYY');
-
-      // if (contract.type === 3) {
-
-      //   console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
-      // }
       if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
         return origin_value;
       } else {
@@ -798,49 +789,53 @@ const PayrollDetails = () => {
           const dataIndex = `-day-${year}_${month + 1}_${day}`;
           const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
           const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
+          const dataIndex_new = `new-day-${year}_${month + 1}_${day}`;
           switch (_day) {
             case 0:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.sunday_hr);
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.sunday_hr);
-
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr) - obj.sunday_hr
+              obj[dataIndex_new] = (changedCellHour(allHours, obj.sunday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
 
             case 1:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.monday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr) - obj.monday_hr;
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.monday_hr);
-
+              obj[dataIndex_new] = (changedCellHour(allHours, obj.monday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
 
             case 2:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.tuesday_hr);
-
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr) - obj.tuesday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.tuesday_hr);
+              obj[dataIndex_new] = (changedCellHour(allHours, obj.tuesday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
 
             case 3:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.wednesday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr) - obj.wednesday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.wednesday_hr);
+              obj[dataIndex_new] = (changedCellHour(allHours, obj.wednesday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
 
             case 4:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.thursday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr) - obj.thursday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.thursday_hr);
+              obj[dataIndex_new] = (changedCellHour(allHours, obj.thursday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
             case 5:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.friday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr) - obj.friday_hr
-
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.friday_hr);
+              obj[dataIndex_new] = (changedCellHour(allHours, obj.friday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
             case 6:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.saturday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr) - obj.saturday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.saturday_hr);
+              obj[dataIndex_new] = (changedCellHour(allHours, obj.saturday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
 
             default:
@@ -848,7 +843,6 @@ const PayrollDetails = () => {
           }
           currentDate = currentDate.add(1, 'days');
         };
-        // obj.hr_week = assignedContract.hr_week;
         obj.sal_hr = assignedContract.sal_hr;
         obj.hrs_bi = getServiceHours(obj);
         obj.week_pay =
@@ -865,6 +859,7 @@ const PayrollDetails = () => {
           assignedContract.type === 3 ?
             ((obj.adjustment / obj.hrs_bi) * obj.week_pay).toFixed(2)
             : (calcAdjustment(obj) * obj.sal_hr || 0).toFixed(2);
+        obj.full_status = getFullPaymentStatus(obj.workDays, start_date, end_date, obj);
         obj.salary =
           (assignedContract.type <= 2 && getFullPaymentStatus(obj.workDays, start_date, end_date, obj)) ?
             assignedContract.sal_monthly / 2 || 0
@@ -931,15 +926,10 @@ const PayrollDetails = () => {
         obj.adjustment = calcAdjustment(obj);
         obj.adjust = (obj.adjustment * obj.sal_hr || 0).toFixed(2);
         obj.salary = (obj.gross_salary).toFixed(2) || 0;
-        obj.employee = { personal_id: '', name: '' }
+        obj.employee = { personal_id: '', name: '' };
+        obj.unassinged = true;
       });
-
-
-
-
       workContracts.map(obj => {
-        // obj.hrs_bi = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
-        // obj.week_pay = obj.type === 1 ? mathCeil(obj.hr_week * 4.333 / 2) : 0;
         obj.contract = { type: obj.type, flag: false }
         obj.salary = obj.type <= 2 ? mathCeil(obj.sal_monthly / 2) || 0 : 0
         obj.employee = obj.parent_id
@@ -959,9 +949,13 @@ const PayrollDetails = () => {
         return acc;
       }, []);
       groupedContract.map(a_item => {
+        a_item.full_periods = [a_item.full_status];
+        a_item.childrens = [a_item];
         _listItems.map(b_item => {
           if (a_item._id !== b_item._id && a_item.contract._id === b_item.contract._id && a_item.employee._id === b_item.employee._id) {
             a_item.hr_week += parseFloat(a_item.hr_week)
+            a_item.full_periods.push(b_item.full_status)
+            a_item.childrens.push(b_item);
           }
         });
         filterdWorkContract.map(c_item => {
@@ -970,34 +964,33 @@ const PayrollDetails = () => {
               c_item.isShow = false;
             } else {
               // c_item.isShow = true;
+              if (a_item.full_periods.toString().includes("false")) {
+                c_item.hr_week = parseFloat(c_item.hr_week) - parseFloat(a_item.hr_week);
+                c_item.hrs_bi = getPartialHours(c_item, a_item.childrens);
 
-              c_item.hr_week = parseFloat(c_item.hr_week) - parseFloat(a_item.hr_week);
-              c_item.salary = ((parseFloat(c_item.hr_week) / (parseFloat(c_item.hr_week) + parseFloat(a_item.hr_week))) * c_item.sal_monthly / 2).toFixed(2)
+                c_item.salary = (c_item.hrs_bi * parseFloat(c_item.sal_hr)).toFixed(2);
+              } else {
+                c_item.hr_week = parseFloat(c_item.hr_week) - parseFloat(a_item.hr_week);
+                c_item.salary = ((parseFloat(c_item.hr_week) / (parseFloat(c_item.hr_week) + parseFloat(a_item.hr_week))) * c_item.sal_monthly / 2).toFixed(2)
+              }
             }
           }
         })
       })
       const finalWorkConctract = filterdWorkContract.filter(contract => contract.isShow !== false)
 
-      console.log(finalWorkConctract, 'allDatasallqqssqDatas')
+      console.log(finalWorkConctract, 'finalWorkConctract');
       const sortedListItems = _listItems.sort((a, b) => b.position.localeCompare(a.position));
-      const allDatas = [...sortedListItems, ...filteredReplacements, ...unAssingedEmployees, ...finalWorkConctract];
-
+      const allDatas = [...sortedListItems, ...filteredReplacements, ...finalWorkConctract, ...unAssingedEmployees];
       allDatas.map(obj => {
         if (!obj.payroll_id) {
           obj.payroll_id = "ZZZZZ"
         }
       })
-
-
-
-
-
       const sortedLists = allDatas.sort((a, b) => a.payroll_id.localeCompare(b.payroll_id));
       allDatas.map((data, index) => data['key'] = index)
       setListItems(sortedLists);
       setGlobalItems(sortedLists);
-
     }
     init()
   }, [
@@ -1016,11 +1009,35 @@ const PayrollDetails = () => {
       if (flag) {
         return origin_value
       } else {
-
         return ''
       }
     }
   }
+
+
+  const getPartialHours = (contract, childrens) => {
+    let { daily_hour } = contract.daily_hour ? contract : { ...contract, daily_hour: 8 };
+    daily_hour = parseFloat(daily_hour);
+
+    let pendingHours = 0;
+    childrens.map(children => {
+      for (var key in children) {
+        console.log(children)
+        if (key.includes("new-day-")) {
+          pendingHours += (parseFloat(daily_hour) - parseFloat(children[key]))
+        }
+      }
+    })
+    console.log(pendingHours, 'daily_hour')
+
+    return pendingHours;
+  }
+
+
+
+
+
+
 
   const getHistory = (hours, date, record) => {
     const { _id } = record;
@@ -1122,24 +1139,18 @@ const PayrollDetails = () => {
     if (globalItems) {
       const filteredData = globalItems.filter((record) => {
         const { store, employee } = record;
-        console.log(employee, '')
         return (
           (!searchText || (employee && employee['name'].toString().toLowerCase().includes(searchText.toLowerCase())) ||
             (store && store['store'].toString().toLowerCase().includes(searchText.toLowerCase())))
         );
       })
-
-      console.log(filteredData, 'filteredData')
       setListItems(filteredData);
       setPaginations({ current: 1, pageSize: 10, total: filteredData.length })
     }
   }, [searchText, globalItems]);
   useEffect(() => {
     if (globalItems) {
-
-      console.log(globalItems, 'globalItems');
       const filter = globalItems.map((item, index) => {
-        console.log(item.replace, 'item.replace');
         const { employee, store } = item;
         if (employee && store && store.store && !item.replace) {
           return {
