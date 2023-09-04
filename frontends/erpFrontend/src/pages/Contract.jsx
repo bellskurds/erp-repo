@@ -1011,8 +1011,6 @@ const Contract = (props) => {
                                 rules={[
                                     {
                                         required: true,
-                                        max: 16,
-                                        min: 2
                                     }
                                 ]}
                             >
