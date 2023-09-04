@@ -574,6 +574,7 @@ const PayrollDetails = () => {
       return false;
     }
   }
+
   useEffect(() => {
     async function init() {
       const { result: allHours } = await request.list({ entity });
@@ -931,7 +932,8 @@ const PayrollDetails = () => {
       });
       workContracts.map(obj => {
         obj.contract = { type: obj.type, flag: false }
-        obj.salary = obj.type <= 2 ? mathCeil(obj.sal_monthly / 2) || 0 : 0
+        obj.workDays = checkPeriods(obj, start_date, end_date, 1);
+        obj.salary = (obj.type <= 2 && (dateValue(obj.start_date) <= dateValue(start_date) && dateValue(obj.end_date) >= dateValue(end_date))) ? (obj.sal_monthly / 2).toFixed(2) : (obj.sal_hr * obj.workDays.length).toFixed(2)
         obj.employee = obj.parent_id
       })
       const filterdWorkContract = workContracts.filter(contract => Object(contract).hasOwnProperty('status') && contract.status === "active" &&
