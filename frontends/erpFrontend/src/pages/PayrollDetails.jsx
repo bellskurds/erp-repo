@@ -534,7 +534,7 @@ const PayrollDetails = () => {
     const PeriodShouldBeworked = [];
     while (targetStartDate.isSameOrBefore(targetEndDate)) {
 
-      if (targetStartDate.isBetween(startDate, endDate, null, '[]')) {
+      if (targetStartDate.isBetween(startDate, endDate, null, '[]') && targetStartDate.day()) {
         flag = true;
         PeriodShouldBeworked.push(targetStartDate.format('MM-DD-YYYY'));
       }
@@ -933,13 +933,33 @@ const PayrollDetails = () => {
       workContracts.map(obj => {
         obj.contract = { type: obj.type, flag: false }
         obj.workDays = checkPeriods(obj, start_date, end_date, 1);
-        obj.salary = (obj.type <= 2 && (dateValue(obj.start_date) <= dateValue(start_date) && dateValue(obj.end_date) >= dateValue(end_date))) ? (obj.sal_monthly / 2).toFixed(2) : (obj.sal_hr * obj.workDays.length).toFixed(2)
+        let currentDate = moment(start_date);
+        const end = moment(end_date);
+
+        while (currentDate.isSameOrBefore(end)) {
+          const day = currentDate.date();
+          const _day = currentDate.day();
+          const year = currentDate.year();
+          const month = currentDate.month();
+          const dataIndex = `-day-${year}_${month + 1}_${day}`;
+          const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
+          const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
+          const dataIndex_new = `new-day-${year}_${month + 1}_${day}`;
+          if (_day && obj.workDays.join(",").includes(currentDate.format("MM-DD-YYYY"))) {
+            obj[dataIndex] = obj.daily_hour || 0
+            obj[dataIndex2] = obj.daily_hour || 0
+          }
+          currentDate = currentDate.add(1, 'days');
+        };
+        obj.hrs_bi = getServiceHours(obj)
+        obj.salary = (obj.type <= 2 && (dateValue(obj.start_date) <= dateValue(start_date) && dateValue(obj.end_date) >= dateValue(end_date))) ? (obj.sal_monthly / 2).toFixed(2) : (obj.sal_hr * obj.hrs_bi).toFixed(2)
         obj.employee = obj.parent_id
       })
       const filterdWorkContract = workContracts.filter(contract => Object(contract).hasOwnProperty('status') && contract.status === "active" &&
         (
           checkPeriods(contract, start_date, end_date, 0)
         ))
+      console.log(filterdWorkContract, 'filterdWo7rkContract-111---')
       filterdWorkContract.map(contract => {
         contract.store = { store: '' }
       })

@@ -149,7 +149,8 @@ const Contract = (props) => {
     const [isUpdate, setIsUpdate] = useState(false);
     const [contracts, setContracts] = useState([]);
     const [contractType, setContractType] = useState();
-    const [vacItems, setVacItems] = useState()
+    const [vacItems, setVacItems] = useState();
+    const [dailyHours, setDailyHours] = useState();
     const formattedDateFunc = (date) => {
         return new Date(date).toLocaleDateString()
     }
@@ -594,6 +595,7 @@ const Contract = (props) => {
     }
     const editItem = (item) => {
         if (item) {
+
             item = JSON.parse(JSON.stringify(item))
             setContractType(item.type);
             setHourWeek(item.hr_week);
@@ -604,7 +606,11 @@ const Contract = (props) => {
                 item.start_date = moment(new Date(item.start_date), 'mm/dd/yyyy')
                 item.end_date = moment(new Date(item.end_date), 'mm/dd/yyyy')
                 console.log(item, 'itemitemitemitem')
-                if (formRef.current) formRef.current.setFieldsValue({ ...item, sal_biweekly: (item.sal_monthly / 2).toFixed(2) });
+                if (formRef.current) {
+
+                    formRef.current.setFieldsValue({ ...item, sal_biweekly: (item.sal_monthly / 2).toFixed(2) })
+                    formRef.current.validateFields(["hr_week"])
+                }
                 setCurrentId(item._id);
             }, 500);
 
@@ -698,6 +704,19 @@ const Contract = (props) => {
     }, [
         salaryHour, hourWeek
     ])
+    useEffect(() => {
+        if (hourWeek && dailyHours) {
+            if (hourWeek > dailyHours * 6) {
+                formRef.current.validateFields(["hr_week"])
+                console.log(formRef.current, dailyHours, 'dailyHours')
+            } else {
+                formRef.current.validateFields(["hr_week"])
+            }
+        }
+    }, [
+        hourWeek, dailyHours
+    ])
+
 
     useEffect(() => {
         if (salMonthly) {
@@ -928,6 +947,14 @@ const Contract = (props) => {
                                     rules={[
                                         {
                                             required: true,
+                                            validator: (_, value) => {
+                                                if (value && value > 96) {
+                                                    return Promise.reject(`Value must be less than or equal to 96`);
+                                                } else if (value && value > dailyHours * 6) {
+                                                    return Promise.reject(`Value must be less than or equal to ${dailyHours * 6}`);
+                                                }
+                                                return Promise.resolve();
+                                            }
                                         },
                                     ]}
                                 >
@@ -1011,17 +1038,18 @@ const Contract = (props) => {
                                 rules={[
                                     {
                                         required: true,
+                                        validator: (_, value) => {
+                                            if (value && value > 16) {
+                                                return Promise.reject(`Value must be less than or equal to 16`);
+                                            }
+                                            return Promise.resolve();
+                                        }
                                     }
                                 ]}
                             >
-                                <Input type="number" />
+                                <Input onChange={(e) => setDailyHours(e.target.value)} type="number" />
                             </Form.Item>
-                            <Form.Item
-                            // wrapperCol={{
-                            //     offset: 8,
-                            //     span: 16,
-                            // }}
-                            >
+                            <Form.Item>
                                 {
                                     isUpdate ?
                                         <Button type="primary" htmlType="submit">
