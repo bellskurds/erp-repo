@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-sparse-arrays */
 /* eslint-disable array-callback-return */
 /* eslint-disable no-unused-vars */
@@ -936,6 +937,11 @@ const PayrollDetails = () => {
         let currentDate = moment(start_date);
         const end = moment(end_date);
 
+        let contractWeekHours = obj.hr_week || 0;
+        let dailyHours = obj.daily_hour || 0
+        const splitedWeekHours = getSplitedWeekHours(contractWeekHours, dailyHours);
+        console.log(splitedWeekHours, 'splitedWeekHours', contractWeekHours, dailyHours);
+
         while (currentDate.isSameOrBefore(end)) {
           const day = currentDate.date();
           const _day = currentDate.day();
@@ -943,11 +949,9 @@ const PayrollDetails = () => {
           const month = currentDate.month();
           const dataIndex = `-day-${year}_${month + 1}_${day}`;
           const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
-          const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
-          const dataIndex_new = `new-day-${year}_${month + 1}_${day}`;
           if (_day && obj.workDays.join(",").includes(currentDate.format("MM-DD-YYYY"))) {
-            obj[dataIndex] = obj.daily_hour || 0
-            obj[dataIndex2] = obj.daily_hour || 0
+            obj[dataIndex] = splitedWeekHours[_day - 1]
+            obj[dataIndex2] = splitedWeekHours[_day - 1]
           }
           currentDate = currentDate.add(1, 'days');
         };
@@ -1018,6 +1022,23 @@ const PayrollDetails = () => {
   }, [
     currentPeriod, saveStatus, currentMonth, currentYear, changeStatus
   ]);
+
+  const getSplitedWeekHours = (hr_week, daily_hour) => {
+    var hours = [];
+    var weekHours = hr_week
+    for (var i = 0; i < 6; i++) {
+      if (weekHours - daily_hour >= 0) {
+        hours.push(daily_hour)
+        weekHours -= daily_hour
+      } else if (weekHours < daily_hour) {
+        hours.push(weekHours)
+        weekHours = 0;
+      } else {
+        hours.push(0);
+      }
+    }
+    return hours;
+  }
   const changedCellHour = (hours, origin_value, date, record, flag) => {
     const { _id } = record;
     const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))

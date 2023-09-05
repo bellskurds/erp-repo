@@ -396,11 +396,14 @@ const PayrollManagement = () => {
         const month = currentDate.month();
         const dataIndex = `-day-${year}_${month + 1}_${day}`;
         const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
-        const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
-        const dataIndex_new = `new-day-${year}_${month + 1}_${day}`;
+        let contractWeekHours = obj.hr_week;
+        let dailyHours = obj.daily_hour || 0
+        const splitedWeekHours = getSplitedWeekHours(contractWeekHours, dailyHours);
+
+
         if (_day && obj.workDays.join(",").includes(currentDate.format("MM-DD-YYYY"))) {
-          obj[dataIndex] = obj.daily_hour || 0
-          obj[dataIndex2] = obj.daily_hour || 0
+          obj[dataIndex] = splitedWeekHours[_day - 1]
+          obj[dataIndex2] = splitedWeekHours[_day - 1]
         }
         currentDate = currentDate.add(1, 'days');
       };
@@ -412,7 +415,6 @@ const PayrollManagement = () => {
       (
         checkPeriods(contract, start_date, end_date, 0)
       ))
-
     filteredReplacements.map(replace => {
       replace.hours = JSON.parse(replace.hours)[0]
       replace.contract = { type: replace.contract_type, sal_hr: replace.sal_hr, replace: true }
@@ -509,6 +511,22 @@ const PayrollManagement = () => {
     console.log(pendingHours, 'daily_hour')
 
     return pendingHours;
+  }
+  const getSplitedWeekHours = (hr_week, daily_hour) => {
+    var hours = [];
+    var weekHours = hr_week
+    for (var i = 0; i < 6; i++) {
+      if (weekHours - daily_hour >= 0) {
+        hours.push(daily_hour)
+        weekHours -= daily_hour
+      } else if (weekHours < daily_hour) {
+        hours.push(weekHours)
+        weekHours = 0;
+      } else {
+        hours.push(0);
+      }
+    }
+    return hours;
   }
 
   const getWorkedStatus = (record) => {
