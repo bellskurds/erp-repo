@@ -990,9 +990,9 @@ const PayrollDetails = () => {
               c_item.isShow = false;
             } else {
               // c_item.isShow = true;
-              if (a_item.full_periods.toString().includes("false")) {
+              c_item.hrs_bi = getPartialHours(c_item, a_item.childrens);
+              if (a_item.full_periods.toString().includes("false") || c_item.hrs_bi === c_item.hr_week * 2) {
                 c_item.hr_week = parseFloat(c_item.hr_week) - parseFloat(a_item.hr_week);
-                c_item.hrs_bi = getPartialHours(c_item, a_item.childrens);
 
                 c_item.salary = (c_item.hrs_bi * parseFloat(c_item.sal_hr)).toFixed(2);
               } else {
