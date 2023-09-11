@@ -524,10 +524,21 @@ const PayrollDetails = () => {
   }
   const [periodsColumn, setPeriodsColumn] = useState();
   const [periodsData, setPeriodsData] = useState([]);
-  const checkPeriods = (contract, start, end, what) => {
+  const checkPeriods = (contract, start, end, what, obj = false) => {
     const { start_date: contract_start, end_date: contract_end } = contract;
+
     let startDate = moment(new Date(contract_start), 'MM-DD-YYYY');
-    const endDate = moment(new Date(contract_end), 'MM-DD-YYYY');
+    let endDate = moment(new Date(contract_end), 'MM-DD-YYYY');
+    if (obj) {
+      if (obj.viaticum_flag) {
+        if (obj.viaticum_start_date) startDate = moment(new Date(obj.viaticum_start_date), "MM-DD-YYYY");
+        if (obj.viaticum_end_date) startDate = moment(new Date(obj.viaticum_end_date), "MM-DD-YYYY");
+      } else {
+        console.log(obj, obj.viaticum_flag, 'obj.viaticum_flag');
+        if (obj.start_date) startDate = moment(new Date(obj.start_date), "MM-DD-YYYY");
+        if (obj.end_date) endDate = moment(new Date(obj.end_date), "MM-DD-YYYY");
+      }
+    }
 
     let targetStartDate = moment(start, 'MM-DD-YYYY');
     const targetEndDate = moment(end, 'MM-DD-YYYY');
@@ -701,12 +712,9 @@ const PayrollDetails = () => {
 
         currentDate = currentDate.add(1, 'days');
       };
-      console.log(initPeriodsData, 'initPeriodsData');
       setPeriodsColumn(periodsColumns)
       setPeriodsData([initPeriodsData]);
       setChangedDays(daysColumns);
-
-      console.log(daysColumns, 'daysColumns');
       setMergedColumns([...columns, ...daysColumns])
       const { result: replacementData } = await request.list({ entity: "replacement" });
       const { result: workContracts } = await request.list({ entity: "workContract" })
@@ -736,39 +744,42 @@ const PayrollDetails = () => {
         } else if (viaticum && !contract) {
           position.contract = { ...viaticum, viaticum_flag: true };
         }
-      })
+      });
 
+
+      const unworkedContracts = [];
       assignedEmployees.map(position => {
-
-        if (position.viaticum_flag) {
-          if (position.viaticum_start_date) {
-            position.contract.start_date = moment(new Date(position.viaticum_start_date)).format("MM/DD/YYYY");
-          }
-          if (position.viaticum_end_date) {
-            position.contract.end_date = moment(new Date(position.viaticum_end_date)).format("MM/DD/YYYY");
-          }
-        } else {
-          if (position.start_date) {
-            position.contract.start_date = moment(new Date(position.start_date)).format("MM/DD/YYYY");
-          }
-          if (position.end_date) {
-            position.contract.end_date = moment(new Date(position.end_date)).format("MM/DD/YYYY");
-          }
+        if (position.contract && moment(new Date(position.contract.start_date)).format("MM/DD/YYYY") !== moment(new Date(position.start_date)).format("MM/DD/YYYY")) {
+          const { start_date, end_date, _id, contract, ...unassingedPeriods } = position
+          unworkedContracts.push({ ...contract, _id: new Date().valueOf(), start_date: contract.start_date, end_date: moment(start_date).subtract(1, "d").format("MM/DD/YYYY") })
         }
       })
+      console.log(unworkedContracts, 'unworkedContracts');
+      // return console.log(assignedEmployees, 'assignedEmployees')
+      // assignedEmployees.map(position => {
 
-      console.log(assignedEmployees, 'assignedEmployees');
-
-
-
+      //   if (position.viaticum_flag) {
+      //     if (position.viaticum_start_date) {
+      //       position.contract.start_date = moment(new Date(position.viaticum_start_date)).format("MM/DD/YYYY");
+      //     }
+      //     if (position.viaticum_end_date) {
+      //       position.contract.end_date = moment(new Date(position.viaticum_end_date)).format("MM/DD/YYYY");
+      //     }
+      //   } else {
+      //     if (position.start_date) {
+      //       position.contract.start_date = moment(new Date(position.start_date)).format("MM/DD/YYYY");
+      //     }
+      //     if (position.end_date) {
+      //       position.contract.end_date = moment(new Date(position.end_date)).format("MM/DD/YYYY");
+      //     }
+      //   }
+      // })
       const _listItems = assignedEmployees.filter(({ contract, viaticum }) =>
         Object(contract).hasOwnProperty('status') && contract.status === "active" &&
         (
           checkPeriods(contract, start_date, end_date, 0)
         )
       );
-
-      console.log(_listItems, '_listItems');
       _listItems.map((obj, index) => {
         const { contract: assignedContract } = obj;
         obj.sunday_hr = obj.sunday ? getHours(obj.sunday) : 0;
@@ -778,7 +789,7 @@ const PayrollDetails = () => {
         obj.thursday_hr = obj.thursday ? getHours(obj.thursday) : 0;
         obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
         obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
-        obj.workDays = checkPeriods(assignedContract, start_date, end_date, 1);
+        obj.workDays = checkPeriods(assignedContract, start_date, end_date, 1, obj);
         obj.payroll_id = obj._id;
         let currentDate = moment(start_date);
         const end = moment(end_date);
@@ -931,7 +942,9 @@ const PayrollDetails = () => {
         obj.employee = { personal_id: '', name: '' };
         obj.unassinged = true;
       });
-      workContracts.map(obj => {
+
+      console.log(unworkedContracts, 'unworkedContracts');
+      [...workContracts, ...unworkedContracts].map(obj => {
         obj.contract = { type: obj.type, flag: false }
         obj.workDays = checkPeriods(obj, start_date, end_date, 1);
         let currentDate = moment(start_date);
@@ -940,8 +953,6 @@ const PayrollDetails = () => {
         let contractWeekHours = obj.hr_week || 0;
         let dailyHours = obj.daily_hour || 0
         const splitedWeekHours = getSplitedWeekHours(contractWeekHours, dailyHours);
-        console.log(splitedWeekHours, 'splitedWeekHours', contractWeekHours, dailyHours);
-
         while (currentDate.isSameOrBefore(end)) {
           const day = currentDate.date();
           const _day = currentDate.day();
@@ -959,7 +970,7 @@ const PayrollDetails = () => {
         obj.salary = (obj.type <= 2 && (dateValue(obj.start_date) <= dateValue(start_date) && dateValue(obj.end_date) >= dateValue(end_date))) ? (obj.sal_monthly / 2).toFixed(2) : (obj.sal_hr * obj.hrs_bi).toFixed(2)
         obj.employee = obj.parent_id
       })
-      const filterdWorkContract = workContracts.filter(contract => Object(contract).hasOwnProperty('status') && contract.status === "active" &&
+      const filterdWorkContract = [...workContracts, ...unworkedContracts].filter(contract => Object(contract).hasOwnProperty('status') && contract.status === "active" &&
         (
           checkPeriods(contract, start_date, end_date, 0)
         ))
@@ -1004,8 +1015,6 @@ const PayrollDetails = () => {
         })
       })
       const finalWorkConctract = filterdWorkContract.filter(contract => contract.isShow !== false)
-
-      console.log(finalWorkConctract, 'finalWorkConctract');
       const sortedListItems = _listItems.sort((a, b) => b.position.localeCompare(a.position));
       const allDatas = [...sortedListItems, ...filteredReplacements, ...finalWorkConctract, ...unAssingedEmployees];
       allDatas.map(obj => {
@@ -1017,6 +1026,8 @@ const PayrollDetails = () => {
       allDatas.map((data, index) => data['key'] = index)
       setListItems(sortedLists);
       setGlobalItems(sortedLists);
+
+      console.log(sortedLists, 'sortedLists');
     }
     init()
   }, [
@@ -1065,7 +1076,6 @@ const PayrollDetails = () => {
     let pendingHours = 0;
     childrens.map(children => {
       for (var key in children) {
-        console.log(children)
         if (key.includes("new-day-")) {
           pendingHours += (parseFloat(daily_hour) - parseFloat(children[key]))
         }
@@ -1258,7 +1268,6 @@ const PayrollDetails = () => {
   const [initPeriodsColumn, setInitPeriodsColumn] = useState([]);
   useEffect(() => {
     if (periodsColumn) {
-      console.log(periodsColumn, 'periodsColumn');
       const _columns = periodsColumn.map((col) => {
         if (!col.editable) {
           return col;

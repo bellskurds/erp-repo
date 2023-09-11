@@ -62,11 +62,6 @@ const columns = [
 
 const PayrollManagement = () => {
   const entity = "workContract"
-
-  const dispatch = useDispatch();
-
-
-
   const [form] = Form.useForm();
   const [listItems, setListItems] = useState([]);
   const [payrollDetails, setPayrollDetails] = useState([])
@@ -220,10 +215,21 @@ const PayrollManagement = () => {
     const difference = maxHour - minHour;
     return (difference)
   }
-  const checkPeriods = (contract, start, end, what) => {
+  const checkPeriods = (contract, start, end, what, obj = false) => {
     const { start_date: contract_start, end_date: contract_end } = contract;
+
     let startDate = moment(new Date(contract_start), 'MM-DD-YYYY');
-    const endDate = moment(new Date(contract_end), 'MM-DD-YYYY');
+    let endDate = moment(new Date(contract_end), 'MM-DD-YYYY');
+    if (obj) {
+      if (obj.viaticum_flag) {
+        if (obj.viaticum_start_date) startDate = moment(new Date(obj.viaticum_start_date), "MM-DD-YYYY");
+        if (obj.viaticum_end_date) startDate = moment(new Date(obj.viaticum_end_date), "MM-DD-YYYY");
+      } else {
+        console.log(obj, obj.viaticum_flag, 'obj.viaticum_flag');
+        if (obj.start_date) startDate = moment(new Date(obj.start_date), "MM-DD-YYYY");
+        if (obj.end_date) endDate = moment(new Date(obj.end_date), "MM-DD-YYYY");
+      }
+    }
 
     let targetStartDate = moment(start, 'MM-DD-YYYY');
     const targetEndDate = moment(end, 'MM-DD-YYYY');
@@ -231,7 +237,7 @@ const PayrollManagement = () => {
     const PeriodShouldBeworked = [];
     while (targetStartDate.isSameOrBefore(targetEndDate)) {
 
-      if (targetStartDate.isBetween(startDate, endDate, null, '[]')) {
+      if (targetStartDate.isBetween(startDate, endDate, null, '[]') && targetStartDate.day()) {
         flag = true;
         PeriodShouldBeworked.push(targetStartDate.format('MM-DD-YYYY'));
       }
@@ -242,7 +248,9 @@ const PayrollManagement = () => {
     } else {
       return flag;
     }
+    // console.log(startDate.isSameOrBefore(targetStartDate) && endDate.isSameOrAfter(targetEndDate), 'status')
   }
+
   const getPaymentData = (_assignedEmployees, _replacements, Hours, workContracts, year, month, periods, payType = 1) => {
     month++;
     const unassignedContracts = [];
@@ -279,7 +287,7 @@ const PayrollManagement = () => {
         obj.thursday_hr = obj.thursday ? getHours(obj.thursday) : 0;
         obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
         obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
-        obj.workDays = checkPeriods(assignedContract, start_date, end_date, 1)
+        obj.workDays = checkPeriods(assignedContract, start_date, end_date, 1, obj)
 
         let currentDate = moment(start_date);
 
@@ -482,7 +490,6 @@ const PayrollManagement = () => {
       })
     })
     const finalWorkConctract = filterdWorkContract.filter(contract => contract.isShow !== false)
-    console.log(finalWorkConctract, 'finalWorkConctract');
     let calValue = 0;
     // [..._listItems].map(obj => {
     [..._listItems, ...filteredReplacements, ...finalWorkConctract].map(obj => {
@@ -500,7 +507,6 @@ const PayrollManagement = () => {
     let pendingHours = 0;
     childrens.map(children => {
       for (var key in children) {
-        console.log(children)
         if (key.includes("new-day-")) {
           pendingHours += (parseFloat(daily_hour) - parseFloat(children[key]))
         }
