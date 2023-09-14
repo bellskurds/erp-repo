@@ -259,15 +259,22 @@ const PayrollManagement = () => {
     const endDay = parseInt(periods.split("-")[1]);
     const start_date = new Date(year, startDay === 31 ? (month - 2) : (month - 1), startDay);
     const end_date = new Date(year, month - 1, endDay);
-
+    const unworkedContracts = [];
     _assignedEmployees.map(position => {
-      if (position.start_date) {
-        position.contract.start_date = moment(new Date(position.start_date)).format("MM/DD/YYYY");
-      }
-      if (position.end_date) {
-        position.contract.end_date = moment(new Date(position.end_date)).format("MM/DD/YYYY");
+      if (position.contract && moment(new Date(position.contract.start_date)).format("MM/DD/YYYY") !== moment(new Date(position.start_date)).format("MM/DD/YYYY")) {
+        const { start_date, end_date, _id, contract, ...unassingedPeriods } = position
+        unworkedContracts.push({ ...contract, _id: new Date().valueOf(), start_date: contract.start_date, end_date: moment(start_date).subtract(1, "d").format("MM/DD/YYYY") })
       }
     })
+    console.log(unworkedContracts, 'unworkedContracts');
+    // _assignedEmployees.map(position => {
+    //   if (position.start_date) {
+    //     position.contract.start_date = moment(new Date(position.start_date)).format("MM/DD/YYYY");
+    //   }
+    //   if (position.end_date) {
+    //     position.contract.end_date = moment(new Date(position.end_date)).format("MM/DD/YYYY");
+    //   }
+    // })
 
     const _listItems = _assignedEmployees.filter(({ contract }) =>
       Object(contract).hasOwnProperty("status") && contract.status === "active" &&
@@ -384,14 +391,14 @@ const PayrollManagement = () => {
             ((obj.adjustment / obj.hrs_bi) * obj.week_pay).toFixed(2)
             : (calcAdjustment(obj) * obj.sal_hr || 0).toFixed(2);
         obj.salary =
-          (assignedContract.type <= 2 && getFullPaymentStatus(obj.workDays, start_date, end_date, obj)) ?
+          (assignedContract.type <= 2 && (getFullPaymentStatus(obj.workDays, start_date, end_date, obj) || assignedContract.hr_week * 2 === parseFloat(obj.hrs_bi))) ?
             assignedContract.sal_monthly / 2 || 0
             :
             ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
       }
     });
 
-    workContracts.map(obj => {
+    [...workContracts, ...unworkedContracts].map(obj => {
       obj.contract = { type: obj.type, flag: false }
       obj.workDays = checkPeriods(obj, start_date, end_date, 1);
       let currentDate = moment(start_date);
@@ -419,7 +426,7 @@ const PayrollManagement = () => {
       obj.salary = (obj.type <= 2 && (dateValue(obj.start_date) <= dateValue(start_date) && dateValue(obj.end_date) >= dateValue(end_date))) ? (obj.sal_monthly / 2).toFixed(2) : (obj.sal_hr * obj.hrs_bi).toFixed(2)
       obj.employee = obj.parent_id
     })
-    const filterdWorkContract = workContracts.filter(contract => Object(contract).hasOwnProperty('status') && contract.status === "active" &&
+    const filterdWorkContract = [...workContracts, ...unworkedContracts].filter(contract => Object(contract).hasOwnProperty('status') && contract.status === "active" &&
       (
         checkPeriods(contract, start_date, end_date, 0)
       ))
@@ -478,7 +485,7 @@ const PayrollManagement = () => {
           } else {
             // c_item.isShow = true;
             c_item.hrs_bi = getPartialHours(c_item, a_item.childrens);
-            if (a_item.full_periods.toString().includes("false") || c_item.hrs_bi === c_item.hr_week * 2) {
+            if (a_item.full_periods.toString().includes("false") || c_item.hrs_bi !== c_item.hr_week * 2) {
               c_item.hr_week = parseFloat(c_item.hr_week) - parseFloat(a_item.hr_week);
               c_item.salary = (c_item.hrs_bi * parseFloat(c_item.sal_hr)).toFixed(2);
             } else {

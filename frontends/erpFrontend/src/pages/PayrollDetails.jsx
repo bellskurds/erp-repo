@@ -529,6 +529,8 @@ const PayrollDetails = () => {
 
     let startDate = moment(new Date(contract_start), 'MM-DD-YYYY');
     let endDate = moment(new Date(contract_end), 'MM-DD-YYYY');
+    let targetStartDate = moment(start, 'MM-DD-YYYY');
+    const targetEndDate = moment(end, 'MM-DD-YYYY');
     if (obj) {
       if (obj.viaticum_flag) {
         if (obj.viaticum_start_date) startDate = moment(new Date(obj.viaticum_start_date), "MM-DD-YYYY");
@@ -539,13 +541,9 @@ const PayrollDetails = () => {
         if (obj.end_date) endDate = moment(new Date(obj.end_date), "MM-DD-YYYY");
       }
     }
-
-    let targetStartDate = moment(start, 'MM-DD-YYYY');
-    const targetEndDate = moment(end, 'MM-DD-YYYY');
     let flag = false;
     const PeriodShouldBeworked = [];
     while (targetStartDate.isSameOrBefore(targetEndDate)) {
-
       if (targetStartDate.isBetween(startDate, endDate, null, '[]') && targetStartDate.day()) {
         flag = true;
         PeriodShouldBeworked.push(targetStartDate.format('MM-DD-YYYY'));
@@ -874,7 +872,7 @@ const PayrollDetails = () => {
             : (calcAdjustment(obj) * obj.sal_hr || 0).toFixed(2);
         obj.full_status = getFullPaymentStatus(obj.workDays, start_date, end_date, obj);
         obj.salary =
-          (assignedContract.type <= 2 && getFullPaymentStatus(obj.workDays, start_date, end_date, obj)) ?
+          (assignedContract.type <= 2 && (getFullPaymentStatus(obj.workDays, start_date, end_date, obj) || assignedContract.hr_week * 2 === parseFloat(obj.hrs_bi))) ?
             assignedContract.sal_monthly / 2 || 0
             :
             ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
@@ -943,7 +941,7 @@ const PayrollDetails = () => {
         obj.unassinged = true;
       });
 
-      console.log(unworkedContracts, 'unworkedContracts');
+      console.log(unworkedContracts, 'unworkedContracts11111');
       [...workContracts, ...unworkedContracts].map(obj => {
         obj.contract = { type: obj.type, flag: false }
         obj.workDays = checkPeriods(obj, start_date, end_date, 1);
@@ -974,7 +972,7 @@ const PayrollDetails = () => {
         (
           checkPeriods(contract, start_date, end_date, 0)
         ))
-      console.log(filterdWorkContract, 'filterdWo7rkContract-111---')
+      console.log(_listItems, '_listItems-11_listItems_listItems1---')
       filterdWorkContract.map(contract => {
         contract.store = { store: '' }
       })
@@ -1000,14 +998,21 @@ const PayrollDetails = () => {
             if (a_item.hr_week >= c_item.hr_week) {
               c_item.isShow = false;
             } else {
+
+
               // c_item.isShow = true;
               c_item.hrs_bi = getPartialHours(c_item, a_item.childrens);
-              if (a_item.full_periods.toString().includes("false") || c_item.hrs_bi === c_item.hr_week * 2) {
+              if (a_item.full_periods.toString().includes("false") || c_item.hrs_bi !== c_item.hr_week * 2) {
+
+
                 c_item.hr_week = parseFloat(c_item.hr_week) - parseFloat(a_item.hr_week);
 
                 c_item.salary = (c_item.hrs_bi * parseFloat(c_item.sal_hr)).toFixed(2);
+                console.log('----------11111113434111111');
               } else {
+                // console.log(parseFloat(c_item.hr_week), '----', (parseFloat(c_item.hr_week) + parseFloat(a_item.hr_week)));
                 c_item.hr_week = parseFloat(c_item.hr_week) - parseFloat(a_item.hr_week);
+
                 c_item.salary = ((parseFloat(c_item.hr_week) / (parseFloat(c_item.hr_week) + parseFloat(a_item.hr_week))) * c_item.sal_monthly / 2).toFixed(2)
               }
             }
@@ -1022,6 +1027,8 @@ const PayrollDetails = () => {
           obj.payroll_id = "ZZZZZ"
         }
       })
+
+      console.log(_listItems, '_listItems111111');
       const sortedLists = allDatas.sort((a, b) => a.payroll_id.localeCompare(b.payroll_id));
       allDatas.map((data, index) => data['key'] = index)
       setListItems(sortedLists);
@@ -1070,6 +1077,9 @@ const PayrollDetails = () => {
 
 
   const getPartialHours = (contract, childrens) => {
+
+
+    console.log(childrens, 'chi1ldrens');
     let { daily_hour } = contract.daily_hour ? contract : { ...contract, daily_hour: 8 };
     daily_hour = parseFloat(daily_hour);
 
