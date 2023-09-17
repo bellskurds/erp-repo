@@ -260,10 +260,24 @@ const PayrollManagement = () => {
     const start_date = new Date(year, startDay === 31 ? (month - 2) : (month - 1), startDay);
     const end_date = new Date(year, month - 1, endDay);
     const unworkedContracts = [];
-    _assignedEmployees.map(position => {
-      if (position.contract && moment(new Date(position.contract.start_date)).format("MM/DD/YYYY") !== moment(new Date(position.start_date)).format("MM/DD/YYYY")) {
+    const filteredLists = _assignedEmployees.filter(({ contract }) =>
+      Object(contract).hasOwnProperty("status") && contract.status === "active" &&
+      (
+        checkPeriods(contract, start_date, end_date, 0)
+      )
+    )
+    filteredLists.map(position => {
+      if (position.contract && moment(new Date(position.start_date)).isAfter(moment(new Date(position.contract.start_date)))) {
         const { start_date, end_date, _id, contract, ...unassingedPeriods } = position
         unworkedContracts.push({ ...contract, _id: new Date().valueOf(), start_date: contract.start_date, end_date: moment(start_date).subtract(1, "d").format("MM/DD/YYYY") })
+      }
+
+      if (position.contract && moment(new Date(position.end_date)).isBefore(moment(new Date(end_date)))) {
+        console.log(moment(new Date(end_date)).format("MM/DD/YYYY"), 'moment(new Date(end_date)).format("MM/DD/YYYY")');
+        const { start_date, _id, contract, ...unassingedPeriods } = position
+        unworkedContracts.push({
+          ...contract, _id: new Date().valueOf(), start_date: moment(new Date(position.end_date)).add(1, 'd').format("MM/DD/YYYY"), end_date: moment(new Date(end_date)).format("MM/DD/YYYY")
+        })
       }
     })
     console.log(unworkedContracts, 'unworkedContracts');
@@ -411,14 +425,14 @@ const PayrollManagement = () => {
         const month = currentDate.month();
         const dataIndex = `-day-${year}_${month + 1}_${day}`;
         const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
+        const dataIndex_new = `new-day-${year}_${month + 1}_${day}`;
         let contractWeekHours = obj.hr_week;
         let dailyHours = obj.daily_hour || 0
         const splitedWeekHours = getSplitedWeekHours(contractWeekHours, dailyHours);
-
-
         if (_day && obj.workDays.join(",").includes(currentDate.format("MM-DD-YYYY"))) {
           obj[dataIndex] = splitedWeekHours[_day - 1]
           obj[dataIndex2] = splitedWeekHours[_day - 1]
+          obj[dataIndex_new] = splitedWeekHours[_day - 1]
         }
         currentDate = currentDate.add(1, 'days');
       };
@@ -579,24 +593,29 @@ const PayrollManagement = () => {
   const getServiceHours = (record) => {
     var hours = 0;
     for (var key in record) {
-      if (key.includes('services-day-')) {
+      if (key.includes('new-day-')) {
         hours += parseFloat(record[key]);
       }
     }
     return hours;
   }
   const changedCellHour = (hours, origin_value, date, record, flag) => {
-    const { _id } = record;
+    const { _id, workDays } = record;
     const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
+    let startDate = moment(new Date(workDays[0]));
+    startDate = startDate.subtract(2, 'day')
+    let endDate = moment(new Date(workDays[workDays.length - 1]));
+    let targetDate = moment(new Date(date));
+
     if (item) {
       if (flag) {
-        return item.hour
+        return targetDate.isBetween(startDate, endDate) ? item.hour : 0
       } else {
         return item.comment
       }
     } else {
       if (flag) {
-        return origin_value
+        return targetDate.isBetween(startDate, endDate) ? origin_value : 0
       } else {
 
         return ''

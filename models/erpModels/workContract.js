@@ -8,6 +8,9 @@ const WorkContractSchema = new mongoose.Schema({
   end_date: {
     type: String,
   },
+  terminated_date: {
+    type: String,
+  },
   sal_hr: {
     type: Number,
   },

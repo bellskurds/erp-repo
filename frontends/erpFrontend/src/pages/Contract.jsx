@@ -1,7 +1,7 @@
 import { crud } from "@/redux/crud/actions";
 import { selectFilteredItemsByParent, selectListItems, selectListsByContract, selectListsByEmergency, selectListsByMedical, selectReadItem } from "@/redux/crud/selectors";
 import { request } from "@/request";
-import { CheckOutlined, CloseCircleOutlined, CreditCardOutlined, DeleteOutlined, EditOutlined, EyeOutlined, MoneyCollectOutlined, NumberOutlined } from "@ant-design/icons";
+import { CheckOutlined, CloseCircleOutlined, CloseOutlined, CreditCardOutlined, DeleteOutlined, EditOutlined, EyeOutlined, MoneyCollectOutlined, NumberOutlined } from "@ant-design/icons";
 import { Button, Col, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Table, Tag, Typography } from "antd";
 import moment from "moment";
 import { useEffect, useRef, useState } from "react";
@@ -100,12 +100,12 @@ const Contract = (props) => {
                             </Typography.Link>
                             {checkCancelStatus(record) &&
 
-                                <Popconfirm title="Sure to cancel?" onConfirm={() => updateStatus('canceled', record._id)}>
+                                <Popconfirm title="Sure to cancel?" onConfirm={() => updateDate({ status: 'canceled' }, record._id)}>
                                     <CloseCircleOutlined style={{ fontSize: "20px", paddingLeft: "5px" }} />
                                 </Popconfirm>
                             }
-                            <Popconfirm title="Sure to end?" onConfirm={() => updateStatus('terminated', record._id)}>
-                                <CheckOutlined style={{ fontSize: "20px", paddingLeft: "5px" }} />
+                            <Popconfirm title="Sure to end?" onConfirm={() => terminateFunc('terminated', record._id)}>
+                                <CloseOutlined title="Terminate" style={{ fontSize: "20px", paddingLeft: "5px" }} />
                             </Popconfirm>
 
                         </> : ''
@@ -575,11 +575,11 @@ const Contract = (props) => {
             return false;
         }
     }
-    const updateStatus = (statusValue, _id) => {
+    const updateDate = (updateData, _id) => {
         const id = currentId || _id;
         const parentId = currentEmployeeId;
         if (id) {
-            const jsonData = { status: statusValue }
+            const jsonData = updateData
             dispatch(crud.update({ entity, id, jsonData }));
             setIsBankModal(false)
             setTimeout(() => {
@@ -591,7 +591,7 @@ const Contract = (props) => {
     const editBankModal = () => {
         setIsBankModal(true);
         setIsUpdate(false);
-        // if (formRef) formRef.current.resetFields();
+        if (formRef) formRef.current.resetFields();
     }
     const editItem = (item) => {
         if (item) {
@@ -881,13 +881,20 @@ const Contract = (props) => {
 
 
     }
-
-    useEffect(() => {
-
-        console.log(dispatch);
-    }, [
-        dispatch
-    ])
+    const [isTerminateModal, setIsTerminateModal] = useState(false);
+    const [termiateId, setTermiateId] = useState(false);
+    const handleTeminateModal = () => {
+        setIsTerminateModal(false)
+    }
+    const terminateFunc = (status, id) => {
+        setIsTerminateModal(true)
+        setTermiateId(id)
+    }
+    const handleTeminate = (value) => {
+        value['status'] = "terminated"
+        updateDate(value, termiateId)
+        setIsTerminateModal(false)
+    }
     return (
 
         <div className="whiteBox shadow">
@@ -921,7 +928,8 @@ const Contract = (props) => {
                                     },
                                 ]}
                             >
-                                <Radio.Group name="radiogroup" options={contractTypes} onChange={(e) => setContractType(e.target.value)} />
+
+                                <Radio.Group disabled={isUpdate ? true : false} name="radiogroup" options={contractTypes} onChange={(e) => setContractType(e.target.value)} />
                             </Form.Item>
 
 
@@ -1152,6 +1160,41 @@ const Contract = (props) => {
                     dataSource={dtmHistory}
                     columns={paymentHistory}
                 />
+            </Modal>
+            <Modal title="Teminate Modal" visible={isTerminateModal} onCancel={handleTeminateModal} footer={null} width={600}>
+                <Form
+                    onFinish={handleTeminate}
+                >
+                    <Form.Item
+                        name={"terminated_date"}
+                        label="Teminate Date"
+                        rules={[
+                            {
+                                required: true,
+                                validator: (_, date) => {
+                                    let today = moment(new Date());
+                                    today = today.subtract(1, 'day')
+                                    if (today.isSameOrBefore(date)) {
+                                        return Promise.resolve();
+                                    } else {
+                                        return Promise.reject("Terminate date should be after current date")
+                                    }
+                                }
+                            },
+                        ]}
+                    >
+                        <DatePicker />
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit">
+                            Save
+                        </Button>
+                        <Button type="ghost" onClick={handleTeminateModal}>
+                            cancel
+                        </Button>
+                    </Form.Item>
+
+                </Form>
             </Modal>
             <Row>
                 <Col span={5}>

@@ -536,7 +536,6 @@ const PayrollDetails = () => {
         if (obj.viaticum_start_date) startDate = moment(new Date(obj.viaticum_start_date), "MM-DD-YYYY");
         if (obj.viaticum_end_date) startDate = moment(new Date(obj.viaticum_end_date), "MM-DD-YYYY");
       } else {
-        console.log(obj, obj.viaticum_flag, 'obj.viaticum_flag');
         if (obj.start_date) startDate = moment(new Date(obj.start_date), "MM-DD-YYYY");
         if (obj.end_date) endDate = moment(new Date(obj.end_date), "MM-DD-YYYY");
       }
@@ -746,32 +745,29 @@ const PayrollDetails = () => {
 
 
       const unworkedContracts = [];
-      assignedEmployees.map(position => {
-        if (position.contract && moment(new Date(position.contract.start_date)).format("MM/DD/YYYY") !== moment(new Date(position.start_date)).format("MM/DD/YYYY")) {
+
+
+
+      const filteredLists = assignedEmployees.filter(({ contract, viaticum }) =>
+        Object(contract).hasOwnProperty('status') && contract.status === "active" &&
+        (
+          checkPeriods(contract, start_date, end_date, 0)
+        )
+      );
+      filteredLists.map(position => {
+        if (position.contract && moment(new Date(position.start_date)).isAfter(moment(new Date(position.contract.start_date)))) {
           const { start_date, end_date, _id, contract, ...unassingedPeriods } = position
           unworkedContracts.push({ ...contract, _id: new Date().valueOf(), start_date: contract.start_date, end_date: moment(start_date).subtract(1, "d").format("MM/DD/YYYY") })
         }
-      })
-      console.log(unworkedContracts, 'unworkedContracts');
-      // return console.log(assignedEmployees, 'assignedEmployees')
-      // assignedEmployees.map(position => {
 
-      //   if (position.viaticum_flag) {
-      //     if (position.viaticum_start_date) {
-      //       position.contract.start_date = moment(new Date(position.viaticum_start_date)).format("MM/DD/YYYY");
-      //     }
-      //     if (position.viaticum_end_date) {
-      //       position.contract.end_date = moment(new Date(position.viaticum_end_date)).format("MM/DD/YYYY");
-      //     }
-      //   } else {
-      //     if (position.start_date) {
-      //       position.contract.start_date = moment(new Date(position.start_date)).format("MM/DD/YYYY");
-      //     }
-      //     if (position.end_date) {
-      //       position.contract.end_date = moment(new Date(position.end_date)).format("MM/DD/YYYY");
-      //     }
-      //   }
-      // })
+        if (position.contract && moment(new Date(position.end_date)).isBefore(moment(new Date(end_date)))) {
+          console.log(moment(new Date(end_date)).format("MM/DD/YYYY"), 'moment(new Date(end_date)).format("MM/DD/YYYY")');
+          const { start_date, _id, contract, ...unassingedPeriods } = position
+          unworkedContracts.push({
+            ...contract, _id: new Date().valueOf(), start_date: moment(new Date(position.end_date)).add(1, 'd').format("MM/DD/YYYY"), end_date: moment(new Date(end_date)).format("MM/DD/YYYY")
+          })
+        }
+      })
       const _listItems = assignedEmployees.filter(({ contract, viaticum }) =>
         Object(contract).hasOwnProperty('status') && contract.status === "active" &&
         (
@@ -860,7 +856,7 @@ const PayrollDetails = () => {
           (assignedContract && assignedContract.type) ?
             (
               assignedContract.type === 3 ?
-                assignedContract.sal_monthly / 2
+                (assignedContract.sal_monthly / 2).toFixed(2)
                 :
                 mathCeil(obj.hrs_bi * assignedContract.sal_hr || 0)
             )
@@ -873,7 +869,7 @@ const PayrollDetails = () => {
         obj.full_status = getFullPaymentStatus(obj.workDays, start_date, end_date, obj);
         obj.salary =
           (assignedContract.type <= 2 && (getFullPaymentStatus(obj.workDays, start_date, end_date, obj) || assignedContract.hr_week * 2 === parseFloat(obj.hrs_bi))) ?
-            assignedContract.sal_monthly / 2 || 0
+            (assignedContract.sal_monthly / 2).toFixed(2) || 0
             :
             ((parseFloat(obj.adjust) + parseFloat(obj.week_pay))).toFixed(2) || 0;
         obj.replace = false
@@ -958,9 +954,11 @@ const PayrollDetails = () => {
           const month = currentDate.month();
           const dataIndex = `-day-${year}_${month + 1}_${day}`;
           const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
+          const dataIndex_new = `new-day-${year}_${month + 1}_${day}`;
           if (_day && obj.workDays.join(",").includes(currentDate.format("MM-DD-YYYY"))) {
             obj[dataIndex] = splitedWeekHours[_day - 1]
             obj[dataIndex2] = splitedWeekHours[_day - 1]
+            obj[dataIndex_new] = splitedWeekHours[_day - 1]
           }
           currentDate = currentDate.add(1, 'days');
         };
@@ -972,7 +970,6 @@ const PayrollDetails = () => {
         (
           checkPeriods(contract, start_date, end_date, 0)
         ))
-      console.log(_listItems, '_listItems-11_listItems_listItems1---')
       filterdWorkContract.map(contract => {
         contract.store = { store: '' }
       })
@@ -1058,17 +1055,21 @@ const PayrollDetails = () => {
     return hours;
   }
   const changedCellHour = (hours, origin_value, date, record, flag) => {
-    const { _id } = record;
+    const { _id, workDays } = record;
     const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
+    let startDate = moment(new Date(workDays[0]));
+    startDate = startDate.subtract(2, 'day')
+    let endDate = moment(new Date(workDays[workDays.length - 1]));
+    let targetDate = moment(new Date(date));
     if (item) {
       if (flag) {
-        return item.hour
+        return targetDate.isBetween(startDate, endDate) ? item.hour : 0
       } else {
         return item.comment
       }
     } else {
       if (flag) {
-        return origin_value
+        return targetDate.isBetween(startDate, endDate) ? origin_value : 0
       } else {
         return ''
       }
@@ -1116,7 +1117,7 @@ const PayrollDetails = () => {
   const getServiceHours = (record) => {
     var hours = 0;
     for (var key in record) {
-      if (key.includes('services-day-')) {
+      if (key.includes('new-day-')) {
         hours += parseFloat(record[key]);
       }
     }
