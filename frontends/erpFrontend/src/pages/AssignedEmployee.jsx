@@ -646,13 +646,10 @@ const AssignedEmployee = (props) => {
 
                             <Form.Item
                                 name="monday"
-                                label={<Checkbox checked={mondayValue} onChange={(e) => { e.target.checked ? setMondayValue(true) : setMondayValue(false) }}>Monday</Checkbox>}
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //     },
-                            // ]}
+                                label="Monday"
                             >
+                                <Checkbox checked={mondayValue} onChange={(e) => { e.target.checked ? setMondayValue(true) : setMondayValue(false) }}>Custom</Checkbox>
+                                <Checkbox>Not Working</Checkbox>
                                 {mondayValue &&
 
                                     <TimePicker.RangePicker format={"HH:mm"} />
@@ -660,13 +657,10 @@ const AssignedEmployee = (props) => {
                             </Form.Item>
                             <Form.Item
                                 name="tuesday"
-                                label={<Checkbox checked={tuesdayValue} onChange={(e) => { e.target.checked ? setTuesdayValue(true) : setTuesdayValue(false) }}>Tuesday</Checkbox>}
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //     },
-                            // ]}
+                                label="Tuesday"
                             >
+                                <Checkbox checked={tuesdayValue} onChange={(e) => { e.target.checked ? setTuesdayValue(true) : setTuesdayValue(false) }}>Custom</Checkbox>
+                                <Checkbox>Not working</Checkbox>
                                 {tuesdayValue &&
 
                                     <TimePicker.RangePicker format={"HH:mm"} />
@@ -674,14 +668,10 @@ const AssignedEmployee = (props) => {
                             </Form.Item>
                             <Form.Item
                                 name="wednesday"
-                                label={<Checkbox checked={wednesdayValue} onChange={(e) => { e.target.checked ? setWednesdayValue(true) : setWednesdayValue(false) }}>Wednesday</Checkbox>}
-
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //     },
-                            // ]}
+                                label="Wednesday"
                             >
+                                <Checkbox checked={wednesdayValue} onChange={(e) => { e.target.checked ? setWednesdayValue(true) : setWednesdayValue(false) }}>Custom</Checkbox>
+                                <Checkbox>Not working</Checkbox>
                                 {wednesdayValue &&
 
                                     <TimePicker.RangePicker format={"HH:mm"} />
@@ -689,14 +679,10 @@ const AssignedEmployee = (props) => {
                             </Form.Item>
                             <Form.Item
                                 name="thursday"
-                                label={<Checkbox checked={tursdayValue} onChange={(e) => { e.target.checked ? setTursdayValue(true) : setTursdayValue(false) }}>Thursday</Checkbox>}
-
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //     },
-                            // ]}
+                                label="Thursday"
                             >
+                                <Checkbox checked={tursdayValue} onChange={(e) => { e.target.checked ? setTursdayValue(true) : setTursdayValue(false) }}>Custom</Checkbox>
+                                <Checkbox>Not working</Checkbox>
                                 {tursdayValue &&
 
                                     <TimePicker.RangePicker format={"HH:mm"} />
@@ -704,14 +690,10 @@ const AssignedEmployee = (props) => {
                             </Form.Item>
                             <Form.Item
                                 name="friday"
-
-                                label={<Checkbox checked={fridayValue} onChange={(e) => { e.target.checked ? setFridayValue(true) : setFridayValue(false) }}>Friday</Checkbox>}
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //     },
-                            // ]}
+                                label="Firday"
                             >
+                                <Checkbox checked={fridayValue} onChange={(e) => { e.target.checked ? setFridayValue(true) : setFridayValue(false) }}>Custom</Checkbox>
+                                <Checkbox>Not working</Checkbox>
                                 {fridayValue &&
 
                                     <TimePicker.RangePicker format={"HH:mm"} />
@@ -719,14 +701,10 @@ const AssignedEmployee = (props) => {
                             </Form.Item>
                             <Form.Item
                                 name="saturday"
-
-                                label={<Checkbox checked={saturdayValue} onChange={(e) => { e.target.checked ? setSaturdayValue(true) : setSaturdayValue(false) }}>Saturday</Checkbox>}
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //     },
-                            // ]}
+                                label="Saturday"
                             >
+                                <Checkbox checked={saturdayValue} onChange={(e) => { e.target.checked ? setSaturdayValue(true) : setSaturdayValue(false) }}>Custom</Checkbox>
+                                <Checkbox>Not working</Checkbox>
                                 {saturdayValue &&
 
                                     <TimePicker.RangePicker format={"HH:mm"} />
@@ -734,14 +712,10 @@ const AssignedEmployee = (props) => {
                             </Form.Item>
                             <Form.Item
                                 name="sunday"
-
-                                label={<Checkbox checked={sundayValue} onChange={(e) => { e.target.checked ? setSundayValue(true) : setSundayValue(false) }}>Sunday</Checkbox>}
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //     },
-                            // ]}
+                                label="Sunday"
                             >
+                                <Checkbox checked={sundayValue} onChange={(e) => { e.target.checked ? setSundayValue(true) : setSundayValue(false) }}>Custom</Checkbox>
+                                <Checkbox >Not working</Checkbox>
                                 {sundayValue &&
 
                                     <TimePicker.RangePicker format={"HH:mm"} />

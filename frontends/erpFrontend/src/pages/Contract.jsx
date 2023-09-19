@@ -63,6 +63,9 @@ const Contract = (props) => {
         {
             title: 'Sal/HR',
             dataIndex: 'sal_hr',
+            render: (text) => {
+                return parseFloat(text).toFixed(2)
+            }
         },
         {
             title: 'HR/sem',
@@ -71,6 +74,13 @@ const Contract = (props) => {
         {
             title: 'Sal/Mes',
             dataIndex: 'sal_monthly',
+            render: (text) => {
+                return parseFloat(text).toFixed(2)
+            }
+        },
+        {
+            title: 'Ref',
+            dataIndex: 'ref',
         },
         {
             title: 'Status',
@@ -591,7 +601,7 @@ const Contract = (props) => {
     const editBankModal = () => {
         setIsBankModal(true);
         setIsUpdate(false);
-        if (formRef) formRef.current.resetFields();
+        if (formRef.current) formRef.current.resetFields();
     }
     const editItem = (item) => {
         if (item) {
@@ -1056,6 +1066,17 @@ const Contract = (props) => {
                                 ]}
                             >
                                 <Input onChange={(e) => setDailyHours(e.target.value)} type="number" />
+                            </Form.Item>
+                            <Form.Item
+                                name="ref"
+                                label="Ref"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <Input />
                             </Form.Item>
                             <Form.Item>
                                 {

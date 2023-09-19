@@ -128,8 +128,11 @@ const ComparativeReport = () => {
       render: (_) => {
         return `$${_ ? _.toFixed(2) : 0 || 0}`
       }
-
     },
+    {
+      title: "Projected hours"
+    }
+    ,
     {
       title: 'Real Payment',
       dataIndex: 'salary',
@@ -138,7 +141,10 @@ const ComparativeReport = () => {
       render: (_) => {
         return `$${_ ? _.toFixed(2) : 0}`
       }
+    },
 
+    {
+      title: "Real hours"
     },
     {
       title: 'Difference',
@@ -330,7 +336,6 @@ const ComparativeReport = () => {
       var date = new Date(start_date);
       date.setMonth(date.getMonth() + 12);
 
-      console.log();
 
 
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" })

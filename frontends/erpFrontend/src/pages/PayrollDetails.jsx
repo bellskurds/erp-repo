@@ -289,11 +289,13 @@ const PayrollDetails = () => {
     {
       title: 'Personal ID',
       dataIndex: ['employee', 'personal_id'],
+
     },
     {
       title: 'Employee',
       dataIndex: ['employee', 'name'],
     },
+
     {
       title: `Hours`,
       dataIndex: 'hours',
@@ -718,7 +720,11 @@ const PayrollDetails = () => {
       const { result: assignedEmployees } = await request.list({ entity: "assignedEmployee" });
       const { result: allEmployees } = await request.list({ entity: "employee" });
       const { result: userData } = await request.list({ entity: "Admin" });
-
+      const { result: BankDetails } = await request.list({ entity: "bankAccount" });
+      const getBankDetails = (emplopyee_id) => {
+        const item = BankDetails.find(item => item.parent_id === emplopyee_id);
+        return item || {};
+      }
       const filteredReplacements = replacementData.filter(data => dateValue(data.start_date) === dateValue(start_date) && dateValue(data.end_date) === dateValue(end_date))
       setUserData(userData);
       const _employees = allEmployees.map(employee => {
@@ -775,7 +781,7 @@ const PayrollDetails = () => {
         )
       );
       _listItems.map((obj, index) => {
-        const { contract: assignedContract } = obj;
+        const { contract: assignedContract, employee } = obj;
         obj.sunday_hr = obj.sunday ? getHours(obj.sunday) : 0;
         obj.monday_hr = obj.monday ? getHours(obj.monday) : 0;
         obj.tuesday_hr = obj.tuesday ? getHours(obj.tuesday) : 0;
@@ -785,6 +791,12 @@ const PayrollDetails = () => {
         obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
         obj.workDays = checkPeriods(assignedContract, start_date, end_date, 1, obj);
         obj.payroll_id = obj._id;
+        obj.bankData = getBankDetails(employee?._id);
+        obj.bank = obj.bankData['bank'] || ''
+        obj.account_type = obj.bankData['account_type'] || ''
+        obj.account_no = obj.bankData['account_no'] || ''
+        obj.ruta = obj.bankData['ruta'] || ''
+
         let currentDate = moment(start_date);
         const end = moment(end_date);
 
@@ -850,7 +862,7 @@ const PayrollDetails = () => {
           }
           currentDate = currentDate.add(1, 'days');
         };
-        obj.sal_hr = assignedContract.sal_hr;
+        obj.sal_hr = parseFloat(assignedContract.sal_hr).toFixed(2);
         obj.hrs_bi = getServiceHours(obj);
         obj.week_pay =
           (assignedContract && assignedContract.type) ?
@@ -900,6 +912,7 @@ const PayrollDetails = () => {
           replace[`history${dataIndex}`] = getHistory(allHours, currentDate.format("MM/DD/YYYY"), replace)
           currentDate = currentDate.add(1, 'days');
         };
+        replace.sal_hr = parseFloat(replace.sal_hr).toFixed(2)
         replace.replace = true
         replace.hours = 'Replacement'
         replace.hrs_bi = getServiceHours(replace);
@@ -907,6 +920,7 @@ const PayrollDetails = () => {
         replace.adjustment = calcAdjustment(replace);
         replace.adjust = ((replace.adjustment / replace.hrs_bi) * replace.week_pay).toFixed(2)
         replace.salary = ((parseFloat(replace.adjust) + parseFloat(replace.week_pay))).toFixed(2) || 0;
+
       })
       assignedEmployees.map(obj => {
         const { contract: assignedContract } = obj;
@@ -928,6 +942,7 @@ const PayrollDetails = () => {
         obj.thursday_hr = obj.thursday ? getHours(obj.thursday) : 0;
         obj.friday_hr = obj.friday ? getHours(obj.friday) : 0;
         obj.saturday_hr = obj.saturday ? getHours(obj.saturday) : 0;
+        obj.sal_hr = parseFloat(obj.sal_hr).toFixed(2)
         obj.hrs_bi = getServiceHours(obj);
         obj.week_pay = mathCeil(obj.hrs_bi * obj.sal_hr)
         obj.adjustment = calcAdjustment(obj);
@@ -962,9 +977,16 @@ const PayrollDetails = () => {
           }
           currentDate = currentDate.add(1, 'days');
         };
+        obj.sal_hr = parseFloat(obj.sal_hr).toFixed(2)
         obj.hrs_bi = getServiceHours(obj)
         obj.salary = (obj.type <= 2 && (dateValue(obj.start_date) <= dateValue(start_date) && dateValue(obj.end_date) >= dateValue(end_date))) ? (obj.sal_monthly / 2).toFixed(2) : (obj.sal_hr * obj.hrs_bi).toFixed(2)
-        obj.employee = obj.parent_id
+        obj.employee = obj.parent_id;
+
+        obj.bankData = getBankDetails(obj.employee?._id);
+        obj.bank = obj.bankData['bank'] || ''
+        obj.account_type = obj.bankData['account_type'] || ''
+        obj.account_no = obj.bankData['account_no'] || ''
+        obj.ruta = obj.bankData['ruta'] || ''
       })
       const filterdWorkContract = [...workContracts, ...unworkedContracts].filter(contract => Object(contract).hasOwnProperty('status') && contract.status === "active" &&
         (
@@ -1152,11 +1174,35 @@ const PayrollDetails = () => {
 
   const exportToExcel = () => {
     const tableData = [];
+    const addedHeader = [{
+      title: "Ruta",
+      hidden: true,
+      dataIndex: "ruta"
+    },
+    {
+      title: "Account No.",
+      hidden: true,
+      dataIndex: "account_no"
+    },
+    {
+      title: "Bank name",
+      hidden: true,
+      dataIndex: "bank"
+    },
+    {
+      title: "Account type",
+      hidden: true,
+      dataIndex: "account_type"
+    },]
+    let insertPosition = 3;
     const columns1 = [...mergedColumns];
+
+    columns1.splice(insertPosition, 0, ...addedHeader)
     const headerRow1 = columns1.map((column) => column.title);
+    console.log(columns1, 'columns1');
     tableData.push(headerRow1);
     listItems.forEach((record) => {
-      const rowData = columns1.map((column) => {
+      const rowData = columns1.map((column, index) => {
         if (column.dataIndex && column.dataIndex.includes('-day-')) {
           return record[`services${column.dataIndex}`] || 0;
         }
@@ -1181,8 +1227,11 @@ const PayrollDetails = () => {
               record.sunday ? [record.sunday[0], record.sunday[1]] : "",
             ])}`
         }
-        else if (column.dataIndex && column.dataIndex.includes('type') && record['contract']) {
+        else if (column.dataIndex && column.dataIndex[1] === 'type' && record['contract']) {
           return contractTypes[record['contract']['type']]
+        }
+        else if (column.dataIndex && column.dataIndex === 'account_type') {
+          return record['account_type']
         }
         return record[`${column.dataIndex}`]
       });

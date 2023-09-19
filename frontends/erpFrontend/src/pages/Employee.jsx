@@ -174,9 +174,9 @@ const Employees = () => {
                 <EditOutlined style={{ fontSize: "20px" }} />
               </Typography.Link>
 
-              <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
+              {/* <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record)}>
                 <DeleteOutlined style={{ fontSize: "20px" }} />
-              </Popconfirm>
+              </Popconfirm> */}
               <Typography.Text>
                 <Link to={`/employee/details/${record._id}`}>
                   <EyeOutlined style={{ fontSize: "20px" }} />

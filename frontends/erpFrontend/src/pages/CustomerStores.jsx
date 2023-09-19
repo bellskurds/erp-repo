@@ -454,6 +454,19 @@ const CustomerStores = (props) => {
                                 ]} />
                             </Form.Item>
                             <Form.Item
+                                name="inspection"
+                                label="Monthly inspections"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <InputNumber type="number" />
+                            </Form.Item>
+
+
+                            <Form.Item
                                 name="insumos"
                                 label="Insumos"
                                 rules={[
@@ -503,19 +516,7 @@ const CustomerStores = (props) => {
                                     </Form.Item>
                                 </>
                             }
-                            {
-                                insumos &&
-                                <Form.Item
-                                    name="inspection"
-                                    label="Monthly inspections"
-                                    rules={[
-                                        {
-                                            required: true,
-                                        },
-                                    ]}
-                                >
-                                    <InputNumber type="number" />
-                                </Form.Item>}
+
                             {insumos &&
                                 <Form.Item
                                     name="products"
