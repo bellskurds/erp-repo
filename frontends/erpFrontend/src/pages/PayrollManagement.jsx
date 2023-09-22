@@ -158,8 +158,8 @@ const PayrollManagement = () => {
       let positionEnd = contract.type === 3 ? moment(new Date(viaticum_end_date), 'MM-DD-YYYY') : moment(new Date(end_date), 'MM-DD-YYYY');
 
 
-      let startWorkDay = positionStart || moment(workDays[0], 'MM-DD-YYYY');
-      let endWorkDay = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
+      let startWorkDay = positionStart || moment(workDays?.length ? workDays[0] : null, 'MM-DD-YYYY');
+      let endWorkDay = end_date ? positionEnd : moment(workDays?.length ? workDays[workDays.length - 1] : null, 'MM-DD-YYYY');
       startWorkDay = startWorkDay.subtract(1, 'day')
       const targetDay = moment(new Date(date), 'MM-DD-YYYY');
 
@@ -190,8 +190,8 @@ const PayrollManagement = () => {
       let positionEnd = contract.type === 3 ? moment(new Date(viaticum_end_date), 'MM-DD-YYYY') : moment(new Date(end_date), 'MM-DD-YYYY');
 
 
-      let startWorkDay = positionStart || moment(workDays[0], 'MM-DD-YYYY');
-      let endWorkDay = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
+      let startWorkDay = positionStart || moment(workDays?.length ? workDays[0] : null, 'MM-DD-YYYY');
+      let endWorkDay = end_date ? positionEnd : moment(workDays?.length ? workDays[workDays.length - 1] : null, 'MM-DD-YYYY');
       startWorkDay = startWorkDay.subtract(1, 'day')
       const targetDay = moment(new Date(date), 'MM-DD-YYYY');
 
@@ -602,9 +602,9 @@ const PayrollManagement = () => {
   const changedCellHour = (hours, origin_value, date, record, flag) => {
     const { _id, workDays } = record;
     const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
-    let startDate = moment(new Date(workDays[0]));
+    let startDate = moment(new Date(workDays?.length ? workDays[0] : null));
     startDate = startDate.subtract(2, 'day')
-    let endDate = moment(new Date(workDays[workDays.length - 1]));
+    let endDate = moment(new Date(workDays?.length ? workDays[workDays.length - 1] : null));
     let targetDate = moment(new Date(date));
 
     if (item) {
