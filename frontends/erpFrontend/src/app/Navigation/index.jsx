@@ -118,11 +118,11 @@ export default function Navigation() {
               Recurrent Payment Report
             </Menu.Item>
           </SubMenu>
-          {!company &&
+          {/* {!company &&
             <Menu.Item key={'Company'} icon={<TeamOutlined />}>
               <Link to={'/company'} />
               Company
-            </Menu.Item>}
+            </Menu.Item>} */}
           {
             role === 0 &&
             <>

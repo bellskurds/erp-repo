@@ -1,20 +1,14 @@
-import { DashboardLayout, DefaultLayout } from '@/layout';
-import { DeleteOutlined, EditOutlined, EyeOutlined, LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
-import { Button, Col, Form, Input, InputNumber, Layout, Modal, Popconfirm, Row, Space, Table, Tag, Typography } from 'antd';
-import Search from 'antd/lib/transfer/search';
+/* eslint-disable no-self-assign */
+/* eslint-disable array-callback-return */
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { Button, Col, Form, Input, Layout, Modal, Row, Table, } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
-import CustomModal from 'modules/CustomModal'
 import { useDispatch, useSelector } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
 import moment from 'moment';
-import { useParams } from 'react-router-dom/cjs/react-router-dom.min';
 import { request } from '@/request';
 import { selectCurrentAdmin } from '@/redux/auth/selectors';
-import { useEffectOnce } from 'react-use';
-const contractTypes = [
-  "", "Payroll", "Services"
-]
 const getFormattedHours = (days) => {
   const dayLabels = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
   const hours = [];
@@ -130,7 +124,10 @@ const ComparativeReport = () => {
       }
     },
     {
-      title: "Projected hours"
+      title: "Projected hours",
+      render: (_, record) => {
+        return parseFloat(record.hrs_bi || 0) - parseFloat(record.adjustment || 0)
+      }
     }
     ,
     {
@@ -144,7 +141,8 @@ const ComparativeReport = () => {
     },
 
     {
-      title: "Real hours"
+      title: "Real hours",
+      dataIndex: 'hrs_bi'
     },
     {
       title: 'Difference',
@@ -235,7 +233,7 @@ const ComparativeReport = () => {
   }
   const changedCellValue = (hours, date, record, origin_value) => {
 
-    const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id }, workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = record;
+    const { workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date, _id: position_id } = record;
     if (contract) {
       let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
       let positionEnd = contract.type === 3 ? moment(new Date(viaticum_end_date), 'MM-DD-YYYY') : moment(new Date(end_date), 'MM-DD-YYYY');
@@ -243,13 +241,8 @@ const ComparativeReport = () => {
       let endWorkDay = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
       startWorkDay = startWorkDay.subtract(1, 'day')
       const targetDay = moment(new Date(date), 'MM-DD-YYYY');
-
-      if (contract.type === 3) {
-
-        console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
-      }
       if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
-        const item = hours.find(obj => obj.contract === contract_id && obj.employee === employee_id && obj.customer === customer_id && obj.date === date);
+        const item = hours.find(obj => obj.position === position_id && obj.date === date);
         if (item) {
           return item.hour
         } else {
@@ -299,20 +292,12 @@ const ComparativeReport = () => {
 
     const { workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date } = record;
     if (contract) {
-
       let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
       let positionEnd = contract.type === 3 ? moment(new Date(viaticum_end_date), 'MM-DD-YYYY') : moment(new Date(end_date), 'MM-DD-YYYY');
-
-
       let startWorkDay = positionStart || moment(workDays[0], 'MM-DD-YYYY');
       let endWorkDay = end_date ? positionEnd : moment(workDays[workDays.length - 1], 'MM-DD-YYYY');
       startWorkDay = startWorkDay.subtract(1, 'day')
       const targetDay = moment(new Date(date), 'MM-DD-YYYY');
-
-      if (contract.type === 3) {
-
-        console.log(targetDay, 'target', startWorkDay, 'contract.type', contract.type, targetDay.isBetween(startWorkDay, endWorkDay, null, '[]'));
-      }
       if (targetDay.isBetween(startWorkDay, endWorkDay, null, '[]')) {
         return origin_value;
       } else {
@@ -321,7 +306,27 @@ const ComparativeReport = () => {
     }
 
   }
-
+  const changedCellHour = (hours, origin_value, date, record, flag) => {
+    const { _id, workDays } = record;
+    const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
+    let startDate = moment(new Date(workDays?.length ? workDays[0] : null));
+    startDate = startDate.subtract(2, 'day')
+    let endDate = moment(new Date(workDays?.length ? workDays[workDays.length - 1] : null));
+    let targetDate = moment(new Date(date));
+    if (item) {
+      if (flag) {
+        return targetDate.isBetween(startDate, endDate) ? item.hour : 0
+      } else {
+        return item.comment
+      }
+    } else {
+      if (flag) {
+        return targetDate.isBetween(startDate, endDate) ? origin_value : 0
+      } else {
+        return ''
+      }
+    }
+  }
 
   useEffect(() => {
     async function init() {
@@ -383,55 +388,54 @@ const ComparativeReport = () => {
           const dataIndex = `-day-${year}_${month + 1}_${day}`;
           const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
           const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
+          const dataIndex_new = `new-day-${year}_${month + 1}_${day}`;
 
           switch (_day) {
             case 0:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr;
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr) - obj.sunday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.sunday_hr);
-
-
+              obj[dataIndex_new] = (changedCellHour(allHours, obj.sunday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
 
             case 1:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr;
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr) - obj.monday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.monday_hr);
-
+              obj[dataIndex_new] = (changedCellHour(allHours, obj.monday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
 
             case 2:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr;
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr) - obj.tuesday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.tuesday_hr);
-
+              obj[dataIndex_new] = (changedCellHour(allHours, obj.tuesday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
 
             case 3:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr;
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr) - obj.wednesday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.wednesday_hr);
-
+              obj[dataIndex_new] = (changedCellHour(allHours, obj.wednesday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
 
             case 4:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr;
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr) - obj.thursday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.thursday_hr);
-
+              obj[dataIndex_new] = (changedCellHour(allHours, obj.thursday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
             case 5:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr;
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr) - obj.friday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.friday_hr);
-
-
+              obj[dataIndex_new] = (changedCellHour(allHours, obj.friday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
             case 6:
               obj[dataIndex] = changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr;
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr) - obj.saturday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.saturday_hr);
-
+              obj[dataIndex_new] = (changedCellHour(allHours, obj.saturday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
 
             default:
@@ -447,7 +451,7 @@ const ComparativeReport = () => {
         obj.salary = parseFloat(obj.adjust) + parseFloat(obj.week_pay);
       });
 
-      console.log(_listItems, '_listItems');
+      console.log(_listItems, '_listIt111ems');
       const groupedCustomer = _listItems.reduce((acc, item) => {
         const existingItem = acc.find(i => i.parent_id._id === item.parent_id._id);
         if (!existingItem) {
@@ -462,6 +466,7 @@ const ComparativeReport = () => {
           const { parent_id: customer2 } = list
           if (item._id !== list._id && customer1._id === customer2._id) {
             item.salary += parseFloat(list.salary || 0);
+            item.gross_salary += parseFloat(list.gross_salary || 0);
             item.gross_salary += parseFloat(list.gross_salary || 0);
           }
         });
@@ -483,7 +488,7 @@ const ComparativeReport = () => {
   const getServiceHours = (record) => {
     var hours = 0;
     for (var key in record) {
-      if (key.includes('services-day-')) {
+      if (key.includes('new-day-')) {
         hours += record[key];
       }
     }

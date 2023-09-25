@@ -455,11 +455,8 @@ const PayrollDetails = () => {
 
     const { workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date, _id: position_id } = record;
     if (contract) {
-
       let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
       let positionEnd = contract.type === 3 ? moment(new Date(viaticum_end_date), 'MM-DD-YYYY') : moment(new Date(end_date), 'MM-DD-YYYY');
-
-
       let startWorkDay = positionStart || moment(workDays?.length ? workDays[0] : null, 'MM-DD-YYYY');
       let endWorkDay = end_date ? positionEnd : moment(workDays?.length ? workDays[workDays.length - 1] : null, 'MM-DD-YYYY');
       startWorkDay = startWorkDay.subtract(1, 'day')

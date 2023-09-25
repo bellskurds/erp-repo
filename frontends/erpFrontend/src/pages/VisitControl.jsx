@@ -195,7 +195,7 @@ const VisitControl = () => {
     {
       title: 'Client(Branch)',
       dataIndex: ['customer', 'name'],
-      // width: 270,
+      width: 230,
       render: (text, { store, ...otherObj }) => {
         return (<label style={{ cursor: 'pointer' }} onClick={() => editItem({ store, ...otherObj })}>{text}({store.store})</label>)
       }
@@ -203,17 +203,17 @@ const VisitControl = () => {
     {
       title: 'T',
       dataIndex: 'store_visit_value',
-      width: 100,
+      width: 50,
     },
     {
       title: 'R',
       dataIndex: 'visit_value',
-      width: 100,
+      width: 50,
     },
     {
       title: 'P',
       dataIndex: 'difference',
-      width: 100,
+      width: 50,
       render: (text, record) => {
         return ((parseFloat(record.store_visit_value) || 0) - (parseFloat(record.visit_value) || 0));
       }
@@ -239,21 +239,21 @@ const VisitControl = () => {
     },
     {
       title: "",
-      width: 100,
+      width: 50,
       dataIndex: 'report_value'
     },
     {
       title: "",
-      width: 50,
+      width: 0,
     },
     {
       title: "",
-      width: 50,
+      width: 0,
 
     },
     {
       title: "..%...",
-      width: 89,
+      width: 50,
       dataIndex: "report_percent",
       render: (text, record, index) => {
         const obj = {
@@ -272,7 +272,7 @@ const VisitControl = () => {
   const visitColumn = [
     {
       title: "",
-      width: 300,
+      width: 230,
       dataIndex: "report_title"
     },
     {
@@ -401,7 +401,7 @@ const VisitControl = () => {
         daysColumns.push({
           title: `${currentDate.format("dddd").slice(0, 1).toUpperCase()} ${day}`,
           dataIndex: `day_${year}-${month}-${day}`,
-          width: 100
+          width: 50
         })
         inspectionPerDate[`day_${year}-${month}-${day}`] = 0;
         inspectionPerDate_[`day_${year}-${month}-${day}`] = 0;
@@ -1033,7 +1033,7 @@ const VisitControl = () => {
               columns={parseInt(tabsStatus) === 1 ? [...visitColumn, ...changedMonth] : [...topColumn, ...changedMonth]}
               rowClassName={rowClass}
               scroll={{
-                x: 3300
+                x: 2700
               }}
               pagination={false}
             />
@@ -1049,7 +1049,7 @@ const VisitControl = () => {
               onChange={handelDataTableLoad}
               footer={Footer}
               scroll={{
-                x: 3300
+                x: 2700
               }}
             />
           </Form>
