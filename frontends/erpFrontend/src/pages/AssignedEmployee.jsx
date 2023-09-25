@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 import { crud } from "@/redux/crud/actions";
 import { selectListsByAssignedEmployee, selectListsByContract, selectListsByCustomerStores, } from "@/redux/crud/selectors";
 import { DeleteOutlined, EditOutlined, } from "@ant-design/icons";
@@ -46,17 +47,9 @@ const AssignedEmployee = (props) => {
             dataIndex: 'time',
             render: (text, record) => (
                 <>
-                    {getFormattedHours(
-                        [
-                            record.monday ? [record.monday[0], record.monday[1]] : "",
-                            record.tuesday ? [record.tuesday[0], record.tuesday[1]] : "",
-                            record.wednesday ? [record.wednesday[0], record.wednesday[1]] : "",
-                            record.thursday ? [record.thursday[0], record.thursday[1]] : "",
-                            record.friday ? [record.friday[0], record.friday[1]] : "",
-                            record.saturday ? [record.saturday[0], record.saturday[1]] : "",
-                            record.sunday ? [record.sunday[0], record.sunday[1]] : "",
-                        ]
-                    )}
+                    {
+                        setHourLabels(record)
+                    }
                 </>
             ),
         },
@@ -120,7 +113,7 @@ const AssignedEmployee = (props) => {
         setMondayValue(false);
         setTuesdayValue(false);
         setWednesdayValue(false);
-        setTursdayValue(false);
+        setThursdayValue(false);
         setFridayValue(false);
         setSaturdayValue(false);
         setSundayValue(false);
@@ -128,29 +121,83 @@ const AssignedEmployee = (props) => {
         setAssignStatus(true);
         setCantUpdate(false);
         setIsViaticum(false);
+
+        setMondayNotWorking(false);
+        setTuesdayNotWorking(false)
+        setWednesdayNotWorking(false)
+        setThursdayNotWorking(false)
+        setFridayNotWorking(false)
+        setSaturdayNotWorking(false)
+        setSundayNotWorking(true)
+
+        setMondayHour(0)
+        setTuesdayHour(0)
+        setWednesdayHour(0)
+        setThursdayHour(0)
+        setFridayHour(0)
+        setSaturdayHour(0)
+        setSundayHour(0)
+
+
+
         if (formRef.current) { formRef.current.resetFields(); }
     }
+    const setHourLabels = (record) => {
+        // const { is_custom_monday, is_custom_tuesday, is_custom_wednesday, is_custom_thursday, is_custom_friday, is_custom_saturday, is_custom_sunday } = record
+        // console.log(is_custom_monday, is_custom_tuesday, is_custom_wednesday, is_custom_thursday, is_custom_friday, is_custom_saturday, is_custom_sunday);
 
+        // if (is_custom_tuesday) record.tuesday = record.every_hours
+        return getFormattedHours(
+            [
+                record.monday ? [record.monday[0], record.monday[1]] : "",
+                record.tuesday ? [record.tuesday[0], record.tuesday[1]] : "",
+                record.wednesday ? [record.wednesday[0], record.wednesday[1]] : "",
+                record.thursday ? [record.thursday[0], record.thursday[1]] : "",
+                record.friday ? [record.friday[0], record.friday[1]] : "",
+                record.saturday ? [record.saturday[0], record.saturday[1]] : "",
+                record.sunday ? [record.sunday[0], record.sunday[1]] : "",
+            ]
+        )
+    }
     const getFormattedHours = (days) => {
+
         const dayLabels = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
         const hours = [];
 
         for (let i = 0; i < days.length; i++) {
             if (!days[i]) continue
             const [start, end] = days[i];
-
-            if (start === end) {
-                hours.push(dayLabels[i] + ' ' + new Date(start).getHours());
-            } else if (i === 0 || start !== days[i - 1][0] || end !== days[i - 1][1]) {
-                hours.push(dayLabels[i] + '( ' + new Date(start).getHours() + '-' + new Date(end).getHours() + ')');
-            }
+            hours.push(dayLabels[i] + '( ' + new Date(start).getHours() + '-' + new Date(end).getHours() + ')');
         }
         return hours.join(', ');
     }
     const [cantUpdate, setCantUpdate] = useState(false);
     const editItem = (item) => {
         if (item) {
-            console.log(item, 'item');
+            setMondayHour(0)
+            setTuesdayHour(0)
+            setWednesdayHour(0)
+            setThursdayHour(0)
+            setFridayHour(0)
+            setSaturdayHour(0)
+            setSundayHour(0)
+            setEveryHours(0)
+            setMondayNotWorking(false);
+            setTuesdayNotWorking(false)
+            setWednesdayNotWorking(false)
+            setThursdayNotWorking(false)
+            setFridayNotWorking(false)
+            setSaturdayNotWorking(false)
+            setSundayNotWorking(false)
+
+            setMondayValue(false)
+            setTuesdayValue(false)
+            setWednesdayValue(false)
+            setThursdayValue(false)
+            setFridayValue(false)
+            setSaturdayValue(false)
+            setSundayValue(false)
+
 
             setIsEmployee(false)
             setIsBankModal(true);
@@ -163,33 +210,93 @@ const AssignedEmployee = (props) => {
             setIsViaticum(false)
             if (formRef.current) formRef.current.resetFields();
             setTimeout(() => {
-                if (item.monday) { setMondayValue(true) }
+                if (item.is_custom_monday) {
+                    let hour = moment(item.monday[1]).hour() - moment(item.monday[0]).hour() || 0;
+                    setMondayValue(true)
+                    setMondayHour(hour)
+
+                }
+                else if (item.is_custom_monday === false) {
+                    setMondayValue(false)
+                    setMondayHour(moment(item.every_hours[1]).hour() - moment(item.every_hours[0]).hour())
+                }
                 else {
                     setMondayValue(false)
+                    setMondayNotWorking(true)
                 }
-                if (item.tuesday) setTuesdayValue(true)
+                if (item.is_custom_tuesday) {
+                    setTuesdayValue(true)
+                    setTuesdayHour(moment(item.tuesday[1]).hour() - moment(item.tuesday[0]).hour())
+                }
+                else if (item.is_custom_tuesday === false) {
+                    setTuesdayValue(false)
+                    setTuesdayHour(moment(item.every_hours[1]).hour() - moment(item.every_hours[0]).hour())
+                }
                 else {
                     setTuesdayValue(false)
+                    setTuesdayNotWorking(true)
                 }
-                if (item.wednesday) setWednesdayValue(true)
+                if (item.is_custom_wednesday) {
+                    setWednesdayValue(true)
+                    setWednesdayHour(moment(item.wednesday[1]).hour() - moment(item.wednesday[0]).hour())
+                } else if (item.is_custom_wednesday === false) {
+                    setWednesdayValue(false)
+                    setWednesdayHour(moment(item.every_hours[1]).hour() - moment(item.every_hours[0]).hour())
+                }
                 else {
                     setWednesdayValue(false)
+                    setWednesdayNotWorking(true)
                 }
-                if (item.thursday) setTursdayValue(true)
+                if (item.is_custom_thursday) {
+                    setThursdayValue(true)
+                    setThursdayHour(moment(item.thursday[1]).hour() - moment(item.thursday[0]).hour())
+                }
+                else if (item.is_custom_thursday === false) {
+                    setThursdayValue(false)
+                    setThursdayHour(moment(item.every_hours[1]).hour() - moment(item.every_hours[0]).hour())
+                }
                 else {
-                    setTursdayValue(false)
+                    setThursdayValue(false)
+                    setThursdayNotWorking(true)
                 }
-                if (item.friday) setFridayValue(true)
+                if (item.is_custom_friday) {
+                    setFridayValue(true)
+                    setFridayHour(moment(item.friday[1]).hour() - moment(item.friday[0]).hour())
+                }
+                else if (item.is_custom_friday === false) {
+                    setFridayValue(false)
+                    setFridayHour(moment(item.every_hours[1]).hour() - moment(item.every_hours[0]).hour())
+                }
                 else {
                     setFridayValue(false)
+                    setFridayNotWorking(true)
                 }
-                if (item.saturday) setSaturdayValue(true)
+                if (item.is_custom_saturday) {
+                    setSaturdayValue(true)
+                    setSaturdayHour(moment(item.saturday[1]).hour() - moment(item.saturday[0]).hour())
+                }
+                else if (item.is_custom_saturday === false) {
+                    setSaturdayValue(false)
+                    setSaturdayHour(moment(item.every_hours[1]).hour() - moment(item.every_hours[0]).hour())
+                }
                 else {
                     setSaturdayValue(false)
+                    setSaturdayNotWorking(true)
                 }
-                if (item.sunday) setSundayValue(true)
+                if (item.is_custom_sunday) {
+                    setSundayValue(true)
+                    setSundayHour(moment(item.sunday[1]).hour() - moment(item.sunday[0]).hour())
+                }
+                else if (item.is_custom_sunday === false) {
+                    setSundayValue(false)
+                    setSundayHour(moment(item.every_hours[1]).hour() - moment(item.every_hours[0]).hour())
+                }
                 else {
                     setSundayValue(false)
+                    setSundayNotWorking(true)
+                }
+                if (item.every_hours) {
+                    setEveryHours(moment(item.every_hours[1]).hour() - moment(item.every_hours[0]).hour())
                 }
                 if (item.end_date) {
                     setUnAssignStatus(true);
@@ -221,10 +328,11 @@ const AssignedEmployee = (props) => {
                     friday: item.friday ? [moment(item.friday[0]), moment(item.friday[1])] : null,
                     saturday: item.saturday ? [moment(item.saturday[0]), moment(item.saturday[1])] : null,
                     sunday: item.sunday ? [moment(item.sunday[0]), moment(item.sunday[1])] : null,
+                    every_hours: item.every_hours ? [moment(item.every_hours[0]), moment(item.every_hours[1])] : null,
                     employee: item.employee,
                     store: item.store._id,
                     sal_hr: item.sal_hr,
-                    hr_week: item.hr_week,
+                    // hr_week: item.hr_week,
                     position: item.position,
                     gross_salary: item.gross_salary,
                     start_date: item.start_date ? moment(new Date(item.start_date)) : null,
@@ -261,6 +369,63 @@ const AssignedEmployee = (props) => {
         setIsBankModal(false)
     }
     const saveDetails = (values) => {
+        if (mondayNotWorking) {
+            values['monday'] = null;
+        } else if (!mondayValue && !mondayNotWorking) {
+            values['monday'] = values['every_hours']
+            values['is_custom_monday'] = false
+        } else if (mondayValue) {
+            values['is_custom_monday'] = true;
+        }
+        if (tuesdayNotWorking) {
+            values['tuesday'] = null;
+        } else if (!tuesdayValue && !tuesdayNotWorking) {
+            values['tuesday'] = values['every_hours']
+            values['is_custom_tuesday'] = false
+        } else if (tuesdayValue) {
+            values['is_custom_tuesday'] = true;
+        }
+        if (wednesdayNotWorking) {
+            values['wednesday'] = null;
+        } else if (!wednesdayValue && !wednesdayNotWorking) {
+            values['wednesday'] = values['every_hours']
+            values['is_custom_wednesday'] = false
+        } else if (wednesdayValue) {
+            values['is_custom_wednesday'] = true;
+        }
+        if (thursdayNotWorking) {
+            values['thursday'] = null;
+        } else if (!thursdayValue && !thursdayNotWorking) {
+            values['thursday'] = values['every_hours']
+            values['is_custom_thursday'] = false
+        } else if (thursdayValue) {
+            values['is_custom_thursday'] = true;
+        }
+        if (fridayNotWorking) {
+            values['friday'] = null;
+        } else if (!fridayValue && !fridayNotWorking) {
+            values['friday'] = values['every_hours']
+            values['is_custom_friday'] = false
+        } else if (fridayValue) {
+            values['is_custom_friday'] = true;
+        }
+        if (saturdayNotWorking) {
+            values['saturday'] = null;
+        } else if (!saturdayValue && !saturdayNotWorking) {
+            values['saturday'] = values['every_hours']
+            values['is_custom_saturday'] = false
+        } else if (saturdayValue) {
+            values['is_custom_saturday'] = true;
+        }
+
+        if (sundayNotWorking) {
+            values['sunday'] = null;
+        } else if (!sundayValue && !sundayNotWorking) {
+            values['sunday'] = values['every_hours']
+            values['is_custom_sunday'] = false
+        } else if (sundayValue) {
+            values['is_custom_sunday'] = true;
+        }
 
         const parentId = currentEmployeeId;
         if (unAssignStatus && currentId && parentId && isUpdate) {
@@ -316,18 +481,54 @@ const AssignedEmployee = (props) => {
     }, []);
     useEffect(() => {
         const positions = Items.items || [];
+
         const data = positions.filter(position => !position.unassigned)
-        setItemLists(data || [])
-        console.log(Items.items, 'Items.items');
+        // data.map(position => {
+        //     const { monday, tuesday, wednesday, thursday, friday, saturday, sunday } = position
+        //     if (monday === true) {
+        //         position['monday'] = position['every_hours']
+        //     }
+        //     if (tuesday === true) {
+        //         position['tuesday'] = position['every_hours']
+        //     }
+        //     if (wednesday === true) {
+        //         position['wednesday'] = position['every_hours']
+        //     }
+        //     if (thursday === true) {
+        //         position['thursday'] = position['every_hours']
+        //     }
+        //     if (friday === true) {
+        //         position['friday'] = position['every_hours']
+        //     }
+        //     if (saturday === true) {
+        //         position['saturday'] = position['every_hours']
+        //     }
+        //     if (sunday === true) {
+        //         position['sunday'] = position['every_hours']
+        //     }
+        // })
+        console.log(JSON.parse(JSON.stringify(data)), '-------------------');
+
+        setItemLists(JSON.parse(JSON.stringify(data)) || [])
     }, [Items])
 
-    const [mondayValue, setMondayValue] = useState(null);
-    const [tuesdayValue, setTuesdayValue] = useState(null);
-    const [wednesdayValue, setWednesdayValue] = useState(null);
-    const [tursdayValue, setTursdayValue] = useState(null);
-    const [fridayValue, setFridayValue] = useState(null);
-    const [saturdayValue, setSaturdayValue] = useState(null);
-    const [sundayValue, setSundayValue] = useState(null);
+    const [mondayNotWorking, setMondayNotWorking] = useState(false);
+    const [tuesdayNotWorking, setTuesdayNotWorking] = useState(false);
+    const [wednesdayNotWorking, setWednesdayNotWorking] = useState(false);
+    const [thursdayNotWorking, setThursdayNotWorking] = useState(false);
+    const [fridayNotWorking, setFridayNotWorking] = useState(false);
+    const [saturdayNotWorking, setSaturdayNotWorking] = useState(false);
+    const [sundayNotWorking, setSundayNotWorking] = useState(true);
+
+
+
+    const [mondayValue, setMondayValue] = useState(false);
+    const [tuesdayValue, setTuesdayValue] = useState(false);
+    const [wednesdayValue, setWednesdayValue] = useState(false);
+    const [thursdayValue, setThursdayValue] = useState(false);
+    const [fridayValue, setFridayValue] = useState(false);
+    const [saturdayValue, setSaturdayValue] = useState(false);
+    const [sundayValue, setSundayValue] = useState(false);
 
     const [workContract, setWorkContract] = useState([]);
     const [viaticumContract, setViaticumContract] = useState([]);
@@ -338,6 +539,130 @@ const AssignedEmployee = (props) => {
     const [isContract, setIsContract] = useState(false);
     const [workContracts, setWorkContracts] = useState();
     const [selectedEmployeeId, setSelectedEmployeeId] = useState(false);
+
+    const [mondayHour, setMondayHour] = useState(0);
+    const [tuesdayHour, setTuesdayHour] = useState(0);
+    const [wednesdayHour, setWednesdayHour] = useState(0);
+    const [thursdayHour, setThursdayHour] = useState(0);
+    const [fridayHour, setFridayHour] = useState(0);
+    const [saturdayHour, setSaturdayHour] = useState(0);
+    const [sundayHour, setSundayHour] = useState(0);
+    const [everyHours, setEveryHours] = useState(0)
+    useEffect(() => {
+        let totalHours = 0;
+        console.log(mondayHour, tuesdayHour, wednesdayHour, thursdayHour, fridayHour, saturdayHour, sundayHour, everyHours, 'everyHours')
+
+        if (mondayNotWorking) {
+            totalHours += 0
+        } else if (mondayValue || mondayHour) {
+            totalHours += mondayHour
+        } else {
+            totalHours += everyHours
+        }
+
+        if (tuesdayNotWorking) {
+            totalHours += 0
+        } else if (tuesdayValue || tuesdayHour) {
+            totalHours += tuesdayHour
+        } else {
+            totalHours += everyHours
+        }
+        if (wednesdayNotWorking) {
+            totalHours += 0
+        } else if (wednesdayValue || wednesdayHour) {
+            totalHours += wednesdayHour
+        } else {
+            totalHours += everyHours
+        }
+        if (thursdayNotWorking) {
+            totalHours += 0
+        } else if (thursdayValue || thursdayHour) {
+            totalHours += thursdayHour
+        } else {
+            totalHours += everyHours
+        }
+        if (fridayNotWorking) {
+            totalHours += 0
+        } else if (fridayValue || fridayHour) {
+            totalHours += fridayHour
+        } else {
+            totalHours += everyHours
+        }
+        if (saturdayNotWorking) {
+            totalHours += 0
+        } else if (saturdayValue || saturdayHour) {
+            totalHours += saturdayHour
+        } else {
+            totalHours += everyHours
+        }
+        if (sundayNotWorking) {
+            totalHours += 0
+        } else if (sundayValue || sundayHour) {
+            totalHours += sundayHour
+        } else {
+            totalHours += everyHours
+        }
+
+        if (formRef.current) {
+            formRef.current.setFieldsValue({ "hr_week": totalHours })
+        }
+    }, [mondayHour, tuesdayHour, wednesdayHour, thursdayHour, fridayHour, saturdayHour, sundayHour, everyHours, mondayNotWorking, tuesdayNotWorking, wednesdayNotWorking, thursdayNotWorking, fridayNotWorking, saturdayNotWorking, sundayNotWorking, mondayValue, tuesdayValue, wednesdayValue, thursdayValue, fridayValue, saturdayValue, sundayValue])
+
+
+
+    useEffect(() => {
+        if (!mondayValue && !mondayNotWorking) {
+            setMondayHour(everyHours)
+        }
+        if (!tuesdayValue && !tuesdayNotWorking) {
+            setTuesdayHour(everyHours)
+        }
+        if (!wednesdayValue && !wednesdayNotWorking) {
+            setWednesdayHour(everyHours)
+        }
+        if (!thursdayValue && !thursdayNotWorking) {
+            setThursdayHour(everyHours)
+        }
+        if (!fridayValue && !fridayNotWorking) {
+            setFridayHour(everyHours)
+        }
+        if (!saturdayValue && !saturdayNotWorking) {
+            setSaturdayHour(everyHours)
+        }
+        if (!sundayValue && !sundayNotWorking) {
+            setSundayHour(everyHours)
+        }
+    }, [
+        everyHours, mondayNotWorking, tuesdayNotWorking, wednesdayNotWorking, thursdayNotWorking, fridayNotWorking, saturdayNotWorking, sundayNotWorking, mondayValue, tuesdayValue, wednesdayValue, thursdayValue, fridayValue, saturdayValue, sundayValue
+    ])
+    useEffect(() => {
+        if (formRef.current) {
+
+            if ((!mondayValue)) {
+                formRef.current.setFieldsValue({ monday: null })
+            }
+            if ((!tuesdayValue)) {
+                formRef.current.setFieldsValue({ tuesday: null })
+            }
+            if ((!wednesdayValue)) {
+                formRef.current.setFieldsValue({ wednesday: null })
+            }
+            if ((!thursdayValue)) {
+                formRef.current.setFieldsValue({ thursday: null })
+            }
+            if ((!fridayValue)) {
+                formRef.current.setFieldsValue({ friday: null })
+            }
+            if ((!saturdayValue)) {
+                formRef.current.setFieldsValue({ saturday: null })
+            }
+            if ((!sundayValue)) {
+                formRef.current.setFieldsValue({ sunday: null })
+            }
+        }
+    }, [
+        mondayNotWorking, tuesdayNotWorking, wednesdayNotWorking, thursdayNotWorking, fridayNotWorking, saturdayNotWorking, sundayNotWorking, mondayValue, tuesdayValue, wednesdayValue, thursdayValue, fridayValue, saturdayValue, sundayValue
+    ])
     const changeEmployee = (value) => {
         formRef.current.setFieldsValue({
             contract: undefined,
@@ -423,13 +748,7 @@ const AssignedEmployee = (props) => {
         }
 
     }, [Stores]);
-
     useEffect(() => {
-
-        console.log(selectedEmployeeId, 'selectedEmployeeId');
-    }, [selectedEmployeeId,])
-    useEffect(() => {
-        console.log(Contracts, 'ContractsContracts')
         const contractOptions = Contracts.items || [];
         if (contractOptions) {
             const contracts = contractOptions.map(item => {
@@ -478,12 +797,6 @@ const AssignedEmployee = (props) => {
         }
     }, [currentContract, currentEmployee, currentViaticum]);
 
-
-
-    useEffect(() => {
-
-        console.log(isContract, isEmployee, 'isContract,isEmployee');
-    }, [isContract, isEmployee])
     const [isWorkDate, setIsWorkDate] = useState(false);
     const cancelWorkDate = () => {
         setIsWorkDate(false);
@@ -564,6 +877,13 @@ const AssignedEmployee = (props) => {
             }
         }
     }
+    const validateTimeRange = (rule, value) => {
+        console.log(rule, value, 'valuevaluevalue');
+        if (!value || !value[0] || !value[1]) {
+            return Promise.reject('This field is required');
+        }
+        return Promise.resolve();
+    };
     return (
 
         <div className="whiteBox shadow">
@@ -643,82 +963,209 @@ const AssignedEmployee = (props) => {
                                 />
 
                             </Form.Item>
-
+                            <Form.Item
+                                name="every_hours"
+                                label="Hours"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <TimePicker.RangePicker format={"h a"} hideDisabledOptions hourStep={1}
+                                    minuteStep={15}
+                                    onChange={(e) => { setEveryHours(!e ? 0 : moment(e[1]).hour() - moment(e[0]).hour()) }}
+                                />
+                            </Form.Item>
                             <Form.Item
                                 name="monday"
-                                label="Monday"
-                            >
-                                <Checkbox checked={mondayValue} onChange={(e) => { e.target.checked ? setMondayValue(true) : setMondayValue(false) }}>Custom</Checkbox>
-                                <Checkbox>Not Working</Checkbox>
-                                {mondayValue &&
-
-                                    <TimePicker.RangePicker format={"HH:mm"} />
+                                label={
+                                    <div >
+                                        Monday
+                                        <Checkbox
+                                            checked={mondayValue}
+                                            onChange={(e) => {
+                                                e.target.checked ? (
+                                                    setMondayValue(true),
+                                                    setMondayNotWorking(false)
+                                                ) : (
+                                                    setMondayValue(false),
+                                                    setMondayHour(0)
+                                                )
+                                            }}
+                                        >
+                                            Custom
+                                        </Checkbox>
+                                        <Checkbox
+                                            checked={mondayNotWorking}
+                                            onChange={(e) => {
+                                                (mondayValue && e.target.checked) ? (
+                                                    setMondayValue(false),
+                                                    setMondayNotWorking(true),
+                                                    setMondayHour(0)
+                                                ) : e.target.checked ? (
+                                                    (setMondayNotWorking(true), setMondayHour(0))
+                                                ) : (
+                                                    setMondayNotWorking(false)
+                                                );
+                                            }}
+                                        >
+                                            Not Working
+                                        </Checkbox>
+                                    </div>
                                 }
+                                labelCol={{
+                                    offset: 5,
+                                    span: 12,
+                                }}
+                                rules={
+                                    mondayValue ?
+                                        [
+                                            { required: true },
+                                        ] : null}
+                            >
+                                {mondayValue && (
+                                    <TimePicker.RangePicker name="monday" format={"HH a"} onChange={(e) => { setMondayHour(!e ? 0 : moment(e[1]).hour() - moment(e[0]).hour()) }} />
+                                )}
                             </Form.Item>
                             <Form.Item
                                 name="tuesday"
-                                label="Tuesday"
+                                label={
+                                    <div >
+                                        Tuesday
+                                        <Checkbox checked={tuesdayValue} onChange={(e) => { e.target.checked ? (setTuesdayValue(true), setTuesdayNotWorking(false)) : setTuesdayValue(false) }}>Custom</Checkbox>
+                                        <Checkbox checked={tuesdayNotWorking} onChange={(e) => { (tuesdayValue && e.target.checked) ? (setTuesdayValue(false), setTuesdayNotWorking(true), setTuesdayHour(0)) : e.target.checked ? (setTuesdayNotWorking(true), setTuesdayHour(0)) : setTuesdayNotWorking(false) }} >Not Working</Checkbox>
+                                    </div>
+                                }
+                                labelCol={{
+                                    offset: 5,
+                                    span: 12,
+                                }}
+                                rules={
+                                    tuesdayValue ?
+                                        [
+                                            { required: true },
+                                        ] : null}
                             >
-                                <Checkbox checked={tuesdayValue} onChange={(e) => { e.target.checked ? setTuesdayValue(true) : setTuesdayValue(false) }}>Custom</Checkbox>
-                                <Checkbox>Not working</Checkbox>
-                                {tuesdayValue &&
 
-                                    <TimePicker.RangePicker format={"HH:mm"} />
+                                {tuesdayValue &&
+                                    <TimePicker.RangePicker format={"h a"} onChange={(e) => { setTuesdayHour(!e ? 0 : moment(e[1]).hour() - moment(e[0]).hour()) }} />
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="wednesday"
-                                label="Wednesday"
+                                label={
+                                    <div >
+                                        Wednesday
+                                        <Checkbox checked={wednesdayValue} onChange={(e) => { e.target.checked ? (setWednesdayValue(true), setWednesdayNotWorking(false)) : setWednesdayValue(false) }}>Custom</Checkbox>
+                                        <Checkbox checked={wednesdayNotWorking} onChange={(e) => { (wednesdayValue && e.target.checked) ? (setWednesdayValue(false), setWednesdayNotWorking(true), setWednesdayHour(0)) : e.target.checked ? (setWednesdayNotWorking(true), setWednesdayHour(0)) : setWednesdayNotWorking(false) }} >Not Working</Checkbox>
+                                    </div>
+                                }
+                                labelCol={{
+                                    offset: 5,
+                                    span: 12,
+                                }}
+                                rules={
+                                    wednesdayValue ?
+                                        [
+                                            { required: true },
+                                        ] : null}
                             >
-                                <Checkbox checked={wednesdayValue} onChange={(e) => { e.target.checked ? setWednesdayValue(true) : setWednesdayValue(false) }}>Custom</Checkbox>
-                                <Checkbox>Not working</Checkbox>
                                 {wednesdayValue &&
-
-                                    <TimePicker.RangePicker format={"HH:mm"} />
+                                    <TimePicker.RangePicker format={"h a"} onChange={(e) => { setWednesdayHour(!e ? 0 : moment(e[1]).hour() - moment(e[0]).hour()) }} />
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="thursday"
-                                label="Thursday"
-                            >
-                                <Checkbox checked={tursdayValue} onChange={(e) => { e.target.checked ? setTursdayValue(true) : setTursdayValue(false) }}>Custom</Checkbox>
-                                <Checkbox>Not working</Checkbox>
-                                {tursdayValue &&
+                                label={
+                                    <div >
+                                        Thursday
+                                        <Checkbox checked={thursdayValue} onChange={(e) => { e.target.checked ? (setThursdayValue(true), setThursdayNotWorking(false)) : setThursdayValue(false) }}>Custom</Checkbox>
+                                        <Checkbox checked={thursdayNotWorking} onChange={(e) => { (thursdayValue && e.target.checked) ? (setThursdayValue(false), setThursdayNotWorking(true), setTuesdayHour(0)) : e.target.checked ? (setThursdayNotWorking(true), setTuesdayHour(0)) : setThursdayNotWorking(false) }} >Not Working</Checkbox>
+                                    </div>
+                                }
+                                labelCol={{
+                                    offset: 5,
+                                    span: 12,
+                                }}
+                                rules={
+                                    thursdayValue ?
+                                        [
+                                            { required: true },
+                                        ] : null}
 
-                                    <TimePicker.RangePicker format={"HH:mm"} />
+                            >
+                                {thursdayValue &&
+                                    <TimePicker.RangePicker format={"h a"} onChange={(e) => { setThursdayHour(!e ? 0 : moment(e[1]).hour() - moment(e[0]).hour()) }} />
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="friday"
-                                label="Firday"
+                                label={
+                                    <div >
+                                        Friday
+                                        <Checkbox checked={fridayValue} onChange={(e) => { e.target.checked ? (setFridayValue(true), setFridayNotWorking(false)) : setFridayValue(false) }}>Custom</Checkbox>
+                                        <Checkbox checked={fridayNotWorking} onChange={(e) => { (fridayValue && e.target.checked) ? (setFridayValue(false), setFridayNotWorking(true), setFridayHour(0)) : e.target.checked ? (setFridayNotWorking(true), setFridayHour(0)) : setFridayNotWorking(false) }} >Not Working</Checkbox>
+                                    </div>
+                                }
+                                labelCol={{
+                                    offset: 5,
+                                    span: 12,
+                                }}
+                                rules={
+                                    fridayValue ?
+                                        [
+                                            { required: true },
+                                        ] : null}
                             >
-                                <Checkbox checked={fridayValue} onChange={(e) => { e.target.checked ? setFridayValue(true) : setFridayValue(false) }}>Custom</Checkbox>
-                                <Checkbox>Not working</Checkbox>
                                 {fridayValue &&
-
-                                    <TimePicker.RangePicker format={"HH:mm"} />
+                                    <TimePicker.RangePicker format={"h a"} onChange={(e) => { setFridayHour(!e ? 0 : moment(e[1]).hour() - moment(e[0]).hour()) }} />
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="saturday"
-                                label="Saturday"
+                                label={
+                                    <div >
+                                        Saturday
+                                        <Checkbox checked={saturdayValue} onChange={(e) => { e.target.checked ? (setSaturdayValue(true), setSaturdayNotWorking(false)) : setSaturdayValue(false) }}>Custom</Checkbox>
+                                        <Checkbox checked={saturdayNotWorking} onChange={(e) => { (saturdayValue && e.target.checked) ? (setSaturdayValue(false), setSaturdayNotWorking(true), setSaturdayHour(0)) : e.target.checked ? (setSaturdayNotWorking(true), setSaturdayHour(0)) : setSaturdayNotWorking(false) }} >Not Working</Checkbox>
+                                    </div>
+                                }
+                                labelCol={{
+                                    offset: 5,
+                                    span: 12,
+                                }}
+                                rules={
+                                    saturdayValue ?
+                                        [
+                                            { required: true },
+                                        ] : null}
                             >
-                                <Checkbox checked={saturdayValue} onChange={(e) => { e.target.checked ? setSaturdayValue(true) : setSaturdayValue(false) }}>Custom</Checkbox>
-                                <Checkbox>Not working</Checkbox>
                                 {saturdayValue &&
-
-                                    <TimePicker.RangePicker format={"HH:mm"} />
+                                    <TimePicker.RangePicker format={"h a"} onChange={(e) => { setSaturdayHour(!e ? 0 : moment(e[1]).hour() - moment(e[0]).hour()) }} />
                                 }
                             </Form.Item>
                             <Form.Item
                                 name="sunday"
-                                label="Sunday"
+                                label={
+                                    <div >
+                                        Sunday
+                                        <Checkbox checked={sundayValue} onChange={(e) => { e.target.checked ? (setSundayValue(true), setSundayNotWorking(false)) : setSundayValue(false) }}>Custom</Checkbox>
+                                        <Checkbox checked={sundayNotWorking} onChange={(e) => { (sundayValue && e.target.checked) ? (setSundayValue(false), setSundayNotWorking(true), setSaturdayHour(0)) : e.target.checked ? (setSundayNotWorking(true), setSaturdayHour(0)) : setSundayNotWorking(false) }} >Not Working</Checkbox>
+                                    </div>
+                                }
+                                labelCol={{
+                                    offset: 5,
+                                    span: 12,
+                                }}
+                                rules={
+                                    sundayValue ?
+                                        [
+                                            { required: true },
+                                        ] : null}
                             >
-                                <Checkbox checked={sundayValue} onChange={(e) => { e.target.checked ? setSundayValue(true) : setSundayValue(false) }}>Custom</Checkbox>
-                                <Checkbox >Not working</Checkbox>
                                 {sundayValue &&
-
-                                    <TimePicker.RangePicker format={"HH:mm"} />
+                                    <TimePicker.RangePicker format={"h a"} onChange={(e) => { setSundayHour(!e ? 0 : moment(e[1]).hour() - moment(e[0]).hour()) }} />
                                 }
                             </Form.Item>
 
@@ -767,7 +1214,7 @@ const AssignedEmployee = (props) => {
                                     },
                                 ]}
                             >
-                                <Input type='number' />
+                                <Input type='number' readOnly />
                             </Form.Item>
                             <Form.Item
                                 name="gross_salary"
@@ -883,7 +1330,7 @@ const AssignedEmployee = (props) => {
                 </Form>
                 <>
                 </>
-            </Modal>
+            </Modal >
             <Modal title="Last day worked" visible={isWorkDate} footer={false}>
                 <Form onFinish={handleLastWork}>
 
@@ -928,7 +1375,7 @@ const AssignedEmployee = (props) => {
 
 
             />
-        </div>
+        </div >
     );
 }
 

@@ -73,6 +73,35 @@ const AssignedEmployeeSchema = new mongoose.Schema({
   unassigned: {
     type: Boolean,
   },
+  every_hours: {
+    type: Object
+  },
+  is_custom_monday: {
+    type: Boolean
+  },
+  is_custom_tuesday: {
+    type: Boolean
+  }
+  ,
+  is_custom_wednesday: {
+    type: Boolean
+  }
+  ,
+  is_custom_thursday: {
+    type: Boolean
+  }
+  ,
+  is_custom_friday: {
+    type: Boolean
+  }
+  ,
+  is_custom_saturday: {
+    type: Boolean
+  }
+  ,
+  is_custom_sunday: {
+    type: Boolean
+  }
 });
 AssignedEmployeeSchema.plugin(require('mongoose-autopopulate'));
 // AssignedEmployeeSchema.index({
