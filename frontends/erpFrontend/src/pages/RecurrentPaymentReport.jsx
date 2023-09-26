@@ -827,24 +827,26 @@ const RecurrentPaymentReport = () => {
   ]);
 
   const changedCellHour = (hours, origin_value, date, record, flag) => {
-    const { _id } = record;
+    const { _id, workDays } = record;
     const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
+    let startDate = moment(new Date(workDays?.length ? workDays[0] : null));
+    startDate = startDate.subtract(2, 'day')
+    let endDate = moment(new Date(workDays?.length ? workDays[workDays.length - 1] : null));
+    let targetDate = moment(new Date(date));
     if (item) {
       if (flag) {
-        return item.hour
+        return (targetDate.isBetween(startDate, endDate) || targetDate.isSame(endDate)) ? item.hour : 0
       } else {
         return item.comment
       }
     } else {
       if (flag) {
-        return origin_value
+        return (targetDate.isBetween(startDate, endDate) || targetDate.isSame(endDate)) ? origin_value : 0
       } else {
-
         return ''
       }
     }
   }
-
   const getHistory = (hours, date, record) => {
     const { _id } = record;
     const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))

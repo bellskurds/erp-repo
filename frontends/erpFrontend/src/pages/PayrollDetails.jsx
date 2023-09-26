@@ -2,8 +2,8 @@
 /* eslint-disable no-sparse-arrays */
 /* eslint-disable array-callback-return */
 /* eslint-disable no-unused-vars */
-import { LeftOutlined, RightOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons';
-import { Button, Col, Form, Input, Layout, Modal, Radio, Row, Select, Table, Typography, message } from 'antd';
+import { DeleteOutlined, LeftOutlined, RightOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons';
+import { Button, Col, Form, Input, Layout, Modal, Popconfirm, Radio, Row, Select, Table, Typography, message } from 'antd';
 import * as XLSX from 'xlsx';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -150,12 +150,7 @@ const getFormattedHours = (days) => {
   for (let i = 0; i < days.length; i++) {
     if (!days[i]) continue
     const [start, end] = days[i];
-
-    if (start === end) {
-      hours.push(dayLabels[i] + ' ' + new Date(start).getHours());
-    } else if (i === 0 || start !== days[i - 1][0] || end !== days[i - 1][1]) {
-      hours.push(dayLabels[i] + '( ' + new Date(start).getHours() + '-' + new Date(end).getHours() + ')');
-    }
+    hours.push(dayLabels[i] + '( ' + new Date(start).getHours() + '-' + new Date(end).getHours() + ')');
   }
   return hours.join(', ');
 }
@@ -216,7 +211,8 @@ const PayrollDetails = () => {
     if (item && item.contract.replace) {
 
 
-      const newHour = item[`new-day-${current.split("/").join("_")}`];
+      const newHour = parseFloat(item[`new-day-${current.split("/").join("_")}`]);
+      const differnceHour = parseFloat(item[`_day-${current.split("/").join("_")}`]);
       const newComment = item[`comment-day-${current.split("/").join("_")}`];
       const newHistory = item[`history-day-${current.split("/").join("_")}`]
 
@@ -225,7 +221,7 @@ const PayrollDetails = () => {
       setPrevHour(newHour);
       setTimeout(() => {
         if (formRef.current) formRef.current.setFieldsValue({
-          hours: newHour,
+          hours: (newHour + differnceHour),
           comment: newComment,
         });
       }, 400);
@@ -279,6 +275,19 @@ const PayrollDetails = () => {
     return adjust;
   }
   const columns = [
+    {
+      title: "action",
+      render: (_, record) => {
+        return (
+
+          record.replace &&
+          <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record._id)}>
+            <DeleteOutlined style={{ fontSize: "20px" }} />
+          </Popconfirm>
+
+        );
+      }
+    },
     {
       title: 'Store',
       dataIndex: ['store', 'store'],
@@ -410,6 +419,12 @@ const PayrollDetails = () => {
       setCurrentQ(1);
     }
   }
+  const deleteItem = (id) => {
+    const entity = 'replacement'
+    dispatch(crud.delete({ entity, id }))
+    setChangeStatus(!changeStatus);
+
+  }
   const nextData = () => {
     if (currentQ) {
       setCurrentMonth(currentMonth + 1);
@@ -489,7 +504,27 @@ const PayrollDetails = () => {
         return 0;
       }
     }
-
+  }
+  const changedCellHour = (hours, origin_value, date, record, flag) => {
+    const { _id, workDays } = record;
+    const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
+    let startDate = moment(new Date(workDays?.length ? workDays[0] : null));
+    startDate = startDate.subtract(2, 'day')
+    let endDate = moment(new Date(workDays?.length ? workDays[workDays.length - 1] : null));
+    let targetDate = moment(new Date(date));
+    if (item) {
+      if (flag) {
+        return (targetDate.isBetween(startDate, endDate) || targetDate.isSame(endDate)) ? item.hour : 0
+      } else {
+        return item.comment
+      }
+    } else {
+      if (flag) {
+        return (targetDate.isBetween(startDate, endDate) || targetDate.isSame(endDate)) ? origin_value : 0
+      } else {
+        return ''
+      }
+    }
   }
   const changedCellItem = (hours, date, record) => {
 
@@ -793,7 +828,6 @@ const PayrollDetails = () => {
         obj.account_type = obj.bankData['account_type'] || ''
         obj.account_no = obj.bankData['account_no'] || ''
         obj.ruta = obj.bankData['ruta'] || ''
-
         let currentDate = moment(start_date);
         const end = moment(end_date);
 
@@ -809,49 +843,56 @@ const PayrollDetails = () => {
           switch (_day) {
             case 0:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.sunday_hr);
-              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.sunday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr) - obj.sunday_hr
-              obj[dataIndex_new] = (changedCellHour(allHours, obj.sunday_hr, `${year}/${month + 1}/${day}`, obj, true))
+              obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.sunday_hr);
+              obj[dataIndex_new] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.sunday_hr);
+              // obj[dataIndex_new] = (changedCellHour(allHours, obj.sunday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
 
             case 1:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.monday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr) - obj.monday_hr;
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.monday_hr);
-              obj[dataIndex_new] = (changedCellHour(allHours, obj.monday_hr, `${year}/${month + 1}/${day}`, obj, true))
+              obj[dataIndex_new] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.monday_hr);
+              // obj[dataIndex_new] = (changedCellHour(allHours, obj.monday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
 
             case 2:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.tuesday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr) - obj.tuesday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.tuesday_hr);
-              obj[dataIndex_new] = (changedCellHour(allHours, obj.tuesday_hr, `${year}/${month + 1}/${day}`, obj, true))
+              obj[dataIndex_new] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.tuesday_hr);
+              // obj[dataIndex_new] = (changedCellHour(allHours, obj.tuesday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
 
             case 3:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.wednesday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr) - obj.wednesday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.wednesday_hr);
-              obj[dataIndex_new] = (changedCellHour(allHours, obj.wednesday_hr, `${year}/${month + 1}/${day}`, obj, true))
+              obj[dataIndex_new] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.wednesday_hr);
+              // obj[dataIndex_new] = (changedCellHour(allHours, obj.wednesday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
 
             case 4:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.thursday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr) - obj.thursday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.thursday_hr);
-              obj[dataIndex_new] = (changedCellHour(allHours, obj.thursday_hr, `${year}/${month + 1}/${day}`, obj, true))
+              obj[dataIndex_new] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.thursday_hr);
+              // obj[dataIndex_new] = (changedCellHour(allHours, obj.thursday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
             case 5:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.friday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr) - obj.friday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.friday_hr);
-              obj[dataIndex_new] = (changedCellHour(allHours, obj.friday_hr, `${year}/${month + 1}/${day}`, obj, true))
+              obj[dataIndex_new] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.thursday_hr);
+              // obj[dataIndex_new] = (changedCellHour(allHours, obj.friday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
             case 6:
               obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.saturday_hr);
               obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr) - obj.saturday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.saturday_hr);
-              obj[dataIndex_new] = (changedCellHour(allHours, obj.saturday_hr, `${year}/${month + 1}/${day}`, obj, true))
+              obj[dataIndex_new] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.saturday_hr);
+              // obj[dataIndex_new] = (changedCellHour(allHours, obj.saturday_hr, `${year}/${month + 1}/${day}`, obj, true))
               break;
 
             default:
@@ -900,13 +941,27 @@ const PayrollDetails = () => {
           const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
           const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
           const originValue = replace.hours[dataIndex] || 0;
-          replace[dataIndex] = setColor(changedCellHour(allHours, originValue, currentDate.format("MM/DD/YYYY"), replace, true), originValue)
+
+
+
+          // finding error
+          // obj[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj), obj.saturday_hr);
+          // obj[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr) - obj.saturday_hr
+          // obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.saturday_hr);
+          // obj[dataIndex_new] = (changedCellHour(allHours, obj.saturday_hr, `${year}/${month + 1}/${day}`, obj, true))
+
+
+          // const dataIndex = `-day-${year}_${month + 1}_${day}`;
+          // const dataIndex2 = `services-day-${year}_${month + 1}_${day}`;
+          // const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
+          // const dataIndex_new = `new-day-${year}_${month + 1}_${day}`;
+          replace[dataIndex] = setColor(changedCellValue(allHours, `${year}/${month + 1}/${day}`, replace), originValue)
+          replace[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, replace) || originValue) - originValue
+          replace[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, replace, originValue);
+          replace[dataIndex_new] = originValue
           replace[dataIndex_origin] = originValue
-          replace[dataIndex_new] = changedCellHour(allHours, originValue, currentDate.format("MM/DD/YYYY"), replace, true)
-          replace[dataIndex2] = originValue
-          replace[dataIndex1] = parseInt(replace[dataIndex_new] - originValue)
-          replace[dataIndex_comment] = changedCellHour(allHours, originValue, currentDate.format("MM/DD/YYYY"), replace, false)
-          replace[`history${dataIndex}`] = getHistory(allHours, currentDate.format("MM/DD/YYYY"), replace)
+          replace[dataIndex_comment] = changedCellHour(allHours, originValue, `${year}/${month + 1}/${day}`, replace, false)
+          replace[`history${dataIndex}`] = getHistory(allHours, `${year}/${month + 1}/${day}`, replace)
           currentDate = currentDate.add(1, 'days');
         };
         replace.sal_hr = parseFloat(replace.sal_hr).toFixed(2)
@@ -917,8 +972,9 @@ const PayrollDetails = () => {
         replace.adjustment = calcAdjustment(replace);
         replace.adjust = ((replace.adjustment / replace.hrs_bi) * replace.week_pay).toFixed(2)
         replace.salary = ((parseFloat(replace.adjust) + parseFloat(replace.week_pay))).toFixed(2) || 0;
-
       })
+      console.log(filteredReplacements, '_listItems111111');
+
       assignedEmployees.map(obj => {
         const { contract: assignedContract } = obj;
         assignedContracts.push(assignedContract);
@@ -948,8 +1004,6 @@ const PayrollDetails = () => {
         obj.employee = { personal_id: '', name: '' };
         obj.unassinged = true;
       });
-
-      console.log(unworkedContracts, 'unworkedContracts11111');
       [...workContracts, ...unworkedContracts].map(obj => {
         obj.contract = { type: obj.type, flag: false }
         obj.workDays = checkPeriods(obj, start_date, end_date, 1);
@@ -1043,8 +1097,6 @@ const PayrollDetails = () => {
           obj.payroll_id = "ZZZZZ"
         }
       })
-
-      console.log(_listItems, '_listItems111111');
       const sortedLists = allDatas.sort((a, b) => a.payroll_id.localeCompare(b.payroll_id));
       allDatas.map((data, index) => data['key'] = index)
       setListItems(sortedLists);
@@ -1073,29 +1125,6 @@ const PayrollDetails = () => {
     }
     return hours;
   }
-  const changedCellHour = (hours, origin_value, date, record, flag) => {
-    const { _id, workDays } = record;
-    const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
-    let startDate = moment(new Date(workDays?.length ? workDays[0] : null));
-    startDate = startDate.subtract(2, 'day')
-    let endDate = moment(new Date(workDays?.length ? workDays[workDays.length - 1] : null));
-    let targetDate = moment(new Date(date));
-    if (item) {
-      if (flag) {
-        return targetDate.isBetween(startDate, endDate) ? item.hour : 0
-      } else {
-        return item.comment
-      }
-    } else {
-      if (flag) {
-        return targetDate.isBetween(startDate, endDate) ? origin_value : 0
-      } else {
-        return ''
-      }
-    }
-  }
-
-
   const getPartialHours = (contract, childrens) => {
 
 
@@ -1115,13 +1144,6 @@ const PayrollDetails = () => {
 
     return pendingHours;
   }
-
-
-
-
-
-
-
   const getHistory = (hours, date, record) => {
     const { _id } = record;
     const item = hours.find(obj => obj.position === _id && dateValue(date) === dateValue(obj.date))
@@ -1132,7 +1154,6 @@ const PayrollDetails = () => {
       return false
     }
   }
-
   const getServiceHours = (record) => {
     var hours = 0;
     for (var key in record) {

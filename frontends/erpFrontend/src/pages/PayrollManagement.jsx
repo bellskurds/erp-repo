@@ -151,7 +151,7 @@ const PayrollManagement = () => {
   }
   const changedCellValue = (hours, date, record, origin_value) => {
 
-    const { contract: { _id: contract_id }, employee: { _id: employee_id }, parent_id: { _id: customer_id }, workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date, _id } = record;
+    const { workDays, start_date, end_date, contract, viaticum_start_date, viaticum_end_date, _id } = record;
     if (contract) {
 
       let positionStart = contract.type === 3 ? moment(new Date(viaticum_start_date), 'MM-DD-YYYY') : moment(new Date(start_date), 'MM-DD-YYYY');
@@ -330,7 +330,8 @@ const PayrollManagement = () => {
               obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr;
               obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.sunday_hr) - obj.sunday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.sunday_hr);
-              obj[dataIndex_new] = (changedCellHour(allHours, obj.sunday_hr, `${year}/${month + 1}/${day}`, obj, true))
+              obj[dataIndex_new] = obj[dataIndex2]
+              // obj[dataIndex_new] = (changedCellHour(allHours, obj.sunday_hr, `${year}/${month + 1}/${day}`, obj, true))
 
 
               break;
@@ -339,16 +340,16 @@ const PayrollManagement = () => {
               obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr;
               obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.monday_hr) - obj.monday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.monday_hr);
-              obj[dataIndex_new] = (changedCellHour(allHours, obj.monday_hr, `${year}/${month + 1}/${day}`, obj, true))
-
+              // obj[dataIndex_new] = (changedCellHour(allHours, obj.monday_hr, `${year}/${month + 1}/${day}`, obj, true))
+              obj[dataIndex_new] = obj[dataIndex2]
               break;
 
             case 2:
               obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr;
               obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.tuesday_hr) - obj.tuesday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.tuesday_hr);
-              obj[dataIndex_new] = (changedCellHour(allHours, obj.tuesday_hr, `${year}/${month + 1}/${day}`, obj, true))
-
+              // obj[dataIndex_new] = (changedCellHour(allHours, obj.tuesday_hr, `${year}/${month + 1}/${day}`, obj, true))
+              obj[dataIndex_new] = obj[dataIndex2]
 
               break;
 
@@ -356,30 +357,30 @@ const PayrollManagement = () => {
               obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr;
               obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.wednesday_hr) - obj.wednesday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.wednesday_hr);
-              obj[dataIndex_new] = (changedCellHour(allHours, obj.wednesday_hr, `${year}/${month + 1}/${day}`, obj, true))
-
+              // obj[dataIndex_new] = (changedCellHour(allHours, obj.wednesday_hr, `${year}/${month + 1}/${day}`, obj, true))
+              obj[dataIndex_new] = obj[dataIndex2]
               break;
 
             case 4:
               obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr;
               obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.thursday_hr) - obj.thursday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.thursday_hr);
-              obj[dataIndex_new] = (changedCellHour(allHours, obj.thursday_hr, `${year}/${month + 1}/${day}`, obj, true))
-
+              // obj[dataIndex_new] = (changedCellHour(allHours, obj.thursday_hr, `${year}/${month + 1}/${day}`, obj, true))
+              obj[dataIndex_new] = obj[dataIndex2]
               break;
             case 5:
               obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr;
               obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.friday_hr) - obj.friday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.friday_hr);
-              obj[dataIndex_new] = (changedCellHour(allHours, obj.friday_hr, `${year}/${month + 1}/${day}`, obj, true))
-
+              // obj[dataIndex_new] = (changedCellHour(allHours, obj.friday_hr, `${year}/${month + 1}/${day}`, obj, true))
+              obj[dataIndex_new] = obj[dataIndex2]
               break;
             case 6:
               obj[dataIndex] = changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr;
               obj[dataIndex1] = (changedCellValue(Hours, `${year}/${month + 1}/${day}`, obj) || obj.saturday_hr) - obj.saturday_hr
               obj[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, obj, obj.saturday_hr);
-              obj[dataIndex_new] = (changedCellHour(allHours, obj.saturday_hr, `${year}/${month + 1}/${day}`, obj, true))
-
+              // obj[dataIndex_new] = (changedCellHour(allHours, obj.saturday_hr, `${year}/${month + 1}/${day}`, obj, true))
+              obj[dataIndex_new] = obj[dataIndex2]
               break;
 
             default:
@@ -462,13 +463,22 @@ const PayrollManagement = () => {
         const dataIndex1 = `_day-${year}_${month + 1}_${day}`;
         const originValue = replace.hours[dataIndex] || 0;
         replace[dataIndex_origin] = originValue
-        replace[dataIndex_new] = changedCellHour(Hours, originValue, currentDate.format("MM/DD/YYYY"), replace, true)
-        replace[dataIndex2] = originValue
-        replace[dataIndex1] = parseInt(replace[dataIndex_new] - originValue)
-        replace[dataIndex_comment] = changedCellHour(Hours, originValue, currentDate.format("MM/DD/YYYY"), replace, false)
-        replace[`history${dataIndex}`] = getHistory(Hours, currentDate.format("MM/DD/YYYY"), replace)
+
+        replace[dataIndex1] = (changedCellValue(allHours, `${year}/${month + 1}/${day}`, replace) || originValue) - originValue
+        replace[dataIndex2] = getCellValue(allHours, `${year}/${month + 1}/${day}`, replace, originValue);
+        replace[dataIndex_new] = originValue
+        replace[dataIndex_origin] = originValue
+        replace[dataIndex_comment] = changedCellHour(allHours, originValue, `${year}/${month + 1}/${day}`, replace, false)
+        replace[`history${dataIndex}`] = getHistory(allHours, `${year}/${month + 1}/${day}`, replace)
+        // replace[dataIndex_new] = changedCellHour(Hours, originValue, currentDate.format("MM/DD/YYYY"), replace, true)
+        // replace[dataIndex2] = originValue
+        // replace[dataIndex1] = parseInt(replace[dataIndex_new] - originValue)
+        // replace[dataIndex_comment] = changedCellHour(Hours, originValue, currentDate.format("MM/DD/YYYY"), replace, false)
+        // replace[`history${dataIndex}`] = getHistory(Hours, currentDate.format("MM/DD/YYYY"), replace)
         currentDate = currentDate.add(1, 'days');
       };
+
+
       replace.hrs_bi = getServiceHours(replace);
       replace.week_pay = mathCeil(replace.hrs_bi * replace.sal_hr)
       replace.adjustment = calcAdjustment(replace);
@@ -606,18 +616,16 @@ const PayrollManagement = () => {
     startDate = startDate.subtract(2, 'day')
     let endDate = moment(new Date(workDays?.length ? workDays[workDays.length - 1] : null));
     let targetDate = moment(new Date(date));
-
     if (item) {
       if (flag) {
-        return targetDate.isBetween(startDate, endDate) ? item.hour : 0
+        return (targetDate.isBetween(startDate, endDate) || targetDate.isSame(endDate)) ? item.hour : 0
       } else {
         return item.comment
       }
     } else {
       if (flag) {
-        return targetDate.isBetween(startDate, endDate) ? origin_value : 0
+        return (targetDate.isBetween(startDate, endDate) || targetDate.isSame(endDate)) ? origin_value : 0
       } else {
-
         return ''
       }
     }
