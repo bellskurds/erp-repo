@@ -275,19 +275,19 @@ const PayrollDetails = () => {
     return adjust;
   }
   const columns = [
-    {
-      title: "action",
-      render: (_, record) => {
-        return (
+    // {
+    //   title: "action",
+    //   render: (_, record) => {
+    //     return (
 
-          record.replace &&
-          <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record._id)}>
-            <DeleteOutlined style={{ fontSize: "20px" }} />
-          </Popconfirm>
+    //       record.replace &&
+    //       <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(record._id)}>
+    //         <DeleteOutlined style={{ fontSize: "20px" }} />
+    //       </Popconfirm>
 
-        );
-      }
-    },
+    //     );
+    //   }
+    // },
     {
       title: 'Store',
       dataIndex: ['store', 'store'],
@@ -966,7 +966,12 @@ const PayrollDetails = () => {
         };
         replace.sal_hr = parseFloat(replace.sal_hr).toFixed(2)
         replace.replace = true
-        replace.hours = 'Replacement'
+        replace.hours =
+          <Popconfirm title="Sure to delete?" onConfirm={() => deleteItem(replace._id)}>
+            <label>Replacement {'        '}</label>
+            <DeleteOutlined style={{ fontSize: "20px", color: 'blue' }} />
+          </Popconfirm>
+
         replace.hrs_bi = getServiceHours(replace);
         replace.week_pay = mathCeil(replace.hrs_bi * replace.sal_hr)
         replace.adjustment = calcAdjustment(replace);

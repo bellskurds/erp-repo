@@ -218,8 +218,6 @@ const Employees = () => {
         assignedEmployees.map(obj => {
           const { employee } = obj
           if (employee) {
-
-            console.log(employee, 'employee')
             const { _id: employee_id1 } = employee;
             if (employee_id === employee_id1) {
               item['customers_'].push(obj)
@@ -228,8 +226,6 @@ const Employees = () => {
         })
         item['customers'] = item['customers_'].length
       })
-      console.log(items, 'itemsitemsitemsitems');
-
       setFilterData(items)
     }
     init();
