@@ -9,7 +9,6 @@
 exports.catchErrors = (fn) => {
   return function (req, res, next) {
     const resp = fn(req, res, next);
-    console.log(resp instanceof Promise, 'respresp')
     if (resp instanceof Promise) {
       return resp.catch(next);
     }

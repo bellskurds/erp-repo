@@ -1,19 +1,6 @@
-const employeeSchema = require('@/models/erpModels/Employee');
 const apiRest = require('./apiRest');
 const mongoose = require('mongoose');
-const { getConnection } = require('@/db');
-const AssignedEmployee = require('@/models/erpModels/AssignedEmployee');
-const AssignedEmployeeSchema = require('@/models/erpModels/AssignedEmployee');
-const workContract = require('@/models/erpModels/workContract');
-const WorkContractSchema = require('@/models/erpModels/workContract');
-
-
-
-
 exports.createCRUDController = (modelName, filter = []) => {
-
-
-  console.log(modelName, 'modelNamemodelName')
   var Model = mongoose.model(modelName);
   let crudMethods = {};
 
@@ -22,7 +9,9 @@ exports.createCRUDController = (modelName, filter = []) => {
       const modelSchema = Model.schema;
       const { db_name } = req.session;
       if (db_name) {
-        Model = (await getConnection(db_name)).model(modelName, modelSchema);
+        Model = mongoose.model(`${db_name}_${modelName}`, modelSchema);
+      } else {
+        Model = mongoose.model(modelName, modelSchema);
       }
 
       apiRest.create(Model, req, res);
@@ -33,7 +22,9 @@ exports.createCRUDController = (modelName, filter = []) => {
       const modelSchema = Model.schema;
       const { db_name } = req.session;
       if (db_name) {
-        Model = (await getConnection(db_name)).model(modelName, modelSchema);
+        Model = mongoose.model(`${db_name}_${modelName}`, modelSchema);
+      } else {
+        Model = mongoose.model(modelName, modelSchema);
       }
       apiRest.read(Model, req, res);
     };
@@ -43,7 +34,9 @@ exports.createCRUDController = (modelName, filter = []) => {
       const modelSchema = Model.schema;
       const { db_name } = req.session;
       if (db_name) {
-        Model = (await getConnection(db_name)).model(modelName, modelSchema);
+        Model = mongoose.model(`${db_name}_${modelName}`, modelSchema);
+      } else {
+        Model = mongoose.model(modelName, modelSchema);
       }
       apiRest.update(Model, req, res);
     };
@@ -53,7 +46,9 @@ exports.createCRUDController = (modelName, filter = []) => {
       const modelSchema = Model.schema;
       const { db_name } = req.session;
       if (db_name) {
-        Model = (await getConnection(db_name)).model(modelName, modelSchema);
+        Model = mongoose.model(`${db_name}_${modelName}`, modelSchema);
+      } else {
+        Model = mongoose.model(modelName, modelSchema);
       }
       apiRest.delete(Model, req, res);
     };
@@ -66,7 +61,9 @@ exports.createCRUDController = (modelName, filter = []) => {
       const modelSchema = Model.schema;
       const { db_name } = req.session;
       if (!req.url.includes('company') && db_name) {
-        Model = (await getConnection(db_name)).model(modelName, modelSchema);
+        Model = mongoose.model(`${db_name}_${modelName}`, modelSchema);
+      } else {
+        Model = mongoose.model(modelName, modelSchema);
       }
       apiRest.list(Model, req, res, modelName);
     };
@@ -76,7 +73,9 @@ exports.createCRUDController = (modelName, filter = []) => {
       const modelSchema = Model.schema;
       const { db_name } = req.session;
       if (db_name) {
-        Model = (await getConnection(db_name)).model(modelName, modelSchema);
+        Model = mongoose.model(`${db_name}_${modelName}`, modelSchema);
+      } else {
+        Model = mongoose.model(modelName, modelSchema);
       }
       apiRest.search(Model, req, res);
     };
@@ -86,7 +85,9 @@ exports.createCRUDController = (modelName, filter = []) => {
       const modelSchema = Model.schema;
       const { db_name } = req.session;
       if (db_name) {
-        Model = (await getConnection(db_name)).model(modelName, modelSchema);
+        Model = mongoose.model(`${db_name}_${modelName}`, modelSchema);
+      } else {
+        Model = mongoose.model(modelName, modelSchema);
       }
       apiRest.filter(Model, req, res);
     };
@@ -96,7 +97,9 @@ exports.createCRUDController = (modelName, filter = []) => {
       const modelSchema = Model.schema;
       const { db_name } = req.session;
       if (db_name) {
-        Model = (await getConnection(db_name)).model(modelName, modelSchema);
+        Model = mongoose.model(`${db_name}_${modelName}`, modelSchema);
+      } else {
+        Model = mongoose.model(modelName, modelSchema);
       }
       apiRest.status(Model, req, res);
     };
@@ -106,7 +109,9 @@ exports.createCRUDController = (modelName, filter = []) => {
       const modelSchema = Model.schema;
       const { db_name } = req.session;
       if (db_name) {
-        Model = (await getConnection(db_name)).model(modelName, modelSchema);
+        Model = mongoose.model(`${db_name}_${modelName}`, modelSchema);
+      } else {
+        Model = mongoose.model(modelName, modelSchema);
       }
       apiRest.getFilterbyDate(Model, req, res);
     };
@@ -117,7 +122,9 @@ exports.createCRUDController = (modelName, filter = []) => {
       const { db_name } = req.session;
       console.log(db_name, modelName, '343434334')
       if (db_name) {
-        Model = (await getConnection(db_name)).model(modelName, modelSchema);
+        Model = mongoose.model(`${db_name}_${modelName}`, modelSchema);
+      } else {
+        Model = mongoose.model(modelName, modelSchema);
       }
       apiRest.getByParentId(Model, req, res);
     };
@@ -127,7 +134,9 @@ exports.createCRUDController = (modelName, filter = []) => {
       const modelSchema = Model.schema;
       const { db_name } = req.session;
       if (db_name) {
-        Model = (await getConnection(db_name)).model(modelName, modelSchema);
+        Model = mongoose.model(`${db_name}_${modelName}`, modelSchema);
+      } else {
+        Model = mongoose.model(modelName, modelSchema);
       }
       apiRest.upload(Model, req, res);
     };
@@ -137,7 +146,9 @@ exports.createCRUDController = (modelName, filter = []) => {
       const modelSchema = Model.schema;
       const { db_name } = req.session;
       if (db_name) {
-        Model = (await getConnection(db_name)).model(modelName, modelSchema);
+        Model = mongoose.model(`${db_name}_${modelName}`, modelSchema);
+      } else {
+        Model = mongoose.model(modelName, modelSchema);
       }
       apiRest._upload(Model, req, res);
     };

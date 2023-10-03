@@ -4,29 +4,8 @@
  *  @returns {Document} Single Document
  */
 
-const employeeSchema = require('@/models/erpModels/Employee');
 const moment = require('moment');
 const { default: mongoose } = require('mongoose');
-const { generateResetToken, verifyResetToken } = require('../erpControllers/authJwtController ');
-const adminSchema = require('@/models/erpModels/Admin');
-const { getConnection } = require('@/db');
-const createConnection = (db) => {
-  return mongoose.createConnection(`mongodb://localhost/${db}`, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-
-  })
-}
-
-const getModelWithDBName = (modelName, db_name) => {
-  const connection = mongoose.connections.find(conn => conn.name === db_name);
-  if (connection) {
-    return connection.model(modelName, Model.schema);
-  } else {
-    return mongoose.model(modelName, Model.schema);
-  }
-};
-
 exports.read = async (Model, req, res) => {
   try {
     // Find document by id
@@ -67,9 +46,7 @@ exports.create = async (Model, req, res) => {
   try {
     if (req.url.includes('company')) {
       const { email, db_name, name } = req.body;
-      const resetToken = generateResetToken(email);
-      const resetPasswordUrl = `http://localhost:3000/reset-password/${resetToken}`;
-      const Admin = (await getConnection(db_name)).model("Admin", mongoose.model('Admin').schema);
+      const Admin = mongoose.model(`${db_name}_Admin`, mongoose.model('Admin').schema);
       const admin = new Admin();
       const passwordHash = admin.generateHash('123');
       new Admin({

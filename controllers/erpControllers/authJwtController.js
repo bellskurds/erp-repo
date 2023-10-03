@@ -1,4 +1,3 @@
-const { connectDB, getConnection } = require('@/db');
 const moment = require('moment');
 
 const bcrypt = require('bcryptjs');
@@ -44,14 +43,14 @@ exports.login = async (req, res) => {
         })
       }
       if (db_name) {
-        Admin = (await getConnection(db_name)).model("Admin", Admin.schema);
+        Admin = mongoose.model(`${db_name}_Admin`, Admin.schema);
 
         // Admin = createConnection(db_name).model("Admin", Admin.schema);
 
       }
     } else {
-      db_name = 'erp-pro'
-      Admin = (await getConnection(db_name)).model("Admin", Admin.schema);
+      db_name = false
+      Admin = mongoose.model(`Admin`, Admin.schema);
     }
     console.log(db_name, 'db_name');
     // validate
@@ -122,11 +121,12 @@ exports.login = async (req, res) => {
           name: result.name,
           role: result.role,
           isLoggedIn: result.isLoggedIn,
-          company: db_name === 'erp-pro' ? false : true
+          company: db_name ? true : false
         },
       },
       message: 'Successfully login admin',
     });
+    console.log(req.session.db_name, 'req.session.db_name');
   } catch (err) {
 
     console.log(err, 'errrr')
@@ -151,9 +151,10 @@ exports.isValidAdminToken = async (req, res, next) => {
     const verified = jwt.verify(token, secretKey);
     const { db_name } = req.session;
 
-    console.log(db_name, '3434343')
     if (db_name) {
-      Admin = (await getConnection(db_name)).model("Admin", Admin.schema);
+      Admin = mongoose.model(`${db_name}_Admin`, Admin.schema);
+    } else {
+      Admin = mongoose.model(`Admin`, Admin.schema);
     }
     if (!verified)
       return res.status(401).json({
@@ -164,7 +165,6 @@ exports.isValidAdminToken = async (req, res, next) => {
       });
 
     const admin = await Admin.findOne({ _id: verified.id, removed: false });
-    console.log(admin, 'adminadminadmin')
     if (!admin)
       return res.status(401).json({
         success: false,

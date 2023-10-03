@@ -1,4 +1,3 @@
-const { getConnection } = require('@/db');
 const mongoose = require('mongoose');
 
 var Admin = mongoose.model('Admin');
@@ -13,7 +12,9 @@ const getOne = require('../corsControllers/custom').getOne;
 exports.list = async (req, res) => {
   const { db_name } = req.session;
   if (db_name) {
-    Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+    Admin = mongoose.model(`${db_name}_Admin`, mongoose.model("Admin").schema);
+  } else {
+    Admin = mongoose.model(`Admin`, mongoose.model("Admin").schema);
   }
 
 
@@ -102,7 +103,9 @@ exports.photo = async (req, res) => {
   try {
     const { db_name } = req.session;
     if (db_name) {
-      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+      Admin = mongoose.model(`${db_name}_Admin`, mongoose.model("Admin").schema);
+    } else {
+      Admin = mongoose.model(`Admin`, mongoose.model("Admin").schema);
     }
 
     // Find document by id
@@ -155,7 +158,9 @@ exports.read = async (req, res) => {
   try {
     const { db_name } = req.session;
     if (db_name) {
-      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+      Admin = mongoose.model(`${db_name}_Admin`, mongoose.model("Admin").schema);
+    } else {
+      Admin = mongoose.model(`Admin`, mongoose.model("Admin").schema);
     }
 
     // Find document by id
@@ -209,7 +214,9 @@ exports.create = async (req, res) => {
   try {
     const { db_name } = req.session;
     if (db_name) {
-      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+      Admin = mongoose.model(`${db_name}_Admin`, mongoose.model("Admin").schema);
+    } else {
+      Admin = mongoose.model(`Admin`, mongoose.model("Admin").schema);
     }
 
     let { email, password } = req.body;
@@ -278,7 +285,9 @@ exports.update = async (req, res) => {
   try {
     const { db_name } = req.session;
     if (db_name) {
-      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+      Admin = mongoose.model(`${db_name}_Admin`, mongoose.model("Admin").schema);
+    } else {
+      Admin = mongoose.model(`Admin`, mongoose.model("Admin").schema);
     }
 
     let { email } = req.body;
@@ -341,7 +350,9 @@ exports.updatePassword = async (req, res) => {
   try {
     const { db_name } = req.session;
     if (db_name) {
-      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+      Admin = mongoose.model(`${db_name}_Admin`, mongoose.model("Admin").schema);
+    } else {
+      Admin = mongoose.model(`Admin`, mongoose.model("Admin").schema);
     }
 
     let { password } = req.body;
@@ -406,7 +417,9 @@ exports.delete = async (req, res) => {
   try {
     const { db_name } = req.session;
     if (db_name) {
-      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+      Admin = mongoose.model(`${db_name}_Admin`, mongoose.model("Admin").schema);
+    } else {
+      Admin = mongoose.model(`Admin`, mongoose.model("Admin").schema);
     }
 
     let updates = {
@@ -447,7 +460,9 @@ exports.status = async (req, res) => {
   try {
     const { db_name } = req.session;
     if (db_name) {
-      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+      Admin = mongoose.model(`${db_name}_Admin`, mongoose.model("Admin").schema);
+    } else {
+      Admin = mongoose.model(`Admin`, mongoose.model("Admin").schema);
     }
 
     if (req.query.enabled === true || req.query.enabled === false) {
@@ -501,7 +516,9 @@ exports.search = async (req, res) => {
   try {
     const { db_name } = req.session;
     if (db_name) {
-      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+      Admin = mongoose.model(`${db_name}_Admin`, mongoose.model("Admin").schema);
+    } else {
+      Admin = mongoose.model(`Admin`, mongoose.model("Admin").schema);
     }
 
     if (req.query.q === undefined || req.query.q === '' || req.query.q === ' ') {
@@ -552,7 +569,9 @@ exports.filter = async (req, res) => {
   try {
     const { db_name } = req.session;
     if (db_name) {
-      Admin = (await getConnection(db_name)).model("Admin", mongoose.model("Admin").schema);
+      Admin = mongoose.model(`${db_name}_Admin`, mongoose.model("Admin").schema);
+    } else {
+      Admin = mongoose.model(`Admin`, mongoose.model("Admin").schema);
     }
 
     if (req.query.filter === undefined || req.query.equal === undefined) {

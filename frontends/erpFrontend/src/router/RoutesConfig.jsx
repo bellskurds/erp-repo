@@ -31,7 +31,7 @@ import React from 'react';
 //   return <IconTag />;
 // };
 const { role } = window.localStorage.auth ? JSON.parse(window.localStorage.auth) : {};
-console.log(role, 33333333333333333333333333333);
+
 
 
 var routes = [
@@ -103,10 +103,10 @@ var routes = [
     path: '/admin',
     component: 'Admin',
   },
-  // {
-  //   path: '/company',
-  //   component: 'Company',
-  // },
+  {
+    path: '/company',
+    component: 'Company',
+  },
   {
     path: '/payment/mode',
     component: 'PaymentMode',
