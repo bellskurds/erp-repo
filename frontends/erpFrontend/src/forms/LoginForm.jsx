@@ -41,7 +41,7 @@ export default function LoginForm({ onStateChange, stateValue }) {
       <Form.Item>
         <Form.Item name="remember" valuePropName="checked" noStyle>
           <Checkbox>Remember me</Checkbox>
-          <Checkbox checked={stateValue} onChange={(e) => onStateChange(e.target.checked)}>To Company</Checkbox>
+          {/* <Checkbox checked={stateValue} onChange={(e) => onStateChange(e.target.checked)}>To Company</Checkbox> */}
         </Form.Item>
 
 
