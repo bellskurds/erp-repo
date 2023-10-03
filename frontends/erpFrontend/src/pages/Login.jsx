@@ -168,21 +168,20 @@ const LoginPage = () => {
               }}
               onFinish={onFinish}
             >
-
-              <Form.Item
-                name="company"
-                label="Company"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}>
-                <SelectAsync entity={'company'} displayLabels={['company_name']} />
-              </Form.Item>
               <LoginForm onStateChange={setIsCompany} stateValue={isCompany} />
-              {/* {
+              {
                 isCompany &&
-              } */}
+                <Form.Item
+                  name="company"
+                  label="Company"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}>
+                  <SelectAsync entity={'company'} displayLabels={['company_name']} />
+                </Form.Item>
+              }
               <Form.Item>
                 <Button
                   type="primary"
