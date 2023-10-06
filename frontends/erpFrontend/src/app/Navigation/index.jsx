@@ -61,12 +61,12 @@ export default function Navigation() {
           )}
         </div>
         <Menu mode="inline">
-          {/* <Menu.Item key={'Dashboard'} icon={<DashboardOutlined />}>
+          <Menu.Item key={'Dashboard'} icon={<DashboardOutlined />}>
             <Link to={'/'} />
             Dashboard
-          </Menu.Item> */}
+          </Menu.Item>
 
-          {/* 
+
           {role !== 3
             &&
             <>
@@ -98,9 +98,9 @@ export default function Navigation() {
                 Project Payment Management
               </Menu.Item>
             </>
-          } */}
+          }
 
-          {/* <Menu.Item key={'VisitControl'} icon={<ControlOutlined />}>
+          <Menu.Item key={'VisitControl'} icon={<ControlOutlined />}>
             <Link to={'/visit_control'} />
             Visit Control
           </Menu.Item>
@@ -117,14 +117,14 @@ export default function Navigation() {
               <Link to={'/recurrent_payment_report'} />
               Recurrent Payment Report
             </Menu.Item>
-          </SubMenu> */}
+          </SubMenu>
           {!company &&
             <Menu.Item key={'Company'} icon={<TeamOutlined />}>
               <Link to={'/company'} />
               Company
             </Menu.Item>
           }
-          {/* {
+          {
             role === 0 &&
             <>
 
@@ -145,7 +145,7 @@ export default function Navigation() {
                 </Menu.Item>
               </SubMenu>
             </>
-          } */}
+          }
         </Menu>
       </Sider>
     </>
